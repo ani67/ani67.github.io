@@ -2,13 +2,13 @@
 <html lang="en">
 
 <head>
-    <title>Emotion's Poem</title>
+    <title>The Gift of Poetry</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
-    <meta itemprop="name" content="Emotion's Poem">
-    <meta itemprop="description" content="An interactive poem generator for young kids">
+    <meta itemprop="name" content="The Gift of Poetry">
+    <meta itemprop="description" content="interactive poem generator">
     <meta itemprop="image" content="screenshot.png">
-    <meta name="description" content="Slam Out Loud" />
+    <meta name="description" content="interactive poem generator" />
 
     <style>
         body {
@@ -48,7 +48,7 @@
 <body>
     <canvas id="glcanvas" width="100vw" height="100vh" tabindex="1"></canvas>
 
-<!-- Global site tag (gtag.js) - Google Analytics -->
+ <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4C7DXKWJEZ"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -63,15 +63,6 @@
     <corelibs/>
 
     <script>
-        /**
-         * Called when there was a cables error.
-         * @param {string} errId - ID of the error, e.g. 'NO_WEBGL' or 'NO_WEBAUDIO'
-         *                         when the browser does not support the used APIs
-         * @param {string} errMsg - The error message
-         */
-        function showError(errId, errMsg) {
-            alert('An error occured: ' + errId + ', ' + errMsg);
-        }
 
         function patchInitialized(patch) {
             // You can now access the patch object (patch), register variable watchers and so on
@@ -87,7 +78,6 @@
                 prefixAssetPath: '',
                 glCanvasId: 'glcanvas',
                 glCanvasResizeToWindow: true,
-                onError: showError,
                 onPatchLoaded: patchInitialized,
                 onFinishedLoading: patchFinishedLoading,
             });

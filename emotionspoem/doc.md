@@ -8,6 +8,8 @@
 * __cc__ ```String```
 * __d__ ```String```
 * __dd__ ```String```
+* __dear__ ```String```
+* __dec__ ```String``` (default Value: `Dear`)
 * __e__ ```String```
 * __f__ ```String``` (default Value: `is`)
 * __g__ ```String``` (default Value: `As`)
@@ -29,8 +31,14 @@
 * __n11__ ```Number```
 * __n11__ ```Number```
 * __n11__ ```Number```
+* __n11__ ```Number```
+* __n11__ ```Number```
+* __n11__ ```Number```
+* __n11__ ```Number```
+* __n11__ ```Number``` (default Value: `1`)
 * __p__ ```String``` (default Value: `Love is`)
 * __page__ ```Number``` (default Value: `0`)
+* __person__ ```String```
 * __q__ ```String``` (default Value: `As pink as a puppy's tongue`)
 * __r__ ```String``` (default Value: `It sounds like the pitter patter of rain`)
 * __s__ ```String``` (default Value: `Love is beautiful.`)
