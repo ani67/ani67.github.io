@@ -48,7 +48,7 @@ export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect }: Mobile
       aria-label="Navigation menu"
     >
       <nav
-        className="fixed top-0 right-0 h-full w-64 bg-white dark:bg-black dawn:bg-black day:bg-black night:bg-black border-l border-gray-200 dark:border-gray-800 p-8 pt-20"
+        className="fixed top-0 right-0 h-full w-64 bg-[var(--background)] border-l border-white/20 p-8 pt-20"
         onClick={(e) => e.stopPropagation()}
       >
         {onTagSelect ? (

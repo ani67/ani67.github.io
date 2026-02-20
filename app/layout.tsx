@@ -34,22 +34,22 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Blog & Portfolio",
-    template: "%s | Blog & Portfolio",
+    default: "Ani Dalal",
+    template: "%s | Ani Dalal",
   },
-  description: "A blog and portfolio showcasing my work and thoughts.",
-  keywords: ["blog", "portfolio", "web development"],
-  authors: [{ name: "Your Name" }],
+  description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
+  keywords: ["design", "portfolio", "generative art", "product design", "AI"],
+  authors: [{ name: "Ani Dalal" }],
   openGraph: {
-    title: "Blog & Portfolio",
-    description: "A blog and portfolio showcasing my work and thoughts.",
+    title: "Ani Dalal",
+    description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Blog & Portfolio",
-    description: "A blog and portfolio showcasing my work and thoughts.",
+    title: "Ani Dalal",
+    description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
   },
 };
 

@@ -45,7 +45,7 @@ export function BlogLayout({ children, popularTags, selectedTag, onTagSelect, ed
       />
 
       {/* Desktop Layout with max-width container and 12-column grid */}
-      <div className="max-w-[1536px] mx-auto pt-[200px] px-[20px] xl:px-[160px] pb-0 relative z-10">
+      <div className="max-w-[1536px] mx-auto pt-0 md:pt-[200px] px-0 md:px-[20px] xl:px-[160px] pb-0 relative z-10">
         <div className="grid grid-cols-12 gap-4 md:gap-6">
           {/* Columns 1-2: Sidebar */}
           <Sidebar

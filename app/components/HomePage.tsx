@@ -50,7 +50,7 @@ export default function HomePage({ posts, popularTags }: HomePageProps) {
       <main className="flex-1 px-6 pt-24 pb-24 md:px-0 md:pt-0 md:pb-32">
         {/* Blog Posts Section */}
         <section>
-            <h3 className="text-[40px] font-light mb-12 md:mb-16 font-[family-name:var(--font-mondwest)] leading-tight text-white">
+            <h3 className="text-[26px] md:text-[40px] font-light mb-12 md:mb-16 font-[family-name:var(--font-mondwest)] leading-tight text-white">
               Product designer and artist with 8+ years of experience, currently building AI native tools for the future
             </h3>
 
