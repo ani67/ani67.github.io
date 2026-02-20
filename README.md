@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blog & Portfolio
+
+A modern, SEO-friendly blog and portfolio built with Next.js, TypeScript, and Markdown.
+
+## Features
+
+- 📝 Markdown-based content management
+- 🎨 Clean, responsive design with Tailwind CSS
+- ⚡ Fast performance with Next.js App Router
+- 🔍 SEO optimized with metadata
+- 📖 Reading time estimation
+- 🌙 Dark mode support
 
 ## Getting Started
 
-First, run the development server:
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the site.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Adding New Posts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create a new `.md` file in `content/posts/`
+2. Add frontmatter with required fields:
 
-## Learn More
+```markdown
+---
+title: "Your Post Title"
+date: "2025-01-15"
+description: "A brief description of your post"
+---
 
-To learn more about Next.js, take a look at the following resources:
+# Your content here
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Write your post content in markdown...
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. The post will automatically appear on the home page
 
-## Deploy on Vercel
+### Build for Production
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run build
+npm start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+### Deploy to Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com)
+3. Import your GitHub repository
+4. Vercel will auto-detect Next.js and deploy
+5. Done! Your site will auto-deploy on every push
+
+### Alternative: Cloudflare Pages or Netlify
+
+Both support Next.js and offer free tiers similar to Vercel.
+
+## Project Structure
+
+```
+blog-portfolio/
+├── app/
+│   ├── layout.tsx       # Root layout with SEO metadata
+│   ├── page.tsx         # Home page with post listings
+│   └── posts/
+│       └── [slug]/
+│           └── page.tsx # Individual post pages
+├── content/
+│   └── posts/           # Your markdown blog posts
+├── lib/
+│   └── posts.ts         # Utility functions for reading posts
+└── public/              # Static assets
+```
+
+## Customization
+
+- **Site title & description**: Edit `app/layout.tsx`
+- **Styling**: Modify Tailwind classes or `app/globals.css`
+- **Your name**: Update the author in `app/layout.tsx`
+
+## Tech Stack
+
+- **Framework**: Next.js 15
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Content**: Markdown with gray-matter
+- **Rendering**: MDX (next-mdx-remote)
+- **Hosting**: Vercel (free tier)
+
+## Cost
+
+- **Development**: Free
+- **Hosting**: Free on Vercel (100GB bandwidth/month)
+- **Domain** (optional): ~$12/year
+
+## License
+
+MIT

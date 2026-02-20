@@ -1,8 +1,28 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@variant dawn (&:where(.dawn, .dawn *));
+@variant day (&:where(.day, .day *));
+@variant night (&:where(.night, .night *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #4269E8;
+  --foreground: #ededed;
+}
+
+:root.dawn {
+  --background: #BB3232;
+  --foreground: #ededed;
+}
+
+:root.day {
+  --background: #4269E8;
+  --foreground: #ededed;
+}
+
+:root.night {
+  --background: #14151A;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -12,15 +32,116 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-mondwest), Arial, Helvetica, sans-serif;
+  font-size: 20px;
+}
+
+@keyframes blink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Apply squircle effect to all prose images and videos */
+.prose img {
+  clip-path: url(#squircle-image);
+}
+
+.ProseMirror img {
+  clip-path: url(#squircle-image);
+}
+
+.prose video {
+  clip-path: url(#squircle-image);
+}
+
+.ProseMirror video {
+  clip-path: url(#squircle-image);
+}
+
+/* Image with caption - hanging in margin */
+.ProseMirror .image-with-caption,
+.prose .image-with-caption {
+  position: relative;
+  margin: 2rem 0;
+}
+
+.ProseMirror .image-with-caption img,
+.prose .image-with-caption img {
+  width: 100%;
+  display: block;
+}
+
+/* Video with caption - hanging in margin */
+.ProseMirror .video-with-caption,
+.prose .video-with-caption {
+  position: relative;
+  margin: 2rem 0;
+}
+
+.ProseMirror .video-with-caption video,
+.prose .video-with-caption video {
+  width: 100%;
+  display: block;
+}
+
+/* Match body text line-height to description */
+.prose-xl p {
+  line-height: 2.1875rem; /* 35px - matches text-xl */
+}
+
+@media (min-width: 1024px) {
+  .prose-2xl p {
+    line-height: 2rem; /* 32px - matches text-2xl */
+  }
+}
+
+/* Caption - below image/video on mobile/tablet, in right margin on desktop */
+.ProseMirror .image-with-caption .caption-text,
+.prose .image-with-caption .caption-text,
+.ProseMirror .video-with-caption .caption-text,
+.prose .video-with-caption .caption-text {
+  position: relative;
+  width: 100%;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 20px 0;
+  line-height: 1.4;
+  font-family: var(--font-mondwest), Arial, sans-serif;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+}
+
+/* At 1280px and above: Caption in right margin - columns 10-12 */
+@media (min-width: 1280px) {
+  .ProseMirror .image-with-caption .caption-text,
+  .prose .image-with-caption .caption-text,
+  .ProseMirror .video-with-caption .caption-text,
+  .prose .video-with-caption .caption-text {
+    position: absolute;
+    left: calc(100% + 24px);
+    bottom: 0;
+    width: calc(50% - 24px); /* 3 columns out of 6 content columns, minus the gap */
+    padding: 60px 0;
+  }
+}
+
+.ProseMirror .image-with-caption .caption-text::placeholder,
+.ProseMirror .video-with-caption .caption-text::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
+.ProseMirror .image-with-caption .caption-text:focus,
+.ProseMirror .video-with-caption .caption-text:focus {
+  color: rgba(255, 255, 255, 0.8);
 }
