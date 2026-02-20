@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { PostMetadata } from '@/lib/posts';
 import { BlogLayout } from './layout/BlogLayout';
 import { PostCard } from './PostCard';
@@ -9,17 +9,18 @@ import { PostCard } from './PostCard';
 interface HomePageProps {
   posts: PostMetadata[];
   popularTags: { tag: string; count: number }[];
-  initialTag: string | null;
 }
 
-export default function HomePage({ posts, popularTags, initialTag }: HomePageProps) {
+export default function HomePage({ posts, popularTags }: HomePageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTag = searchParams.get('tag');
   const [selectedTag, setSelectedTag] = useState<string | null>(initialTag);
 
-  // Update selected tag when initialTag changes (e.g., browser back/forward)
+  // Update selected tag when URL changes (e.g., browser back/forward)
   useEffect(() => {
-    setSelectedTag(initialTag);
-  }, [initialTag]);
+    setSelectedTag(searchParams.get('tag'));
+  }, [searchParams]);
 
   const handleTagSelect = (tag: string | null) => {
     setSelectedTag(tag);
