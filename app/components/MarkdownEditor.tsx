@@ -297,8 +297,8 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
         if (tagsMatch && tagsMatch[1].trim()) {
           const parsedTags = tagsMatch[1]
             .split(',')
-            .map(t => t.trim().replace(/["']/g, ''))
-            .filter(t => t);
+            .map((t: string) => t.trim().replace(/["']/g, ''))
+            .filter((t: string) => t);
           // Use first tag or default to vibes
           const firstTag = parsedTags[0];
           if (firstTag === 'work' || firstTag === 'art' || firstTag === 'vibes') {
@@ -328,12 +328,12 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
           // Regular images: ![alt](url)
           .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" />')
           .split('\n\n')
-          .map(para => {
+          .map((para: string) => {
             if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<ol') || para.startsWith('<img') || para.startsWith('<video') || para.startsWith('<div class="image-with-caption"') || para.startsWith('<div class="video-with-caption"')) {
               return para;
             }
             if (para.startsWith('- ')) {
-              const items = para.split('\n').map(line =>
+              const items = para.split('\n').map((line: string) =>
                 line.replace(/^- (.+)$/, '<li>$1</li>')
               ).join('');
               return `<ul>${items}</ul>`;
@@ -944,7 +944,7 @@ ${markdown}`;
                   const url = prompt('Enter image URL:');
                   if (url) {
                     // Insert image with empty caption - user can add caption in the UI textarea
-                    editor.chain().focus().setImage({ src: url, alt: '', caption: '' }).run();
+                    (editor.chain().focus() as any).setImage({ src: url, alt: '', caption: '' }).run();
                   }
                 }}
                 className="p-1.5 transition-colors hover:bg-white/20"
@@ -958,7 +958,7 @@ ${markdown}`;
                   const url = prompt('Enter video URL:');
                   if (url) {
                     // Insert video with empty caption - user can add caption in the UI textarea
-                    editor.chain().focus().setVideo({ src: url, caption: '' }).run();
+                    (editor.chain().focus() as any).setVideo({ src: url, caption: '' }).run();
                   }
                 }}
                 className="p-1.5 transition-colors hover:bg-white/20"

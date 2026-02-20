@@ -28,7 +28,7 @@ export function ScrambleText({
   const [displayText, setDisplayText] = useState(text);
   const [isAnimating, setIsAnimating] = useState(false);
   const [minWidth, setMinWidth] = useState<number | undefined>(undefined);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const mountedRef = useRef(false);
   const containerRef = useRef<HTMLElement>(null);
 
