@@ -106,7 +106,7 @@ const CustomImage = Node.create({
           attrs: options,
         });
       },
-    };
+    } as any;
   },
 
   addNodeView() {
@@ -199,7 +199,7 @@ const CustomVideo = Node.create({
           attrs: options,
         });
       },
-    };
+    } as any;
   },
 
   addNodeView() {

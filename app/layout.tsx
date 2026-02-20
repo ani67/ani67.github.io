@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import localFont from "next/font/local";
+import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { ThemeTransition } from "./components/ThemeTransition";
@@ -59,6 +60,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Script src="https://www.googletagmanager.com/gtag/js?id=G-5F61ZX6857" strategy="afterInteractive" />
+      <Script id="google-analytics" strategy="afterInteractive">{`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-5F61ZX6857');
+      `}</Script>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${gambarino.variable} ${mondwest.variable} ${inter.variable} antialiased`}
       >
