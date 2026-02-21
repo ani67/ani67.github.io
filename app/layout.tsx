@@ -6,7 +6,6 @@ import "./globals.css";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { ThemeTransition } from "./components/ThemeTransition";
 import { PixelTransition } from "./components/PixelTransition";
-import { FaviconSwitcher } from "./components/FaviconSwitcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -82,7 +81,6 @@ export default function RootLayout({
           </defs>
         </svg>
         <ThemeProvider>
-          <FaviconSwitcher />
           <ThemeTransition />
           <PixelTransition />
           {children}
