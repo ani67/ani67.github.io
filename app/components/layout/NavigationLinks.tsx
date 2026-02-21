@@ -7,12 +7,13 @@ interface NavigationLinksProps {
   useLinks?: boolean;
   listClassName?: string;
   itemClassName?: string;
+  inactiveClassName?: string;
 }
 
 /**
  * Main navigation links
  */
-export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassName = 'space-y-2', itemClassName = 'text-xl' }: NavigationLinksProps) {
+export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassName = 'space-y-2', itemClassName = 'text-xl', inactiveClassName = 'text-white/50 hover:text-white' }: NavigationLinksProps) {
   const navItems = [
     { label: 'Work', tag: 'work' },
     { label: 'Art', tag: 'art' },
@@ -32,9 +33,7 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
               <Link
                 href={`/?tag=${tag}`}
                 className={`${itemClassName} transition-colors focus:outline-none block ${
-                  selectedTag === tag
-                    ? 'text-white'
-                    : 'text-white/50 hover:text-white'
+                  selectedTag === tag ? 'text-white' : inactiveClassName
                 }`}
               >
                 <ScrambleText text={label} />
@@ -43,9 +42,7 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
               <button
                 onClick={() => onTagSelect?.(tag)}
                 className={`${itemClassName} transition-colors focus:outline-none block ${
-                  selectedTag === tag
-                    ? 'text-white'
-                    : 'text-white/50 hover:text-white'
+                  selectedTag === tag ? 'text-white' : inactiveClassName
                 }`}
               >
                 <ScrambleText text={label} />
