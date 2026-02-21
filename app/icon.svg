@@ -1,7 +1,7 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="42" height="36" viewBox="0 0 42 36" fill="none" xmlns="http://www.w3.org/2000/svg">
   <style>
     path { fill: black; }
     @media (prefers-color-scheme: dark) { path { fill: white; } }
   </style>
-  <path d="M9 16V6H7V7H5V12H3V24H5V26H8V27H15V26H19V24H21V20H23V26H27V24H29V9H27V7H23V11H21V6H20V5H14V6H13V12V13H14H16V14H18V16H16H15V17V18H11V16H9Z"/>
+  <path d="M10.5 18V0H6V1.5H3V9H0V31.5H3V34.5H7.5V36H19.5V34.5H25.5V31.5H28.5V24H31.5V36H39V31.5H42V6H39V0H31.5V9H28.5V1.5H27V0H18V3H16.5V12V13.5H18H21V15H24V18H21H19.5V19.5V21H13.5V18H10.5Z"/>
 </svg>
