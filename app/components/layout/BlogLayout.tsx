@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { MobileHeader } from './MobileHeader';
 import { MobileMenu } from './MobileMenu';
 import { Sidebar } from './Sidebar';
@@ -24,6 +25,7 @@ interface BlogLayoutProps {
  */
 export function BlogLayout({ children, popularTags, selectedTag, onTagSelect, editorPosts, onPostSelect, onNewPost, useLinks, rightSidebar }: BlogLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <div className="min-h-screen text-white relative z-10">
@@ -35,7 +37,10 @@ export function BlogLayout({ children, popularTags, selectedTag, onTagSelect, ed
         Skip to main content
       </a>
 
-      <MobileHeader menuOpen={menuOpen} onToggleMenu={() => setMenuOpen(!menuOpen)} />
+      <MobileHeader
+        onToggleMenu={() => setMenuOpen(!menuOpen)}
+        onBack={useLinks ? () => router.push('/') : undefined}
+      />
       <MobileMenu
         isOpen={menuOpen}
         onClose={() => setMenuOpen(false)}

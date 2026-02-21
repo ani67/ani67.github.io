@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { NavigationLinks } from './NavigationLinks';
 
 interface MobileMenuProps {
@@ -11,24 +12,15 @@ interface MobileMenuProps {
   onTagSelect?: (tag: string | null) => void;
 }
 
-/**
- * Mobile menu overlay with navigation links
- * Includes keyboard support (Escape to close)
- */
 export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect }: MobileMenuProps) {
-  // Handle keyboard events
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
 
     document.addEventListener('keydown', handleKeyDown);
-
-    // Prevent body scroll when menu is open
     document.body.style.overflow = 'hidden';
 
     return () => {
@@ -41,16 +33,44 @@ export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect }: Mobile
 
   return (
     <div
-      className="md:hidden fixed inset-0 bg-black/10 backdrop-blur-sm z-30"
-      onClick={onClose}
+      className="md:hidden fixed inset-0 bg-white/10 backdrop-blur-md z-50"
       role="dialog"
       aria-modal="true"
       aria-label="Navigation menu"
     >
-      <nav
-        className="fixed top-0 right-0 h-full w-64 bg-[var(--background)] border-l border-white/20 p-8 pt-20"
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* Top bar: name + close button */}
+      <div className="flex items-center justify-between px-6 py-4">
+        <Link
+          href="/"
+          className="text-white focus:outline-none"
+          onClick={onClose}
+        >
+          <h1 className="text-xl font-normal font-[family-name:var(--font-mondwest)]">
+            Ani Dalal
+          </h1>
+        </Link>
+        <button
+          onClick={onClose}
+          className="text-white focus:outline-none p-1"
+          aria-label="Close menu"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Nav options */}
+      <nav className="px-6 py-4">
         {onTagSelect ? (
           <NavigationLinks
             selectedTag={selectedTag ?? null}
@@ -58,6 +78,8 @@ export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect }: Mobile
               onTagSelect(tag);
               onClose();
             }}
+            listClassName="space-y-3"
+            itemClassName="text-2xl"
           />
         ) : null}
       </nav>

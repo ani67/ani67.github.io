@@ -5,12 +5,14 @@ interface NavigationLinksProps {
   selectedTag: string | null;
   onTagSelect?: (tag: string | null) => void;
   useLinks?: boolean;
+  listClassName?: string;
+  itemClassName?: string;
 }
 
 /**
  * Main navigation links
  */
-export function NavigationLinks({ selectedTag, onTagSelect, useLinks }: NavigationLinksProps) {
+export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassName = 'space-y-2', itemClassName = 'text-xl' }: NavigationLinksProps) {
   const navItems = [
     { label: 'Work', tag: 'work' },
     { label: 'Art', tag: 'art' },
@@ -23,13 +25,13 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks }: Navigati
 
   return (
     <nav>
-      <ul className="space-y-0">
+      <ul className={listClassName}>
         {navItems.map(({ label, tag }) => (
           <li key={tag}>
             {useLinks ? (
               <Link
                 href={`/?tag=${tag}`}
-                className={`text-xl transition-colors focus:outline-none block ${
+                className={`${itemClassName} transition-colors focus:outline-none block ${
                   selectedTag === tag
                     ? 'text-white'
                     : 'text-white/50 hover:text-white'
@@ -40,7 +42,7 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks }: Navigati
             ) : (
               <button
                 onClick={() => onTagSelect?.(tag)}
-                className={`text-xl transition-colors focus:outline-none block ${
+                className={`${itemClassName} transition-colors focus:outline-none block ${
                   selectedTag === tag
                     ? 'text-white'
                     : 'text-white/50 hover:text-white'
@@ -55,7 +57,7 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks }: Navigati
           <li>
             <a
               href="/editor"
-              className="text-xl text-white/50 hover:text-white transition-colors focus:outline-none"
+              className={`${itemClassName} text-white/50 hover:text-white transition-colors focus:outline-none`}
             >
               <ScrambleText text="Editor" />
             </a>

@@ -29,6 +29,7 @@ export function PixelTransition() {
   };
 
   const startReveal = () => {
+    if (window.innerWidth < 768) return;
     clearAllTimeouts();
 
     const { cols, rows } = gridRef.current;

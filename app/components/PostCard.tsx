@@ -41,7 +41,7 @@ export function PostCard({ post }: PostCardProps) {
             trigger={isHovering}
           />
         </h4>
-        <p className="text-white/50 group-hover:text-white transition-colors text-xl mb-4 line-clamp-2 font-[family-name:var(--font-mondwest)]">
+        <p className="text-white/50 group-hover:text-white transition-colors text-base md:text-xl mb-4 line-clamp-2 font-[family-name:var(--font-mondwest)]">
           {post.description}
         </p>
         {/* Post image */}

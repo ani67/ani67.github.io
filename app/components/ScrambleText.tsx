@@ -33,6 +33,7 @@ export function ScrambleText({
   const containerRef = useRef<HTMLElement>(null);
 
   const scramble = () => {
+    if (window.innerWidth < 768) return;
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }

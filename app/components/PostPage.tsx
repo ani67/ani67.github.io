@@ -1,9 +1,7 @@
 import { format, parseISO, isValid } from 'date-fns';
-import Link from 'next/link';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import type { Post } from '@/lib/posts';
 import { BlogLayout } from './layout/BlogLayout';
-import { ScrambleText } from './ScrambleText';
 
 interface PostPageProps {
   post: Post;
@@ -87,21 +85,14 @@ export default function PostPageClient({ post, popularTags }: PostPageProps) {
     >
       {/* Main Content - Responsive */}
       <article className="flex-1 px-6 pt-24 pb-24 md:px-0 md:pt-0 md:pb-32">
-          <Link
-            href="/"
-            className="inline-flex items-center text-xl text-white/50 hover:text-white mb-6 lg:mb-8 focus:outline-none"
-          >
-            <ScrambleText text="Back" />
-          </Link>
-
           <header className="mb-8 lg:mb-12">
-            <h1 className="text-3xl lg:text-5xl font-normal leading-tight font-[family-name:var(--font-mondwest)]">
+            <h1 className="text-3xl lg:text-5xl font-normal leading-snug font-[family-name:var(--font-mondwest)]">
               {post.title}
             </h1>
             <p className="mt-4 lg:mt-6 text-xl lg:text-2xl text-white/50">{post.description}</p>
           </header>
 
-          <div className="prose prose-xl lg:prose-2xl dark:prose-invert max-w-none prose-headings:font-normal prose-headings:text-white prose-headings:leading-tight prose-headings:mt-8 prose-headings:mb-4 prose-p:text-white/90 prose-p:mb-6 prose-a:text-white prose-a:underline hover:prose-a:text-white prose-strong:text-white prose-code:text-white/90 prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-white/10 prose-pre:border prose-pre:border-white/30 prose-ul:text-white/90 prose-ol:text-white/90 prose-li:text-white/90 prose-li:marker:text-white/90">
+          <div className="prose prose-lg lg:prose-2xl dark:prose-invert max-w-none prose-headings:font-normal prose-headings:text-white prose-headings:leading-tight prose-headings:mt-8 prose-headings:mb-4 prose-p:text-white/90 prose-p:mb-6 prose-a:text-white prose-a:underline hover:prose-a:text-white prose-strong:text-white prose-code:text-white/90 prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-white/10 prose-pre:border prose-pre:border-white/30 prose-ul:text-white/90 prose-ol:text-white/90 prose-li:text-white/90 prose-li:marker:text-white/90">
             <MDXRemote source={post.content} components={components} />
           </div>
 

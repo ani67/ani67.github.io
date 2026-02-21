@@ -3,26 +3,26 @@
 import Link from 'next/link';
 
 interface MobileHeaderProps {
-  menuOpen: boolean;
   onToggleMenu: () => void;
+  onBack?: () => void;
 }
 
 /**
- * Mobile header with hamburger menu button
+ * Mobile header with hamburger menu button.
+ * When onBack is provided (post pages), shows a close button that navigates home.
  */
-export function MobileHeader({ menuOpen, onToggleMenu }: MobileHeaderProps) {
+export function MobileHeader({ onToggleMenu, onBack }: MobileHeaderProps) {
   return (
-    <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-black/50 backdrop-blur-sm border-b border-white/30 px-6 py-4 flex items-center justify-between">
+    <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white/10 backdrop-blur-md px-6 py-4 flex items-center justify-between">
       <Link href="/" className="text-white focus:outline-none flex flex-col items-start gap-2">
         <h1 className="text-xl font-normal font-[family-name:var(--font-mondwest)]">
           Ani Dalal
         </h1>
       </Link>
       <button
-        onClick={onToggleMenu}
+        onClick={onBack ?? onToggleMenu}
         className="text-white focus:outline-none p-1"
-        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-        aria-expanded={menuOpen}
+        aria-label={onBack ? 'Back to home' : 'Open menu'}
       >
         <svg
           className="w-6 h-6"
@@ -34,7 +34,7 @@ export function MobileHeader({ menuOpen, onToggleMenu }: MobileHeaderProps) {
           stroke="currentColor"
           aria-hidden="true"
         >
-          {menuOpen ? (
+          {onBack ? (
             <path d="M6 18L18 6M6 6l12 12" />
           ) : (
             <path d="M4 6h16M4 12h16M4 18h16" />
