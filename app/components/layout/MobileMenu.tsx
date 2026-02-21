@@ -41,7 +41,7 @@ export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect }: Mobile
 
   return (
     <div
-      className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+      className="md:hidden fixed inset-0 bg-black/10 backdrop-blur-sm z-30"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -54,7 +54,10 @@ export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect }: Mobile
         {onTagSelect ? (
           <NavigationLinks
             selectedTag={selectedTag ?? null}
-            onTagSelect={onTagSelect}
+            onTagSelect={(tag) => {
+              onTagSelect(tag);
+              onClose();
+            }}
           />
         ) : null}
       </nav>

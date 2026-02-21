@@ -12,7 +12,7 @@ interface MobileHeaderProps {
  */
 export function MobileHeader({ menuOpen, onToggleMenu }: MobileHeaderProps) {
   return (
-    <header className="md:hidden fixed top-0 left-0 right-0 z-20 bg-black/50 backdrop-blur-sm border-b border-white/30 px-6 py-4 flex items-center justify-between">
+    <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-black/50 backdrop-blur-sm border-b border-white/30 px-6 py-4 flex items-center justify-between">
       <Link href="/" className="text-white focus:outline-none flex flex-col items-start gap-2">
         <h1 className="text-xl font-normal font-[family-name:var(--font-mondwest)]">
           Ani Dalal
