@@ -15,10 +15,10 @@ interface NavigationLinksProps {
  */
 export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassName = 'space-y-2', itemClassName = 'text-xl', inactiveClassName = 'text-white/50 hover:text-white' }: NavigationLinksProps) {
   const navItems = [
-    { label: 'Work', tag: 'work' },
-    { label: 'Art', tag: 'art' },
-    { label: 'Vibes', tag: 'vibes' },
-    { label: 'About', tag: 'about' },
+    { label: 'Work', tag: 'work', href: null },
+    { label: 'Art', tag: 'art', href: null },
+    { label: 'Vibes', tag: 'vibes', href: null },
+    { label: 'About', tag: 'about', href: '/about' },
   ];
 
   // Only show Editor in development mode
@@ -27,9 +27,16 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
   return (
     <nav>
       <ul className={listClassName}>
-        {navItems.map(({ label, tag }) => (
+        {navItems.map(({ label, tag, href }) => (
           <li key={tag}>
-            {useLinks ? (
+            {href ? (
+              <Link
+                href={href}
+                className={`${itemClassName} transition-colors focus:outline-none block ${inactiveClassName}`}
+              >
+                <ScrambleText text={label} />
+              </Link>
+            ) : useLinks ? (
               <Link
                 href={`/?tag=${tag}`}
                 className={`${itemClassName} transition-colors focus:outline-none block ${
