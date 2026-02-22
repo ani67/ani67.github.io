@@ -70,10 +70,10 @@ export default function AboutPage() {
             <div className="space-y-4">
               {[
                 { title: 'Veha, Speculative Cartography', venue: 'Tbilisi Architecture Biennale', year: '2021' },
-                { title: 'Lost in a Dreamscape', venue: 'Digital Experience', year: '' },
+                { title: 'Lost in a Dreamscape', venue: 'Digital Experience', year: '2021' },
                 { title: 'Fissure', venue: 'Pollinator Virtual Nursery', year: '2020' },
                 { title: 'Processing Community Day', venue: 'Porto', year: '2021' },
-                { title: 'Monalisa Overdrive', venue: 'Generative Art', year: '' },
+                { title: 'Monalisa Overdrive', venue: 'Generative Art', year: '2022' },
                 { title: '#Cryptografik Exhibition', venue: '', year: '2021' },
                 { title: 'Scape', venue: 'Generative Art', year: '' },
                 { title: 'Art of Code', venue: '', year: '2022' },
