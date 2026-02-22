@@ -92,7 +92,7 @@ export default function PostPageClient({ post, popularTags }: PostPageProps) {
             <p className="mt-4 lg:mt-6 text-xl lg:text-2xl text-white/50">{post.description}</p>
           </header>
 
-          <div className="prose prose-lg lg:prose-2xl dark:prose-invert max-w-none prose-headings:font-normal prose-headings:text-white prose-headings:leading-tight prose-headings:mt-8 prose-headings:mb-4 prose-p:text-white/90 prose-p:mb-6 prose-a:text-white prose-a:underline hover:prose-a:text-white prose-strong:text-white prose-code:text-white/90 prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-white/10 prose-pre:border prose-pre:border-white/30 prose-ul:text-white/90 prose-ol:text-white/90 prose-li:text-white/90 prose-li:marker:text-white/90">
+          <div className="prose prose-lg lg:prose-2xl dark:prose-invert max-w-none prose-headings:font-normal prose-headings:text-white prose-headings:leading-tight prose-headings:mt-8 prose-headings:mb-4 prose-p:text-white/90 prose-p:mb-6 prose-a:text-white prose-a:underline hover:prose-a:text-white prose-strong:text-white prose-code:text-white/90 prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-white/10 prose-pre:border prose-pre:border-white/30 prose-ul:text-white/90 prose-ol:text-white/90 prose-li:text-white/90 prose-li:marker:text-white/90 prose-blockquote:border-white/30 prose-blockquote:text-white/80 prose-hr:border-white/20">
             <MDXRemote source={post.content} components={components} />
           </div>
 
