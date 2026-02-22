@@ -91,6 +91,16 @@ body {
   display: block;
 }
 
+/* Fix prose blockquote and hr colors */
+.prose blockquote {
+  border-left-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.prose hr {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
 /* Match body text line-height to description */
 .prose-xl p {
   line-height: 2.1875rem; /* 35px - matches text-xl */
