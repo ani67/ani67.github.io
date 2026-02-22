@@ -13,12 +13,9 @@ export default function AboutPage() {
     <BlogLayout popularTags={popularTags} useLinks>
       <article className="flex-1 px-6 pt-24 pb-24 md:px-0 md:pt-0 md:pb-32 font-[family-name:var(--font-mondwest)]">
         <header className="mb-12 lg:mb-16">
-          <h1 className="text-3xl lg:text-5xl font-normal leading-snug">
-            Ani Dalal
+          <h1 className="text-3xl md:text-[40px] font-light leading-snug text-white">
+            Product designer and artist with 8+ years of experience, currently building AI native tools for the future
           </h1>
-          <p className="mt-4 lg:mt-6 text-xl lg:text-2xl text-white/50">
-            Product designer and artist with 8+ years of experience, currently leading design for Frameo.AI — an AI-native storytelling platform.
-          </p>
         </header>
 
         <div className="space-y-12">
@@ -28,17 +25,15 @@ export default function AboutPage() {
             <h2 className="text-xl text-white/40">Experience</h2>
             <div className="space-y-4">
               {[
-                { role: 'Product Design Lead', company: 'Frameo.AI / Dashtoon Studio', period: "Jun '23 – Present" },
-                { role: 'Product Designer', company: 'Univ.AI / Futureschool.AI', period: "Sep '20 – May '23" },
-                { role: 'Senior UX Designer', company: 'Samsung R&D Bangalore', period: "Jul '18 – Jan '20" },
-                { role: 'Freelance', company: 'UX, product design, web development', period: 'Various' },
-              ].map(({ role, company, period }) => (
-                <div key={role} className="flex items-baseline justify-between">
-                  <div>
-                    <span className="text-xl text-white">{role}</span>
-                    <span className="text-xl text-white/50">, {company}</span>
-                  </div>
-                  <span className="text-xl text-white/40 shrink-0 ml-6">{period}</span>
+                { line: 'Dashverse.ai — 0 to 1 product design for Frameo', period: "Jan '25 – Present" },
+                { line: 'Dashverse.ai — 0 to 1 product design for Dashtoon Studio', period: "Jun '23 – Dec '24" },
+                { line: 'Univ.AI — product design for learning & recruitment platform', period: "Sep '20 – May '23" },
+                { line: 'Samsung R&D — UX design for Bixby voice platform', period: "Jul '18 – Jan '20" },
+                { line: 'Freelance — UX strategy, product design and web development', period: 'Various' },
+              ].map(({ line, period }) => (
+                <div key={line} className="flex items-baseline justify-between gap-6">
+                  <span className="text-xl text-white">{line}</span>
+                  <span className="text-xl text-white/40 shrink-0">{period}</span>
                 </div>
               ))}
             </div>
