@@ -47,8 +47,8 @@ export default function AboutPage() {
             <h2 className="text-xl text-white/40">Education</h2>
             <div className="space-y-6">
               {[
-                { school: 'IIT Guwahati', degree: 'Master of Design', period: '2016 - 2018' },
-                { school: 'NIT Durgapur', degree: 'Bachelor of Technology', period: '2012 - 2016' },
+                { school: 'Indian Institute of Technology Guwahati', degree: 'Master of Design', period: '2016 - 2018' },
+                { school: 'National Institute of Technology Durgapur', degree: 'Bachelor of Technology', period: '2012 - 2016' },
                 { school: 'Strelka Institute for Media, Architecture and Design', degree: 'The Terraforming — Post Graduate Diploma', period: '2020' },
               ].map(({ school, degree, period }) => (
                 <div key={school} className="flex items-start justify-between gap-6">
@@ -67,21 +67,18 @@ export default function AboutPage() {
             <h2 className="text-xl text-white/40">Exhibitions</h2>
             <div className="space-y-6">
               {[
-                { title: 'Veha, Speculative Cartography', venue: 'Tbilisi Architecture Biennale', year: '2021' },
-                { title: 'Lost in a Dreamscape', venue: 'Digital Experience', year: '2021' },
-                { title: 'Fissure', venue: 'Pollinator Virtual Nursery', year: '2020' },
-                { title: 'Processing Community Day', venue: 'Porto', year: '2021' },
-                { title: 'Monalisa Overdrive', venue: 'Generative Art', year: '2022' },
-                { title: '#Cryptografik Exhibition', venue: '', year: '2021' },
-                { title: 'Scape', venue: 'Generative Art', year: '2022' },
-                { title: 'Art of Code', venue: '', year: '2022' },
-              ].map(({ title, venue, year }) => (
-                <div key={title} className="flex items-start justify-between gap-6">
+                { event: 'Tbilisi Architecture Biennale', work: 'Veha, Speculative Cartography', year: '2021' },
+                { event: 'Pollinator Virtual Nursery', work: 'Fissure', year: '2020' },
+                { event: 'Processing Community Day, Porto', work: 'Lost in a Dreamscape, Digital Experience', year: '2021' },
+                { event: '#Cryptografik Exhibition', work: 'Monalisa Overdrive, Generative Art', year: '2021' },
+                { event: 'Art of Code', work: 'Scape, Generative Art', year: '2022' },
+              ].map(({ event, work, year }) => (
+                <div key={event} className="flex items-start justify-between gap-6">
                   <div>
-                    <div className="text-xl text-white">{title}</div>
-                    {venue && <div className="text-xl text-white/50">{venue}</div>}
+                    <div className="text-xl text-white">{event}</div>
+                    <div className="text-xl text-white/50">{work}</div>
                   </div>
-                  {year && <span className="text-xl text-white/40 shrink-0">{year}</span>}
+                  <span className="text-xl text-white/40 shrink-0">{year}</span>
                 </div>
               ))}
             </div>
