@@ -25,8 +25,8 @@ export default function AboutPage() {
             <h2 className="text-xl text-white/40">Experience</h2>
             <div className="space-y-6">
               {[
-                { company: 'Dashverse.ai', desc: '0 to 1 product design for Frameo', period: "Jan '25 - Present" },
-                { company: 'Dashverse.ai', desc: '0 to 1 product design for Dashtoon Studio', period: "Jun '23 - Dec '24" },
+                { company: 'Dashverse.AI', desc: '0 to 1 product design for Frameo', period: "Jan '25 - Present" },
+                { company: 'Dashverse.AI', desc: '0 to 1 product design for Dashtoon Studio', period: "Jun '23 - Dec '24" },
                 { company: 'Univ.AI', desc: 'Product design for learning & recruitment platform', period: "Sep '20 - May '23" },
                 { company: 'Samsung R&D', desc: 'UX design for Bixby voice platform', period: "Jul '18 - Jan '20" },
                 { company: 'Freelance', desc: 'UX strategy, product design and web development', period: 'Various' },
@@ -45,18 +45,18 @@ export default function AboutPage() {
           {/* Education */}
           <section className="space-y-6">
             <h2 className="text-xl text-white/40">Education</h2>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {[
-                { degree: 'MDes', school: 'IIT Guwahati', period: '2016 – 2018' },
-                { degree: 'BTech', school: 'NIT Durgapur', period: '2012 – 2016' },
-                { degree: 'PG Diploma, The Terraforming', school: 'Strelka Institute', period: '2020' },
-              ].map(({ degree, school, period }) => (
-                <div key={degree} className="flex items-baseline justify-between">
+                { school: 'IIT Guwahati', degree: 'MDes', period: '2016 - 2018' },
+                { school: 'NIT Durgapur', degree: 'BTech', period: '2012 - 2016' },
+                { school: 'Strelka Institute', degree: 'PG Diploma, The Terraforming', period: '2020' },
+              ].map(({ school, degree, period }) => (
+                <div key={school} className="flex items-start justify-between gap-6">
                   <div>
-                    <span className="text-xl text-white">{degree}</span>
-                    <span className="text-xl text-white/50">, {school}</span>
+                    <div className="text-xl text-white">{school}</div>
+                    <div className="text-xl text-white/50">{degree}</div>
                   </div>
-                  <span className="text-xl text-white/40 shrink-0 ml-6">{period}</span>
+                  <span className="text-xl text-white/40 shrink-0">{period}</span>
                 </div>
               ))}
             </div>
@@ -65,7 +65,7 @@ export default function AboutPage() {
           {/* Exhibitions */}
           <section className="space-y-6">
             <h2 className="text-xl text-white/40">Exhibitions</h2>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {[
                 { title: 'Veha, Speculative Cartography', venue: 'Tbilisi Architecture Biennale', year: '2021' },
                 { title: 'Lost in a Dreamscape', venue: 'Digital Experience', year: '2021' },
@@ -76,12 +76,12 @@ export default function AboutPage() {
                 { title: 'Scape', venue: 'Generative Art', year: '2022' },
                 { title: 'Art of Code', venue: '', year: '2022' },
               ].map(({ title, venue, year }) => (
-                <div key={title} className="flex items-baseline justify-between">
+                <div key={title} className="flex items-start justify-between gap-6">
                   <div>
-                    <span className="text-xl text-white">{title}</span>
-                    {venue && <span className="text-xl text-white/50">, {venue}</span>}
+                    <div className="text-xl text-white">{title}</div>
+                    {venue && <div className="text-xl text-white/50">{venue}</div>}
                   </div>
-                  {year && <span className="text-xl text-white/40 shrink-0 ml-6">{year}</span>}
+                  {year && <span className="text-xl text-white/40 shrink-0">{year}</span>}
                 </div>
               ))}
             </div>
