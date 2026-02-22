@@ -23,16 +23,19 @@ export default function AboutPage() {
           {/* Experience */}
           <section className="space-y-6">
             <h2 className="text-xl text-white/40">Experience</h2>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {[
-                { line: 'Dashverse.ai — 0 to 1 product design for Frameo', period: "Jan '25 – Present" },
-                { line: 'Dashverse.ai — 0 to 1 product design for Dashtoon Studio', period: "Jun '23 – Dec '24" },
-                { line: 'Univ.AI — product design for learning & recruitment platform', period: "Sep '20 – May '23" },
-                { line: 'Samsung R&D — UX design for Bixby voice platform', period: "Jul '18 – Jan '20" },
-                { line: 'Freelance — UX strategy, product design and web development', period: 'Various' },
-              ].map(({ line, period }) => (
-                <div key={line} className="flex items-baseline justify-between gap-6">
-                  <span className="text-xl text-white">{line}</span>
+                { company: 'Dashverse.ai', desc: '0 to 1 product design for Frameo', period: "Jan '25 - Present" },
+                { company: 'Dashverse.ai', desc: '0 to 1 product design for Dashtoon Studio', period: "Jun '23 - Dec '24" },
+                { company: 'Univ.AI', desc: 'Product design for learning & recruitment platform', period: "Sep '20 - May '23" },
+                { company: 'Samsung R&D', desc: 'UX design for Bixby voice platform', period: "Jul '18 - Jan '20" },
+                { company: 'Freelance', desc: 'UX strategy, product design and web development', period: 'Various' },
+              ].map(({ company, desc, period }) => (
+                <div key={company + desc} className="flex items-start justify-between gap-6">
+                  <div>
+                    <div className="text-xl text-white">{company}</div>
+                    <div className="text-xl text-white/50">{desc}</div>
+                  </div>
                   <span className="text-xl text-white/40 shrink-0">{period}</span>
                 </div>
               ))}
