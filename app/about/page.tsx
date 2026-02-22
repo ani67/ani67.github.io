@@ -47,9 +47,9 @@ export default function AboutPage() {
             <h2 className="text-xl text-white/40">Education</h2>
             <div className="space-y-6">
               {[
-                { school: 'IIT Guwahati', degree: 'MDes', period: '2016 - 2018' },
-                { school: 'NIT Durgapur', degree: 'BTech', period: '2012 - 2016' },
-                { school: 'Strelka Institute', degree: 'PG Diploma, The Terraforming', period: '2020' },
+                { school: 'IIT Guwahati', degree: 'Master of Design', period: '2016 - 2018' },
+                { school: 'NIT Durgapur', degree: 'Bachelor of Technology', period: '2012 - 2016' },
+                { school: 'The Terraforming, Strelka Institute for Media, Architecture and Design', degree: 'Post Graduate Diploma', period: '2020' },
               ].map(({ school, degree, period }) => (
                 <div key={school} className="flex items-start justify-between gap-6">
                   <div>
