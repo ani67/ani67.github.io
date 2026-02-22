@@ -67,11 +67,11 @@ export default function AboutPage() {
             <h2 className="text-xl text-white/40">Exhibitions</h2>
             <div className="space-y-6">
               {[
+                { event: 'Art of Code', work: 'Scape, Generative Art', year: '2022' },
                 { event: 'Tbilisi Architecture Biennale', work: 'Veha, Speculative Cartography', year: '2021' },
-                { event: 'Pollinator Virtual Nursery', work: 'Fissure', year: '2020' },
                 { event: 'Processing Community Day, Porto', work: 'Lost in a Dreamscape, Digital Experience', year: '2021' },
                 { event: '#Cryptografik Exhibition', work: 'Monalisa Overdrive, Generative Art', year: '2021' },
-                { event: 'Art of Code', work: 'Scape, Generative Art', year: '2022' },
+                { event: 'Pollinator Virtual Nursery', work: 'Fissure', year: '2020' },
               ].map(({ event, work, year }) => (
                 <div key={event} className="flex items-start justify-between gap-6">
                   <div>
