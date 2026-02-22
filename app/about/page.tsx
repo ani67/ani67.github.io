@@ -75,7 +75,7 @@ export default function AboutPage() {
                 { title: 'Processing Community Day', venue: 'Porto', year: '2021' },
                 { title: 'Monalisa Overdrive', venue: 'Generative Art', year: '2022' },
                 { title: '#Cryptografik Exhibition', venue: '', year: '2021' },
-                { title: 'Scape', venue: 'Generative Art', year: '' },
+                { title: 'Scape', venue: 'Generative Art', year: '2022' },
                 { title: 'Art of Code', venue: '', year: '2022' },
               ].map(({ title, venue, year }) => (
                 <div key={title} className="flex items-baseline justify-between">
