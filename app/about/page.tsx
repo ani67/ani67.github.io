@@ -49,7 +49,7 @@ export default function AboutPage() {
               {[
                 { school: 'IIT Guwahati', degree: 'Master of Design', period: '2016 - 2018' },
                 { school: 'NIT Durgapur', degree: 'Bachelor of Technology', period: '2012 - 2016' },
-                { school: 'The Terraforming, Strelka Institute for Media, Architecture and Design', degree: 'Post Graduate Diploma', period: '2020' },
+                { school: 'Strelka Institute for Media, Architecture and Design', degree: 'The Terraforming — Post Graduate Diploma', period: '2020' },
               ].map(({ school, degree, period }) => (
                 <div key={school} className="flex items-start justify-between gap-6">
                   <div>
