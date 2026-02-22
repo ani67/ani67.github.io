@@ -69,18 +69,21 @@ export default function AboutPage() {
             <h2 className="text-xl text-white/40">Exhibitions</h2>
             <div className="space-y-4">
               {[
-                { title: 'Veha, Speculative Cartography', venue: 'Tbilisi Architecture Biennale' },
-                { title: 'Lost in a Dreamscape', venue: 'Digital Experience' },
-                { title: 'Fissure', venue: 'Pollinator Virtual Nursery' },
-                { title: 'Processing Community Day', venue: 'Porto' },
-                { title: 'Monalisa Overdrive', venue: 'Generative Art' },
-                { title: '#Cryptografik Exhibition', venue: '' },
-                { title: 'Scape', venue: 'Generative Art' },
-                { title: 'Art of Code 2022', venue: '' },
-              ].map(({ title, venue }) => (
-                <div key={title} className="text-xl">
-                  <span className="text-white">{title}</span>
-                  {venue && <span className="text-white/50">, {venue}</span>}
+                { title: 'Veha, Speculative Cartography', venue: 'Tbilisi Architecture Biennale', year: '2021' },
+                { title: 'Lost in a Dreamscape', venue: 'Digital Experience', year: '' },
+                { title: 'Fissure', venue: 'Pollinator Virtual Nursery', year: '2020' },
+                { title: 'Processing Community Day', venue: 'Porto', year: '2021' },
+                { title: 'Monalisa Overdrive', venue: 'Generative Art', year: '' },
+                { title: '#Cryptografik Exhibition', venue: '', year: '2021' },
+                { title: 'Scape', venue: 'Generative Art', year: '' },
+                { title: 'Art of Code', venue: '', year: '2022' },
+              ].map(({ title, venue, year }) => (
+                <div key={title} className="flex items-baseline justify-between">
+                  <div>
+                    <span className="text-xl text-white">{title}</span>
+                    {venue && <span className="text-xl text-white/50">, {venue}</span>}
+                  </div>
+                  {year && <span className="text-xl text-white/40 shrink-0 ml-6">{year}</span>}
                 </div>
               ))}
             </div>
