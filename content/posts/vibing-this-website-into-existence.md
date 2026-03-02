@@ -1,6 +1,6 @@
 ---
 title: "Vibing this website into existence"
-date: "2026-02-20"
+date: "2026-03-02"
 description: "Your portfolio has the same problem mine did. Here's how I fixed mine — and why you can fix yours too."
 tags: ["work"]
 image: "https://res.cloudinary.com/duw0custw/image/upload/v1771568442/2022-portfolio-website-editor_qyh1o6.png"
@@ -53,8 +53,6 @@ The principle isn't about this specific layout. It's about resisting the urge to
 
 The font is PPMondwest, a bitmap typeface inspired by classic Grotesks and Serifs. It signals elegance but feels techy, almost glitchy. Brutalist yet somehow human. That tension is exactly the aesthetic I was after: raw, authentic, classic and modern at once. The font isn't decoration. It's a decision about what kind of designer you are.
 
-![Font, PPMondwest](https://res.cloudinary.com/duw0custw/image/upload/PPMondwest_ardztl.png "Font, PPMondwest")
-
 Everything else follows from that same logic. Squircle clip-paths on images, that super-ellipse curve that feels handcrafted without being loud. Careful composition so the page feels considered even when it's empty. Three themes - Dawn, Day, Night, not just color swaps, each one a full personality shift. And then the micro-moments: text that scrambles when you hover a nav link, images that dissolve through a pixel grid, pages that arrive through white squares on every load. None of it interrupts. All of it rewards attention.
 
 ![anidalal.net,  reveal animation, 2026](https://res.cloudinary.com/duw0custw/image/upload/v1771601163/2026-portfolio-website_p1typr.gif "anidalal.net,  reveal animation, 2026")
@@ -86,7 +84,7 @@ The garden is fun to tend. That was the whole point.
 ## What still needs planting
  It's not finished. Gardens aren't.
 
-A post ends and there's nowhere to go - no footer, no next read waiting. The interactions are delightful but silent - sound or tactile feedback could push that further. 
+A post ends and there's nowhere to go - no footer, no next read waiting. The interactions are delightful but silent - sound or tactile feedback could push that further.
 
 These aren't failures. They're just the next things to plant.
 

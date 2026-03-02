@@ -16,6 +16,7 @@ const PostFrontmatterSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   image: z.string().nullish(),
   tags: z.array(z.string()).optional().default([]),
+  published: z.boolean().optional().default(true),
 });
 
 export interface PostMetadata {
@@ -26,6 +27,7 @@ export interface PostMetadata {
   readingTime: string;
   image: string | null;
   tags: string[];
+  published: boolean;
 }
 
 export interface Post extends PostMetadata {
@@ -36,7 +38,7 @@ export interface Post extends PostMetadata {
  * Retrieves all blog posts from the content directory
  * @returns Array of post metadata sorted by date (newest first)
  */
-export function getAllPosts(): PostMetadata[] {
+export function getAllPosts(options?: { includeDrafts?: boolean }): PostMetadata[] {
   // Check if posts directory exists
   if (!fs.existsSync(postsDirectory)) {
     console.warn(`Posts directory does not exist: ${postsDirectory}`);
@@ -74,6 +76,7 @@ export function getAllPosts(): PostMetadata[] {
             readingTime: text,
             image: validatedData.image || null,
             tags: validatedData.tags || [],
+            published: validatedData.published,
           };
         } catch (error) {
           console.error(`Error processing post "${fileName}":`, error);
@@ -82,8 +85,12 @@ export function getAllPosts(): PostMetadata[] {
       })
       .filter((post): post is PostMetadata => post !== null);
 
+    const filtered = options?.includeDrafts
+      ? allPostsData
+      : allPostsData.filter((post) => post.published);
+
     // Sort by date using proper date comparison
-    return allPostsData.sort((a, b) =>
+    return filtered.sort((a, b) =>
       compareDesc(parseISO(a.date), parseISO(b.date))
     );
   } catch (error) {
@@ -124,6 +131,11 @@ export function getPostBySlug(slug: string): Post | null {
       throw new Error(`Invalid date in ${slug}: ${validatedData.date}`);
     }
 
+    // Block unpublished posts in production
+    if (!validatedData.published && process.env.NODE_ENV === 'production') {
+      return null;
+    }
+
     const { text } = readingTime(content);
 
     return {
@@ -135,6 +147,7 @@ export function getPostBySlug(slug: string): Post | null {
       readingTime: text,
       image: validatedData.image || null,
       tags: validatedData.tags || [],
+      published: validatedData.published,
     };
   } catch (error) {
     console.error(`Error loading post "${slug}":`, error);
@@ -143,24 +156,11 @@ export function getPostBySlug(slug: string): Post | null {
 }
 
 /**
- * Gets all post slugs for static generation
+ * Gets all post slugs for static generation (published only)
  * @returns Array of slugs (filenames without .md extension)
  */
 export function getAllPostSlugs(): string[] {
-  if (!fs.existsSync(postsDirectory)) {
-    console.warn(`Posts directory does not exist: ${postsDirectory}`);
-    return [];
-  }
-
-  try {
-    const fileNames = fs.readdirSync(postsDirectory);
-    return fileNames
-      .filter((fileName) => fileName.endsWith('.md'))
-      .map((fileName) => fileName.replace(/\.md$/, ''));
-  } catch (error) {
-    console.error('Error reading post slugs:', error);
-    return [];
-  }
+  return getAllPosts().map((post) => post.slug);
 }
 
 /**

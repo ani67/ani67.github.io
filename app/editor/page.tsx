@@ -10,7 +10,7 @@ export const metadata = {
 export default function EditorPage() {
   if (process.env.NODE_ENV === 'production') notFound();
 
-  const posts = getAllPosts();
+  const posts = getAllPosts({ includeDrafts: true });
 
   return <MarkdownEditor posts={posts} />;
 }

@@ -57,11 +57,13 @@ body {
   clip-path: url(#squircle-image);
 }
 
-.prose video {
+.prose video,
+.prose iframe {
   clip-path: url(#squircle-image);
 }
 
-.ProseMirror video {
+.ProseMirror video,
+.ProseMirror iframe {
   clip-path: url(#squircle-image);
 }
 
@@ -91,14 +93,22 @@ body {
   display: block;
 }
 
+.ProseMirror .video-with-caption iframe,
+.prose .video-with-caption iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  border: none;
+}
+
 /* Fix prose blockquote and hr colors */
 .prose blockquote {
-  border-left-color: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.8);
+  border-left-color: rgba(255, 255, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .prose hr {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Match body text line-height to description */

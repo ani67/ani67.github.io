@@ -114,6 +114,120 @@ const CustomImage = Node.create({
   },
 });
 
+// YouTube URL parser — extracts video ID and returns embed URL
+function getYouTubeEmbedUrl(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return `https://www.youtube.com/embed/${match[1]}`;
+  }
+  return null;
+}
+
+// YouTube Node View Component
+function YouTubeNodeView({ node, updateAttributes }: any) {
+  const { src, caption } = node.attrs;
+
+  return (
+    <NodeViewWrapper className="video-with-caption">
+      <iframe
+        src={src}
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        contentEditable={false}
+      />
+      <textarea
+        className="caption-text"
+        placeholder="Add caption..."
+        value={caption || ''}
+        onChange={(e) => {
+          updateAttributes({ caption: e.target.value });
+        }}
+        rows={4}
+      />
+    </NodeViewWrapper>
+  );
+}
+
+// Custom YouTube extension with caption support
+const CustomYouTube = Node.create({
+  name: 'youtube',
+  group: 'block',
+  atom: true,
+
+  addAttributes() {
+    return {
+      src: {
+        default: null,
+      },
+      caption: {
+        default: null,
+      },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: 'div.video-with-caption',
+        priority: 110,
+        getAttrs: (dom) => {
+          const iframe = (dom as HTMLElement).querySelector('iframe');
+          if (!iframe) return false;
+
+          const captionDiv = (dom as HTMLElement).querySelector('.caption-text');
+          const caption = captionDiv?.textContent || (dom as HTMLElement).getAttribute('data-caption') || '';
+
+          return {
+            src: iframe.getAttribute('src'),
+            caption: caption,
+          };
+        },
+      },
+      {
+        tag: 'iframe',
+        priority: 60,
+        getAttrs: (dom) => {
+          const src = (dom as HTMLElement).getAttribute('src') || '';
+          if (!src.includes('youtube.com/embed')) return false;
+          return { src, caption: '' };
+        },
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    const { caption, ...attrs } = HTMLAttributes;
+    return [
+      'div',
+      { class: 'video-with-caption', 'data-caption': caption || '' },
+      ['iframe', mergeAttributes(attrs, {
+        frameborder: '0',
+        allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+        allowfullscreen: 'true',
+      })],
+    ];
+  },
+
+  addCommands() {
+    return {
+      setYouTube: (options: { src: string; caption?: string }) => ({ commands }: any) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: options,
+        });
+      },
+    } as any;
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(YouTubeNodeView);
+  },
+});
+
 // Video Node View Component
 function VideoNodeView({ node, updateAttributes }: any) {
   const { src, caption } = node.attrs;
@@ -222,6 +336,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string>('vibes');
   const [imageUrl, setImageUrl] = useState<string>('');
+  const [isPublished, setIsPublished] = useState(true);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -289,8 +404,10 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
         const descriptionMatch = frontmatterText.match(/description:\s*"([\s\S]+?)"/) || frontmatterText.match(/description:\s*'([\s\S]+?)'/);
         const tagsMatch = frontmatterText.match(/tags:\s*\[(.*?)\]/);
         const imageMatch = frontmatterText.match(/image:\s*(?:["'](.+?)["']|null)/);
+        const publishedMatch = frontmatterText.match(/published:\s*(true|false)/);
 
         if (titleMatch) setTitle(titleMatch[1]);
+        setIsPublished(publishedMatch ? publishedMatch[1] === 'true' : true);
         if (descriptionMatch) setDescription(descriptionMatch[1]);
 
         // Parse tags - get first tag only
@@ -329,7 +446,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
           .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" />')
           .split('\n\n')
           .map((para: string) => {
-            if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<ol') || para.startsWith('<img') || para.startsWith('<video') || para.startsWith('<div class="image-with-caption"') || para.startsWith('<div class="video-with-caption"')) {
+            if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<ol') || para.startsWith('<img') || para.startsWith('<video') || para.startsWith('<iframe') || para.startsWith('<div class="image-with-caption"') || para.startsWith('<div class="video-with-caption"')) {
               return para;
             }
             if (para.startsWith('- ')) {
@@ -356,6 +473,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
     setCurrentSlug(null);
     setSelectedTag('vibes');
     setImageUrl('');
+    setIsPublished(true);
     editor?.commands.setContent('<p></p>');
   };
 
@@ -374,6 +492,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
         },
       }),
       CustomImage,
+      CustomYouTube,
       CustomVideo,
       Table.configure({
         resizable: true,
@@ -427,10 +546,10 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
     },
   });
 
-  const handleSave = async () => {
+  const handleSave = async (options?: { published?: boolean }): Promise<boolean> => {
     if (!editor || !title || !description) {
       alert('Please enter a title and description before saving');
-      return;
+      return false;
     }
 
     const today = new Date().toISOString().split('T')[0];
@@ -452,6 +571,8 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
       }
     }
 
+    const pub = options?.published ?? isPublished;
+
     // Convert editor content to markdown
     const html = editor.getHTML();
     const markdown = htmlToMarkdown(html);
@@ -462,6 +583,7 @@ date: "${today}"
 description: "${description}"
 tags: ["${selectedTag}"]
 image: ${imageUrl ? `"${imageUrl}"` : 'null'}
+published: ${pub}
 ---
 
 ${markdown}`;
@@ -481,15 +603,18 @@ ${markdown}`;
       const result = await response.json();
 
       if (response.ok) {
-        alert(`✅ Saved: ${newSlug}.md\nFile saved to content/posts/`);
-        // Update currentSlug to the new slug
         setCurrentSlug(newSlug);
+        const status = pub ? 'Published' : 'Draft';
+        alert(`✅ Saved "${title}" (${status})`);
+        return true;
       } else {
         alert(`❌ Error: ${result.error}`);
+        return false;
       }
     } catch (error) {
       console.error('Failed to save post:', error);
       alert('❌ Failed to save post');
+      return false;
     }
   };
 
@@ -499,7 +624,26 @@ ${markdown}`;
     const videoPlaceholders: { [key: string]: string } = {};
     let videoCounter = 0;
 
-    // FIRST: Replace videos with placeholders to protect them from HTML cleanup
+    // FIRST: Replace YouTube iframes with placeholders to protect them from HTML cleanup
+    markdown = markdown.replace(/<div class="video-with-caption" data-caption="([^"]*)">[\s\S]*?<iframe[^>]+src="([^"]+)"[^>]*>[\s\S]*?<\/iframe>[\s\S]*?<\/div>/g, (match, caption, src) => {
+      const placeholder = `___VIDEO_PLACEHOLDER_${videoCounter}___`;
+      if (caption && caption.trim()) {
+        videoPlaceholders[placeholder] = `<div class="video-with-caption"><iframe src="${src}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><div class="caption-text">${caption.trim()}</div></div>`;
+      } else {
+        videoPlaceholders[placeholder] = `<iframe src="${src}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      }
+      videoCounter++;
+      return placeholder + '\n\n';
+    });
+
+    markdown = markdown.replace(/<iframe[^>]+src="([^"]+)"[^>]*>[\s\S]*?<\/iframe>/g, (match, src) => {
+      const placeholder = `___VIDEO_PLACEHOLDER_${videoCounter}___`;
+      videoPlaceholders[placeholder] = `<iframe src="${src}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      videoCounter++;
+      return placeholder + '\n\n';
+    });
+
+    // Replace regular videos with placeholders to protect them from HTML cleanup
     markdown = markdown.replace(/<div class="video-with-caption" data-caption="([^"]+)">[\s\S]*?<video[^>]+src="([^"]+)"[^>]*>[\s\S]*?<\/video>[\s\S]*?<\/div>/g, (match, caption, src) => {
       const placeholder = `___VIDEO_PLACEHOLDER_${videoCounter}___`;
       if (caption && caption.trim()) {
@@ -620,33 +764,10 @@ ${markdown}`;
     }
   };
 
-  const handleDuplicate = async () => {
-    if (!currentSlug) return;
-
-    try {
-      const response = await fetch('/api/duplicate-post', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ slug: currentSlug }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        alert(`✅ Duplicated as: ${result.newSlug}.md`);
-        // Load the duplicated post
-        await handleLoadPost(result.newSlug);
-        // Reload the page to update the sidebar
-        window.location.reload();
-      } else {
-        alert(`❌ Error: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Failed to duplicate post:', error);
-      alert('❌ Failed to duplicate post');
-    }
+  const handleTogglePublish = () => {
+    const newValue = !isPublished;
+    setIsPublished(newValue);
+    handleSave({ published: newValue });
   };
 
   if (!editor) {
@@ -740,7 +861,7 @@ ${markdown}`;
               Delete
             </button>
             <button
-              onClick={handleDuplicate}
+              onClick={handleTogglePublish}
               disabled={!currentSlug}
               className={`text-xl transition-colors focus:outline-none ${
                 currentSlug
@@ -748,10 +869,10 @@ ${markdown}`;
                   : 'text-white/20 cursor-not-allowed'
               }`}
             >
-              Duplicate
+              {isPublished ? 'Published' : 'Draft'}
             </button>
             <button
-              onClick={handleSave}
+              onClick={() => handleSave()}
               className="text-xl text-white/50 hover:text-white transition-colors focus:outline-none"
             >
               {currentSlug ? 'Update' : 'Save'}
@@ -957,8 +1078,12 @@ ${markdown}`;
                 onClick={() => {
                   const url = prompt('Enter video URL:');
                   if (url) {
-                    // Insert video with empty caption - user can add caption in the UI textarea
-                    (editor.chain().focus() as any).setVideo({ src: url, caption: '' }).run();
+                    const embedUrl = getYouTubeEmbedUrl(url);
+                    if (embedUrl) {
+                      (editor.chain().focus() as any).setYouTube({ src: embedUrl, caption: '' }).run();
+                    } else {
+                      (editor.chain().focus() as any).setVideo({ src: url, caption: '' }).run();
+                    }
                   }
                 }}
                 className="p-1.5 transition-colors hover:bg-white/20"

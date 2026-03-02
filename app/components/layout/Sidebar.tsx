@@ -98,10 +98,14 @@ export function Sidebar({ selectedTag, onTagSelect, editorPosts, onPostSelect, o
                   <li key={post.slug}>
                     <button
                       onClick={() => onPostSelect(post.slug)}
-                      className="text-xl text-white/50 hover:text-white transition-colors text-left w-full truncate block focus:outline-none"
+                      className={`text-xl transition-colors text-left w-full truncate block focus:outline-none ${
+                        post.published === false
+                          ? 'text-white/30 italic hover:text-white/60'
+                          : 'text-white/50 hover:text-white'
+                      }`}
                       title={post.title}
                     >
-                      <ScrambleText text={post.title} />
+                      <ScrambleText text={post.published === false ? `${post.title} — draft` : post.title} />
                     </button>
                   </li>
                 ))}
