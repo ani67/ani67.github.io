@@ -21,11 +21,11 @@ And that vagueness is convenient. If taste is something you either have or you d
 ![Gamak Ghar, 2019](https://res.cloudinary.com/duw0custw/image/upload/v1772485516/gamakghar_igxlgf.jpg "Gamak Ghar, 2019")
 
 ## That judgment is taste. Not the conclusion, rather the *act* of noticing and deciding.
-# And stopping at the feeling is where most people get stuck.
+And stopping at the feeling is where most people get stuck.
+
 ![untitled exploration by me, 2023](https://res.cloudinary.com/duw0custw/image/upload/v1772482056/untitled20324124_ivgv8e.png "untitled exploration by me, 2023")
 
-Taste is a feeling you've interrogated enough to understand, and therefore transfer.
-
+## Taste is a feeling you've interrogated enough to understand, and therefore transfer.
 It's not just aesthetics. It's the ability to:
 
 - Notice what most people skip
@@ -44,8 +44,8 @@ Nothing changed about the concrete. Everything changed about the context people 
 
 Or think about how Wes Anderson's symmetrical, pastel-drenched frames were considered precious and mannered when *The Royal Tenenbaums* came out in 2001. Now that exact visual language is a meme, a filter, an aesthetic shorthand understood globally. The taste didn't arrive fully formed — it accumulated through exposure until it tipped into the mainstream.
 
-Taste is always moving, changing, evolving. What you're really doing when you develop it, is learning to read *where* it's moving towards - and occasionally, getting there first.
-
+## Taste is always moving, changing, evolving. 
+## What you're really doing when you develop it, is learning to read *where* it's moving towards, and occasionally, getting there first.
 The mistake is treating taste as either fixed or arbitrary. It's neither.
 
 ![Tekkonkinkreet, 2006](https://res.cloudinary.com/duw0custw/image/upload/v1772483652/tekkon7_v5lvur.webp "Tekkonkinkreet, 2006")
@@ -61,7 +61,7 @@ Creative thinking is fundamentally about the distance between the dots you're co
 
 This is why the real question isn't "what should I consume" but
 
-# how do you find references that actually stretch you, rather than confirm what you already like?
+# How do you find references that actually stretch you, rather than confirm what you already like?
  Charles and Ray Eames ran their office at 901 Washington Boulevard like an ongoing experiment in this. The shelves held Japanese spinning tops, Czech puppets, paper kites, circus mirrors — objects that had no obvious connection to each other and even less obvious connection to designing chairs or corporate films. That was the point. When they made *Powers of Ten* in 1977 — a nine-minute film that zooms from a Chicago picnic out to the edge of the universe, then back into a single blood cell — the thinking behind it didn't come from studying other films. It came from a practice of collecting ways of seeing that had no immediate application.
 
 <div class="video-with-caption"><iframe src="https://www.youtube.com/embed/0fKBhvDjuy0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><div class="caption-text">Powers of Ten, 1977</div></div>
@@ -97,6 +97,7 @@ Most people consume passively. They feel a reaction: they like or don't like som
 
 - Would it still work if I changed X? What breaks first?
 
+
 ![Arcane, TV series, 2021](https://res.cloudinary.com/duw0custw/image/upload/v1772485366/arcane_kpirng.jpg "Arcane, TV series, 2021")
 
 **Useful exercise:** Take something well-designed and find the single decision everything else depends on — the load-bearing choice. Remove it mentally. See what collapses. That's where the taste lives.
@@ -116,6 +117,7 @@ An actual stance about:
 
 - What you refuse to compromise on regardless of the brief?
 
+
 Here's the uncomfortable part — most of what we think of as our taste is borrowed. We anchor to people we admire. That's fine as a starting point. The question is whether you ever **move past the anchor**.
 
 # Do your influences recombine into something genuinely yours?
@@ -133,7 +135,11 @@ My portfolio is a deliberate example: maximalist in content depth, minimalist in
 - **Write about what you're building and why.** Not for an audience — for yourself. Articulating a decision forces you to either find the reason or admit you don't have one.
 
 
+
+
 ![photograph by me, nikola lenivets, 2020](https://res.cloudinary.com/duw0custw/image/upload/v1772486739/russia2020_uotxu0.png "photograph by me, nikola lenivets, 2020")
+
+
 
 ## Part 4: Applying Your Taste to What You Build
  This is where taste stops being personal and becomes **professional.**
@@ -163,7 +169,7 @@ The designers who will matter in this environment aren't the ones who use AI fas
 ## The Bottom Line
  The word gets thrown around because it sounds like something you either have or you don't. That's more comfortable — it explains the gap between good and great without requiring you to do anything about it.
 
-# But taste is built.
+# Taste is developed.
 # Slowly, through what you look at, how carefully you look at it, the positions you form, and the decisions you're willing to stand behind.
  Compounding over time in a way that's genuinely hard to reverse engineer. That's why it's the edge, not because it's mysterious, but because most people won't do the work.
 
