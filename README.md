@@ -1,19 +1,18 @@
-# Blog & Portfolio
+# Ani Dalal — Blog & Portfolio
 
-A modern, SEO-friendly blog and portfolio built with Next.js, TypeScript, and Markdown.
+Personal blog and portfolio site for Ani Dalal, built with Next.js, TypeScript, and Markdown.
 
 ## Features
 
-- 📝 Markdown-based content management
-- 🎨 Clean, responsive design with Tailwind CSS
-- ⚡ Fast performance with Next.js App Router
-- 🔍 SEO optimized with metadata
-- 📖 Reading time estimation
-- 🌙 Dark mode support
+- Markdown-based blog with rich text editor (TipTap)
+- YouTube video embeds and image/video captions
+- Theme system with multiple color modes (dawn, day, night)
+- Custom fonts (Gambarino, PP Mondwest, Geist, Inter)
+- Static export for fast, edge-deployable builds
+- Reading time estimation and tag-based filtering
+- Responsive design with Tailwind CSS v4
 
 ## Getting Started
-
-### Development
 
 ```bash
 npm run dev
@@ -21,84 +20,57 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the site.
 
-### Adding New Posts
+### Adding Posts
 
-1. Create a new `.md` file in `content/posts/`
-2. Add frontmatter with required fields:
+Create a `.md` file in `content/posts/` with frontmatter:
 
 ```markdown
 ---
 title: "Your Post Title"
 date: "2025-01-15"
-description: "A brief description of your post"
+description: "A brief description"
+tags: ["vibes"]
+image: null
+published: true
 ---
 
-# Your content here
-
-Write your post content in markdown...
+Your content here...
 ```
 
-3. The post will automatically appear on the home page
+Or use the built-in editor at `/editor` during development.
 
-### Build for Production
+### Build
 
 ```bash
 npm run build
-npm start
 ```
-
-## Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com)
-3. Import your GitHub repository
-4. Vercel will auto-detect Next.js and deploy
-5. Done! Your site will auto-deploy on every push
-
-### Alternative: Cloudflare Pages or Netlify
-
-Both support Next.js and offer free tiers similar to Vercel.
 
 ## Project Structure
 
 ```
-blog-portfolio/
-├── app/
-│   ├── layout.tsx       # Root layout with SEO metadata
-│   ├── page.tsx         # Home page with post listings
-│   └── posts/
-│       └── [slug]/
-│           └── page.tsx # Individual post pages
-├── content/
-│   └── posts/           # Your markdown blog posts
-├── lib/
-│   └── posts.ts         # Utility functions for reading posts
-└── public/              # Static assets
+app/
+  components/        # Shared components (PostPage, MarkdownEditor, ScrambleText, etc.)
+  components/layout/ # Layout components (Sidebar, BlogLayout, MobileHeader)
+  posts/[slug]/      # Dynamic blog post pages
+  about/             # About page
+  editor/            # Rich text editor (dev only)
+  api/               # API routes (dev only)
+content/posts/       # Markdown blog posts
+lib/posts.ts         # Post loading, validation (gray-matter + zod), sorting
+public/fonts/        # Local font files (Gambarino, PP Mondwest)
 ```
-
-## Customization
-
-- **Site title & description**: Edit `app/layout.tsx`
-- **Styling**: Modify Tailwind classes or `app/globals.css`
-- **Your name**: Update the author in `app/layout.tsx`
 
 ## Tech Stack
 
-- **Framework**: Next.js 15
+- **Framework**: Next.js 16 (App Router, static export)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Content**: Markdown with gray-matter
+- **Styling**: Tailwind CSS v4 with @tailwindcss/typography
+- **Editor**: TipTap
+- **Content**: Markdown with gray-matter + zod validation
 - **Rendering**: MDX (next-mdx-remote)
-- **Hosting**: Vercel (free tier)
-
-## Cost
-
-- **Development**: Free
-- **Hosting**: Free on Vercel (100GB bandwidth/month)
-- **Domain** (optional): ~$12/year
 
 ## License
 
-MIT
+The **source code** in this repository is licensed under the [MIT License](https://opensource.org/licenses/MIT) — feel free to use, modify, and learn from it.
+
+All **content** (blog posts, images, artwork, and custom fonts) is **All Rights Reserved** and may not be reproduced or distributed without permission.
