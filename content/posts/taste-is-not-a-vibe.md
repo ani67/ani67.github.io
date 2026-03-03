@@ -1,13 +1,13 @@
 ---
 title: "Taste is not a Vibe"
-date: "2026-03-02"
-description: "Taste isn't something you're born with — it's something you build. A practical breakdown of how designers develop, sharpen, and apply genuine creative judgment in an age where AI can make anything but can't decide what matters."
+date: "2026-03-03"
+description: "Taste isn't something you're born with — it's something you build. A practical breakdown of how designers develop, sharpen, and apply genuine creative judgment in an age where AI can make anything but can't decide what matters. "
 tags: ["vibes"]
 image: "https://res.cloudinary.com/duw0custw/image/upload/v1772477361/safety-match-box-india_kn8l5x.jpg"
 published: true
 ---
 
-Everyone in design is talking about taste right now. It shows up in hiring conversations, in feedback, in communities in the way people describe work they admire. *"This product has great taste." *or*"This logo is not tasteful enough."*
+Everyone in design is talking about taste right now. It shows up in hiring conversations, in feedback, in communities in the way people describe work they admire. *"This product has great taste." *or*"This logo is not tasteful enough." *
 
 ![https://www.matt-lee.com/matchboxes-from-the-subcontinent](https://res.cloudinary.com/duw0custw/image/upload/v1772477361/safety-match-box-india_kn8l5x.jpg "https://www.matt-lee.com/matchboxes-from-the-subcontinent")
 
@@ -21,12 +21,12 @@ And that vagueness is convenient. If taste is something you either have or you d
 ![Gamak Ghar, 2019](https://res.cloudinary.com/duw0custw/image/upload/v1772485516/gamakghar_igxlgf.jpg "Gamak Ghar, 2019")
 
 ## That judgment is taste. Not the conclusion, rather the *act* of noticing and deciding.
-And stopping at the feeling is where most people get stuck.
+ And stopping at the feeling is where most people get stuck.
 
 ![untitled exploration by me, 2023](https://res.cloudinary.com/duw0custw/image/upload/v1772482056/untitled20324124_ivgv8e.png "untitled exploration by me, 2023")
 
 ## Taste is a feeling you've interrogated enough to understand, and therefore transfer.
-It's not just aesthetics. It's the ability to:
+ It's not just aesthetics. It's the ability to:
 
 - Notice what most people skip
 
@@ -44,9 +44,9 @@ Nothing changed about the concrete. Everything changed about the context people 
 
 Or think about how Wes Anderson's symmetrical, pastel-drenched frames were considered precious and mannered when *The Royal Tenenbaums* came out in 2001. Now that exact visual language is a meme, a filter, an aesthetic shorthand understood globally. The taste didn't arrive fully formed — it accumulated through exposure until it tipped into the mainstream.
 
-## Taste is always moving, changing, evolving. 
+## Taste is always moving, changing, evolving.
 ## What you're really doing when you develop it, is learning to read *where* it's moving towards, and occasionally, getting there first.
-The mistake is treating taste as either fixed or arbitrary. It's neither.
+ The mistake is treating taste as either fixed or arbitrary. It's neither.
 
 ![Tekkonkinkreet, 2006](https://res.cloudinary.com/duw0custw/image/upload/v1772483652/tekkon7_v5lvur.webp "Tekkonkinkreet, 2006")
 
@@ -98,7 +98,11 @@ Most people consume passively. They feel a reaction: they like or don't like som
 - Would it still work if I changed X? What breaks first?
 
 
+
+
 ![Arcane, TV series, 2021](https://res.cloudinary.com/duw0custw/image/upload/v1772485366/arcane_kpirng.jpg "Arcane, TV series, 2021")
+
+
 
 **Useful exercise:** Take something well-designed and find the single decision everything else depends on — the load-bearing choice. Remove it mentally. See what collapses. That's where the taste lives.
 
@@ -137,7 +141,11 @@ My portfolio is a deliberate example: maximalist in content depth, minimalist in
 
 
 
+
+
 ![photograph by me, nikola lenivets, 2020](https://res.cloudinary.com/duw0custw/image/upload/v1772486739/russia2020_uotxu0.png "photograph by me, nikola lenivets, 2020")
+
+
 
 
 
