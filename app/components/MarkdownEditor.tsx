@@ -869,7 +869,7 @@ ${markdown}`;
                   : 'text-white/20 cursor-not-allowed'
               }`}
             >
-              {isPublished ? 'Published' : 'Draft'}
+              {isPublished ? 'Unpublish' : 'Publish'}
             </button>
             <button
               onClick={() => handleSave()}
