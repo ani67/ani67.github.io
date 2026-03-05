@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 declare global {
@@ -11,16 +11,14 @@ declare global {
 
 export function Analytics() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (typeof window.gtag !== 'function') return;
 
-    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
     window.gtag('event', 'page_view', {
-      page_path: url,
+      page_path: pathname,
     });
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
 }
