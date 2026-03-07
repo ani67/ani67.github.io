@@ -3,8 +3,6 @@ import { revalidatePath } from 'next/cache';
 import fs from 'fs';
 import path from 'path';
 
-export const dynamic = 'force-dynamic';
-
 export async function POST(request: Request) {
   try {
     const { slug } = await request.json();

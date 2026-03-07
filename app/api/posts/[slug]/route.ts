@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { getAllPostSlugs } from '@/lib/posts';
 
-export const dynamic = 'force-dynamic';
+export async function generateStaticParams() {
+  return getAllPostSlugs().map((slug) => ({ slug }));
+}
 
 export async function GET(
   request: Request,

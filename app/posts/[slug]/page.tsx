@@ -20,6 +20,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: post.title,
     description: post.description,
+    alternates: {
+      canonical: `/posts/${slug}/`,
+    },
+    openGraph: {
+      title: post.title,
+      description: post.description,
+      type: 'article',
+      publishedTime: post.date,
+      tags: post.tags,
+      ...(post.image && { images: [{ url: post.image }] }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
+      ...(post.image && { images: [post.image] }),
+    },
   };
 }
 
@@ -33,5 +50,29 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
   const popularTags = getPopularTags(4);
 
-  return <PostPageClient post={post} popularTags={popularTags} />;
+  const postJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    author: {
+      "@type": "Person",
+      name: "Ani Dalal",
+      url: "https://anidalal.com",
+    },
+    url: `https://anidalal.com/posts/${slug}/`,
+    ...(post.image && { image: post.image }),
+    ...(post.tags.length > 0 && { keywords: post.tags.join(", ") }),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd) }}
+      />
+      <PostPageClient post={post} popularTags={popularTags} />
+    </>
+  );
 }

@@ -3,6 +3,23 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Ani Dalal",
+  url: "https://anidalal.com",
+  email: "anidalal3@gmail.com",
+  jobTitle: "Product Designer",
+  description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Bengaluru",
+    addressCountry: "IN",
+  },
+  sameAs: [],
+  image: "https://res.cloudinary.com/duw0custw/image/upload/v1771154307/theend30_q3abo8.jpg",
+};
 import { ThemeProvider } from "./components/ThemeProvider";
 import { ThemeTransition } from "./components/ThemeTransition";
 import { PixelTransition } from "./components/PixelTransition";
@@ -34,6 +51,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://anidalal.com"),
   title: {
     default: "Ani Dalal",
     template: "%s | Ani Dalal",
@@ -44,13 +62,27 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Ani Dalal",
     description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
+    url: "https://anidalal.com",
+    siteName: "Ani Dalal",
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: "https://res.cloudinary.com/duw0custw/image/upload/v1771154307/theend30_q3abo8.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Ani Dalal",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Ani Dalal",
     description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
+    images: ["https://res.cloudinary.com/duw0custw/image/upload/v1771154307/theend30_q3abo8.jpg"],
+  },
+  alternates: {
+    canonical: "https://anidalal.com",
   },
 };
 
@@ -61,6 +93,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <Script src="https://www.googletagmanager.com/gtag/js?id=G-5F61ZX6857" strategy="afterInteractive" />
       <Script id="google-analytics" strategy="afterInteractive">{`
         window.dataLayer = window.dataLayer || [];

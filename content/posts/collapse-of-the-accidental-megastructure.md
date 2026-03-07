@@ -1,7 +1,7 @@
 ---
-title: "After the Fictions"
-date: "2026-03-02"
-description: "Notes on Living Inside the Dissolution. A philosophical essay on creativity, meaning, and what remains when the stories we told ourselves stop working"
+title: "Collapse of the accidental megastructure"
+date: "2026-03-05"
+description: "The system that shaped your soul, what you make, how you feel, and what you believe wasn't just designed. What happens when  it falls apart?"
 tags: ["vibes"]
 image: null
 published: false
