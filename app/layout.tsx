@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Inter, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
@@ -43,6 +43,16 @@ const gambarino = localFont({
 const mondwest = localFont({
   src: '../public/fonts/PPMondwest-Regular.ttf',
   variable: "--font-mondwest",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+});
+
+const rightGroteskMono = localFont({
+  src: '../public/fonts/PPRightGroteskMono-Regular.woff',
+  variable: "--font-right-grotesk-mono",
 });
 
 const inter = Inter({
@@ -107,7 +117,7 @@ export default function RootLayout({
         gtag('config', 'G-5F61ZX6857');
       `}</Script>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${gambarino.variable} ${mondwest.variable} ${inter.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${gambarino.variable} ${mondwest.variable} ${inter.variable} ${rightGroteskMono.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {/* Global SVG definitions for squircle clip paths - 2% corner radius, matches home page */}
         <svg width="0" height="0" style={{ position: 'absolute' }}>

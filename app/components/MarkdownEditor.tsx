@@ -434,7 +434,16 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
           setImageUrl('');
         }
         // Convert markdown to HTML for Tiptap (simplified)
-        let html = markdownContent
+        // First, extract code blocks before other processing
+        const codeBlocks: string[] = [];
+        let processedContent = markdownContent.replace(/```[\s\S]*?```/g, (match) => {
+          const code = match.replace(/^```\w*\n?/, '').replace(/\n?```$/, '');
+          const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+          codeBlocks.push(`<pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`);
+          return `\n\n${placeholder}\n\n`;
+        });
+
+        let html = processedContent
           .replace(/^# (.+)$/gm, '<h1>$1</h1>')
           .replace(/^## (.+)$/gm, '<h2>$1</h2>')
           .replace(/^### (.+)$/gm, '<h3>$1</h3>')
@@ -446,6 +455,9 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
           .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" />')
           .split('\n\n')
           .map((para: string) => {
+            if (para.match(/^__CODE_BLOCK_\d+__$/)) {
+              return para;
+            }
             if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<ol') || para.startsWith('<img') || para.startsWith('<video') || para.startsWith('<iframe') || para.startsWith('<div class="image-with-caption"') || para.startsWith('<div class="video-with-caption"')) {
               return para;
             }
@@ -455,11 +467,16 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
               ).join('');
               return `<ul>${items}</ul>`;
             }
-            return `<p>${para}</p>`;
+            return `<p>${para.replace(/\n/g, '<br>')}</p>`;
           })
           .join('\n');
 
-        editor?.commands.setContent(html);
+        // Restore code blocks
+        codeBlocks.forEach((block, i) => {
+          html = html.replace(`__CODE_BLOCK_${i}__`, block);
+        });
+
+        editor?.commands.setContent(html, false, { preserveWhitespace: 'full' });
       }
     } catch (error) {
       console.error('Failed to load post:', error);
@@ -701,9 +718,9 @@ ${markdown}`;
       return items.map((item: string, i: number) => `${i + 1}. ` + item.replace(/<\/?li>/g, '')).join('\n') + '\n';
     });
 
-    // Code
-    markdown = markdown.replace(/<code>(.*?)<\/code>/g, '`$1`');
+    // Code — pre+code blocks MUST be processed before inline code
     markdown = markdown.replace(/<pre><code>(.*?)<\/code><\/pre>/gs, '```\n$1\n```\n');
+    markdown = markdown.replace(/<code>(.*?)<\/code>/g, '`$1`');
 
     // Blockquotes
     markdown = markdown.replace(/<blockquote>(.*?)<\/blockquote>/gs, (match, content) => {
