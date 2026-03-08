@@ -436,7 +436,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
         // Convert markdown to HTML for Tiptap (simplified)
         // First, extract code blocks before other processing
         const codeBlocks: string[] = [];
-        let processedContent = markdownContent.replace(/```[\s\S]*?```/g, (match) => {
+        let processedContent = markdownContent.replace(/```[\s\S]*?```/g, (match: string) => {
           const code = match.replace(/^```\w*\n?/, '').replace(/\n?```$/, '');
           const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
           codeBlocks.push(`<pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`);
@@ -476,7 +476,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
           html = html.replace(`__CODE_BLOCK_${i}__`, block);
         });
 
-        editor?.commands.setContent(html, false, { preserveWhitespace: 'full' });
+        editor?.commands.setContent(html);
       }
     } catch (error) {
       console.error('Failed to load post:', error);
