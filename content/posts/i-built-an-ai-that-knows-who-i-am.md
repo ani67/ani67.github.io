@@ -7,6 +7,7 @@ image: null
 published: true
 ---
 
+# I built an AI that knows who I am
 Ask any local AI model what you do for a living.
 
 Here is what a capable 3 billion parameter model told me about myself:

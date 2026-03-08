@@ -7,6 +7,7 @@ image: null
 published: true
 ---
 
+# The architecture of a personal AI that never stops learning
 Four assumptions everyone makes about local AI:
 
 ```
