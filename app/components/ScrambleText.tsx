@@ -13,7 +13,16 @@ interface ScrambleTextProps {
   [key: string]: any;
 }
 
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+const DIGITS = '0123456789';
+
+function randomCharLike(char: string): string {
+  if (char >= 'A' && char <= 'Z') return UPPER[Math.floor(Math.random() * UPPER.length)];
+  if (char >= 'a' && char <= 'z') return LOWER[Math.floor(Math.random() * LOWER.length)];
+  if (char >= '0' && char <= '9') return DIGITS[Math.floor(Math.random() * DIGITS.length)];
+  return char;
+}
 
 export function ScrambleText({
   text,
@@ -27,7 +36,6 @@ export function ScrambleText({
 }: ScrambleTextProps) {
   const [displayText, setDisplayText] = useState(text);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [minWidth, setMinWidth] = useState<number | undefined>(undefined);
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const mountedRef = useRef(false);
   const containerRef = useRef<HTMLElement>(null);
@@ -40,30 +48,30 @@ export function ScrambleText({
 
     setIsAnimating(true);
     const originalText = text;
-    const textLength = originalText.length;
-    let iteration = 0;
-    const maxIterations = textLength;
+    const duration = 300;
+    const frameInterval = 50;
+    const totalFrames = Math.floor(duration / frameInterval);
+    let frame = 0;
+    // Short text: scramble more (70%). Long text: scramble less (15%).
+    const initialRatio = Math.max(0.15, Math.min(0.7, 10 / originalText.length));
 
     const animate = () => {
-      setDisplayText((prev) => {
-        return originalText
+      frame += 1;
+      const scrambleRatio = initialRatio * (1 - frame / totalFrames);
+
+      setDisplayText(
+        originalText
           .split('')
-          .map((char, index) => {
-            if (index < iteration) {
-              return originalText[index];
-            }
-            if (char === ' ') {
-              return ' ';
-            }
-            return CHARS[Math.floor(Math.random() * CHARS.length)];
+          .map((char) => {
+            if (char === ' ') return ' ';
+            if (Math.random() < scrambleRatio) return randomCharLike(char);
+            return char;
           })
-          .join('');
-      });
+          .join('')
+      );
 
-      iteration += 1;
-
-      if (iteration <= maxIterations) {
-        timeoutRef.current = setTimeout(animate, 45);
+      if (frame < totalFrames) {
+        timeoutRef.current = setTimeout(animate, frameInterval);
       } else {
         setDisplayText(originalText);
         setIsAnimating(false);
@@ -73,20 +81,6 @@ export function ScrambleText({
     animate();
   };
 
-  // Measure the width of the final text to prevent layout shifts during scrambling
-  useEffect(() => {
-    if (containerRef.current) {
-      // Temporarily remove minWidth to get natural width
-      setMinWidth(undefined);
-      // Measure on next frame after minWidth is cleared
-      requestAnimationFrame(() => {
-        if (containerRef.current) {
-          const width = containerRef.current.getBoundingClientRect().width;
-          setMinWidth(width);
-        }
-      });
-    }
-  }, [text]);
 
   useEffect(() => {
     if (triggerOnMount && !mountedRef.current) {
@@ -138,7 +132,6 @@ export function ScrambleText({
       style={{
         color: 'inherit',
         display: 'inline-block',
-        minWidth: minWidth ? `${minWidth}px` : undefined
       }}
       onMouseEnter={handleMouseEnter}
       {...props}

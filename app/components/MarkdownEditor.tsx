@@ -476,6 +476,9 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
           html = html.replace(`__CODE_BLOCK_${i}__`, block);
         });
 
+        // TipTap strips empty <p></p> — use <p><br></p> to preserve blank lines
+        html = html.replace(/<p><\/p>/g, '<p><br></p>');
+
         editor?.commands.setContent(html);
       }
     } catch (error) {

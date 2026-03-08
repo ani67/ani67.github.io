@@ -108,6 +108,8 @@ body {
 .ProseMirror code {
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace !important;
   line-height: 1.3 !important;
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
 }
 
 /* Remove double background on code inside code blocks */
