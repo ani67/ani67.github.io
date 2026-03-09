@@ -1,14 +1,17 @@
 ---
 title: "The architecture of a personal AI that never stops learning"
-date: "2026-03-08"
+date: "2026-03-09"
 description: "Ten components, 82 tests, one MacBook Pro — and four assumptions about local AI that turned out to be wrong. The architecture, the real numbers, and the discoveries that weren't in any paper — from someone who built it and measured it."
 tags: ["vibes"]
 image: null
-published: true
+published: false
 ---
 
 # The architecture of a personal AI that never stops learning
-Four assumptions everyone makes about local AI:
+ Four assumptions everyone makes about local AI:
+
+
+
 
 ```
 1. local models can't remember
@@ -19,10 +22,14 @@ Four assumptions everyone makes about local AI:
 4. you need a large model
 
 ```
+
 All four are wrong. Here is the proof — ten components, 82 tests, one MacBook Pro.
 
 ## What we are actually trying to build
-Most local AI setups look like this:
+ Most local AI setups look like this:
+
+
+
 
 ```
 YOU → prompt → model → response
@@ -34,7 +41,11 @@ YOU → prompt → model → response
          same tomorrow as today
 
 ```
+
 What I wanted:
+
+
+
 
 ```
 YOU → prompt → model → response
@@ -49,9 +60,13 @@ YOU → prompt → model → response
          you ever made
 
 ```
+
 The gap between those two diagrams is what the architecture solves.
 
 ## The stack
+
+
+
 ```
 HARDWARE:  M1 Pro, 16GB unified
 MODEL:     Llama 3.2 3B, 4-bit
@@ -65,7 +80,17 @@ LANGUAGE:  Python 3.11
 TESTS:     82 passing, 0 failures
 
 ```
+
+
+
+
+
 ## Component map
+
+
+
+
+
 ```
 1. BASE INFERENCE  once, always live
 2. LORA TRAINING   112 params, not 3B
@@ -89,8 +114,19 @@ BUILD: 1→2→3
        then 8→10
 
 ```
+
+
+
+
+
 ## Assumption 1: local models can't remember
+
 They can. Three distinct memory types, not one:
+
+
+
+
+
 
 ```
 WEIGHTS (base model, frozen):
@@ -109,9 +145,13 @@ KNOWLEDGE STORE (ChromaDB):
   never hallucinated
 
 ```
+
 The separation matters. Facts should not be in weights — weights are diffuse, approximate, hard to update cleanly. A fact stored in the knowledge store is retrieved exactly. A fact trained into weights is interpolated with everything else the model knows and loses precision.
 
 Before every inference, the top 5 most similar facts are retrieved. Facts above 0.7 confidence are prepended:
+
+
+
 
 ```
 "Relevant facts:
@@ -122,14 +162,18 @@ Before every inference, the top 5 most similar facts are retrieved. Facts above 
  Now answer: [prompt]"
 
 ```
+
 The model never has to remember facts. It looks them up.
 
 ## Assumption 2: training and inference must be separate
-They do not have to be. Not on M1 unified memory.
+ They do not have to be. Not on M1 unified memory.
 
 The standard reason for separating them is hardware: GPUs have their own memory (VRAM) and training needs exclusive access. On M1, CPU and GPU share the same memory pool. No PCIe bottleneck. No transfer. No exclusivity requirement.
 
 The double-buffer:
+
+
+
 
 ```
 BUFFER A (buffer_a/)
@@ -146,9 +190,13 @@ SWAP (every 100 steps):
   reload adapter: <100ms
 
 ```
+
 The discovery that complicated this: **Metal is not thread-safe across threads.**
 
 Not documented anywhere I could find. Training and inference must take turns, serialised by a single lock. In practice:
+
+
+
 
 ```
 training step:  ~0.23s
@@ -158,14 +206,18 @@ spec required:  <3s
 actual average: 0.34s
 
 ```
+
 The user never notices. `submit_correction()` queues and returns immediately. `query()` always responds in under a second.
 
 ## Assumption 3: getting better requires retraining from scratch
-LoRA changes this completely.
+ LoRA changes this completely.
 
 Standard fine-tuning updates all model weights — billions of gradient computations per step, minutes to hours per run. LoRA adds small trainable matrices to specific attention layers and trains only those.
 
 In practice:
+
+
+
 
 ```
 BASE MODEL:
@@ -180,9 +232,13 @@ ADAPTER:    ~50MB (.safetensors)
 OVERHEAD:   ~100MB both buffers
 
 ```
+
 Zero-initialised — starts as identity, only diverges as it learns. On day one the model behaves exactly like the base. Changes accumulate from corrections only.
 
 **Not all corrections are equal.** The importance scorer:
+
+
+
 
 ```
 BASE SCORE: 0.3
@@ -197,9 +253,13 @@ RANGE:  0.1 → 1.0
 LR:     1e-5 → 5e-4
 
 ```
+
 A correction made once: learning rate 1e-4. Same correction repeatedly: 5e-4. The system pays more attention to persistent failures. Borrowed from how the amygdala modulates memory consolidation — importance determines encoding depth.
 
 **Consolidation runs while you sleep:**
+
+
+
 
 ```
 1. select importance > 0.5
@@ -213,14 +273,18 @@ A correction made once: learning rate 1e-4. Same correction repeatedly: 5e-4. Th
 6. log everything
 
 ```
+
 The safety revert is not optional. Without it, noisy corrections could degrade the adapter. With it, worst case is: nothing changes.
 
 ## Assumption 4: you need a large model
-For general knowledge across all domains: yes, larger is better. A 3B model will not match GPT-4 on reasoning benchmarks.
+ For general knowledge across all domains: yes, larger is better. A 3B model will not match GPT-4 on reasoning benchmarks.
 
 For knowing one specific person's work, vocabulary, and domain — after four weeks of daily corrections — a 3B adapted model outperforms a 70B static model on that specific task. The static model knows nothing about you. The adapted model knows almost nothing else.
 
 The numbers:
+
+
+
 
 ```
 LOAD TIME:  ~9s (once, at startup)
@@ -239,7 +303,15 @@ MEMORY:
   HEADROOM:       ~6.8GB
 
 ```
+
+
+
 ## The teacher ensemble
+
+
+
+
+
 ```
 UNCERTAINTY > 0.7
       │
@@ -262,10 +334,16 @@ training_worthy: conf > 0.6
 train   discard
 
 ```
+
+
+
 With one local teacher the confidence ceiling is 0.5 — not training-worthy. Adding Gemini Flash (`GEMINI_API_KEY`) raises consensus to 0.9. Two independent models agreeing on a reasoning trace is a strong signal.
 
 ## The internal state monitor
-Four metrics, every 10 inferences:
+ Four metrics, every 10 inferences:
+
+
+
 
 ```
 UNCERTAINTY:
@@ -289,7 +367,11 @@ COHERENCE:
   1.0 = never contradicts
 
 ```
+
 These drive behaviour:
+
+
+
 
 ```
 uncertainty > 0.7
@@ -297,9 +379,13 @@ uncertainty > 0.7
   → importance scores × 1.5
 
 ```
+
 After one session: *"Uncertainty 50%. Performance 100%. Somewhat unfamiliar territory."* Accurate. New domain. It knew it did not know it well.
 
 ## The discoveries that were not in any paper
+
+
+
 ```
 DISCOVERY 1:
   Metal not thread-safe
@@ -329,7 +415,17 @@ DISCOVERY 5:
   better — expected
 
 ```
+
+
+
+
+
 ## What the measurements will tell us
+
+
+
+
+
 ```
 Q1: improvement rate
   how fast does it specialise?
@@ -348,16 +444,19 @@ Q4: minimum viable size
   3B now, 1B is next
 
 ```
+
+
+
 These numbers do not exist. The experiment is running on a MacBook Pro in Bengaluru.
 
 I will publish what I find.
 
 ## The code
-Ten components. One entry point.
+ Ten components. One entry point.
 
 from src.component10 import (
-    chat, start, stop,
-    get_system_status
+chat, start, stop,
+get_system_status
 )
 
 start()
@@ -368,7 +467,7 @@ stop()
 Everything else — retrieval, scoring, training, consolidation, teacher queries, state monitoring — happens in the background.
 
 ## What comes next
-The system is running. I am using it daily.
+ The system is running. I am using it daily.
 
 In four weeks I will publish the measurements — improvement rate, catastrophic forgetting results, hallucination reduction, and whether the efficiency argument holds on real usage data.
 
