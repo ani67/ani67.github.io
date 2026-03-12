@@ -82,7 +82,7 @@ So I used the Forward-Forward algorithm instead. Geoffrey Hinton proposed it in 
 
 It learns while it runs. Without stopping.
 
-![The model says "common beach plane uncle note reasons attack see row river about dress rubber reduction thousand.](https://res.cloudinary.com/duw0custw/image/upload/v1773348743/bb02_s0cz9d.png "The model says "common beach plane uncle note reasons attack see row river about dress rubber reduction thousand.")
+![The model says 'common beach plane uncle note reasons attack see row river about dress rubber reduction thousand.'](https://res.cloudinary.com/duw0custw/image/upload/v1773348743/bb02_s0cz9d.png "The model says 'common beach plane uncle note reasons attack see row river about dress rubber reduction thousand.'")
 
 
 
@@ -134,7 +134,7 @@ You can watch it grow in real time. There's a 3D visualizer that shows the laten
 
 You can also talk to it. There's a chat interface that routes your message through the same pipeline and decodes the model's output back into text.
 
-![I said hello. It said "style news general corner receives should scene similar hard keep nice forest both zoom horse."](https://res.cloudinary.com/duw0custw/image/upload/v1773348745/bb03_vmmpdm.png "I said hello. It said "style news general corner receives should scene similar hard keep nice forest both zoom horse."")
+![I said hello. It said 'style news general corner receives should scene similar hard keep nice forest both zoom horse.'](https://res.cloudinary.com/duw0custw/image/upload/v1773348745/bb03_vmmpdm.png "I said hello. It said 'style news general corner receives should scene similar hard keep nice forest both zoom horse.'")
 
 
 
