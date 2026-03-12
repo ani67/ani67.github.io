@@ -34,9 +34,13 @@ A human brain doesn't arrive with a fixed wiring diagram. It starts near-empty a
 
 So what if you tried to build something closer to that?
 
+
+
 ![The whole system running: 
 3D latent space on the left, teacher-student dialogue on the right.](https://res.cloudinary.com/duw0custw/image/upload/v1773348213/Screenshot_2026-03-10_at_2.32.10_AM_t04r38.png "The whole system running: 
 3D latent space on the left, teacher-student dialogue on the right.")
+
+
 
 ## What I built
  I call it the Baby Model. It starts with almost nothing and grows.
@@ -78,9 +82,9 @@ So I used the Forward-Forward algorithm instead. Geoffrey Hinton proposed it in 
 
 It learns while it runs. Without stopping.
 
-![The teacher sees a horse. 
-The model says "common beach plane uncle note reasons attack see row river about dress rubber reduction thousand."](https://res.cloudinary.com/duw0custw/image/upload/v1773348743/bb02_s0cz9d.png "The teacher sees a horse. 
-The model says "common beach plane uncle note reasons attack see row river about dress rubber reduction thousand."")
+![The model says "common beach plane uncle note reasons attack see row river about dress rubber reduction thousand.](https://res.cloudinary.com/duw0custw/image/upload/v1773348743/bb02_s0cz9d.png "The model says "common beach plane uncle note reasons attack see row river about dress rubber reduction thousand.")
+
+
 
 ## How it actually learns
  The model doesn't just sit and wait for data. It has a learning loop that drives the whole process:
@@ -130,9 +134,9 @@ You can watch it grow in real time. There's a 3D visualizer that shows the laten
 
 You can also talk to it. There's a chat interface that routes your message through the same pipeline and decodes the model's output back into text.
 
-![I said hello. 
-It said "style news general corner receives should scene similar hard keep nice forest both zoom horse."](https://res.cloudinary.com/duw0custw/image/upload/v1773348745/bb03_vmmpdm.png "I said hello. 
-It said "style news general corner receives should scene similar hard keep nice forest both zoom horse."")
+![I said hello. It said "style news general corner receives should scene similar hard keep nice forest both zoom horse."](https://res.cloudinary.com/duw0custw/image/upload/v1773348745/bb03_vmmpdm.png "I said hello. It said "style news general corner receives should scene similar hard keep nice forest both zoom horse."")
+
+
 
 At 8,604 steps the output is still mostly noise. "stranger ocean step heavy tie dry sky sell garden story known first milk looks develops" for an image of two rabbits. The model hasn't differentiated enough for coherent language yet. But here's the thing. The internal representations might actually be meaningful. The weights are changing. The graph is reorganising. There's just no clean way to surface what it "knows" yet. That's the next problem to solve.
 
