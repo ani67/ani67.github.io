@@ -337,6 +337,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
   const [selectedTag, setSelectedTag] = useState<string>('vibes');
   const [imageUrl, setImageUrl] = useState<string>('');
   const [isPublished, setIsPublished] = useState(true);
+  const [originalDate, setOriginalDate] = useState<string | null>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -402,11 +403,13 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
         // Parse title, description, tags, and image from frontmatter
         const titleMatch = frontmatterText.match(/title:\s*"(.+?)"/) || frontmatterText.match(/title:\s*'(.+?)'/);
         const descriptionMatch = frontmatterText.match(/description:\s*"([\s\S]+?)"/) || frontmatterText.match(/description:\s*'([\s\S]+?)'/);
+        const dateMatch = frontmatterText.match(/date:\s*"(.+?)"/) || frontmatterText.match(/date:\s*'(.+?)'/);
         const tagsMatch = frontmatterText.match(/tags:\s*\[(.*?)\]/);
         const imageMatch = frontmatterText.match(/image:\s*(?:["'](.+?)["']|null)/);
         const publishedMatch = frontmatterText.match(/published:\s*(true|false)/);
 
         if (titleMatch) setTitle(titleMatch[1]);
+        if (dateMatch) setOriginalDate(dateMatch[1]);
         setIsPublished(publishedMatch ? publishedMatch[1] === 'true' : true);
         if (descriptionMatch) setDescription(descriptionMatch[1]);
 
@@ -491,6 +494,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
     setTitle('');
     setDescription('');
     setCurrentSlug(null);
+    setOriginalDate(null);
     setSelectedTag('vibes');
     setImageUrl('');
     setIsPublished(true);
@@ -572,7 +576,9 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
       return false;
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    // Preserve original creation date on edits; use datetime for new posts
+    const now = new Date();
+    const dateStr = originalDate ?? `${now.toISOString().split('T')[0]}T${now.toISOString().split('T')[1].slice(0, 5)}`;
     // Always generate slug from current title
     const newSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -599,7 +605,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
 
     const frontmatter = `---
 title: "${title}"
-date: "${today}"
+date: "${dateStr}"
 description: "${description}"
 tags: ["${selectedTag}"]
 image: ${imageUrl ? `"${imageUrl}"` : 'null'}
