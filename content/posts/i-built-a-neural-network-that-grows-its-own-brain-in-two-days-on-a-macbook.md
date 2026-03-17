@@ -1,8 +1,8 @@
 ---
 title: "I built a neural network that grows its own brain. In two days. On a MacBook."
 date: "2026-03-12"
-description: "A designer with no ML background spent a week building a neural network that grows its own architecture from scratch, and documented exactly what worked, what didn't, and why it might matter anyway."
-tags: ["work"]
+description: "A designer with no ML background spent a week building a neural network that grows its own architecture from scratch, and documented exactly what worked, what didn't, and why it might matter anyway. "
+tags: ["vibes"]
 image: "https://res.cloudinary.com/duw0custw/image/upload/v1773349104/monkey_ak_47_srk1h4.jpg"
 published: true
 ---
@@ -36,9 +36,11 @@ So what if you tried to build something closer to that?
 
 
 
+
 ![The whole system running: 
 3D latent space on the left, teacher-student dialogue on the right.](https://res.cloudinary.com/duw0custw/image/upload/v1773348213/Screenshot_2026-03-10_at_2.32.10_AM_t04r38.png "The whole system running: 
 3D latent space on the left, teacher-student dialogue on the right.")
+
 
 
 
@@ -48,6 +50,12 @@ So what if you tried to build something closer to that?
 Instead of fixed layers, it has clusters: groups of nodes with shared activation patterns. Instead of predetermined connections, it has dynamic edges that form when clusters co-activate frequently, and prune away when they're not used. Instead of a static depth, it has layers that insert themselves when the model needs more abstraction to handle what it's seeing.
 
 Six things can happen to the structure at any point:
+
+
+
+
+
+
 
 
 
@@ -67,6 +75,10 @@ DORMANT  → a whole cluster goes to sleep from long
             inactivity
 ```
 
+
+
+
+
 The shape of the network is a direct record of what it has learned. Which felt right to me. The structure should mean something.
 
 ## No backpropagation
@@ -83,6 +95,7 @@ So I used the Forward-Forward algorithm instead. Geoffrey Hinton proposed it in 
 It learns while it runs. Without stopping.
 
 ![The model says 'common beach plane uncle note reasons attack see row river about dress rubber reduction thousand.'](https://res.cloudinary.com/duw0custw/image/upload/v1773348743/bb02_s0cz9d.png "The model says 'common beach plane uncle note reasons attack see row river about dress rubber reduction thousand.'")
+
 
 
 
@@ -135,6 +148,7 @@ You can watch it grow in real time. There's a 3D visualizer that shows the laten
 You can also talk to it. There's a chat interface that routes your message through the same pipeline and decodes the model's output back into text.
 
 ![I said hello. It said 'style news general corner receives should scene similar hard keep nice forest both zoom horse.'](https://res.cloudinary.com/duw0custw/image/upload/v1773348745/bb03_vmmpdm.png "I said hello. It said 'style news general corner receives should scene similar hard keep nice forest both zoom horse.'")
+
 
 
 

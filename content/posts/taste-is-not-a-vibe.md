@@ -2,7 +2,7 @@
 title: "Taste is not a Vibe"
 date: "2026-03-03"
 description: "Taste isn't something you're born with — it's something you build. A practical breakdown of how designers develop, sharpen, and apply genuine creative judgment in an age where AI can make anything but can't decide what matters. "
-tags: ["vibes"]
+tags: ["work"]
 image: "https://res.cloudinary.com/duw0custw/image/upload/v1772477361/safety-match-box-india_kn8l5x.jpg"
 published: true
 ---
@@ -31,9 +31,11 @@ And that vagueness is convenient. If taste is something you either have or you d
 - Notice what most people skip
 
 
+
 - Feel the difference between something *considered* and something merely *executed*
 
 - Make a judgment and stand behind it even when nobody else sees it yet
+
 
 
 Consider brutalist architecture. When those buildings went up across Europe in the 60s and 70s, they were social housing — functional, utilitarian, deliberately stripped of ornament. Critics hated them. Residents felt warehoused. Today, the same buildings have Instagram accounts, preservation orders, and waiting lists.
@@ -93,6 +95,7 @@ Most people consume passively. They feel a reaction: they like or don't like som
 - What specifically am I responding to?
 
 
+
 - Why does it work?
 
 - Would it still work if I changed X? What breaks first?
@@ -100,7 +103,14 @@ Most people consume passively. They feel a reaction: they like or don't like som
 
 
 
+
+
+
+
 ![Arcane, TV series, 2021](https://res.cloudinary.com/duw0custw/image/upload/v1772485366/arcane_kpirng.jpg "Arcane, TV series, 2021")
+
+
+
 
 
 
@@ -117,9 +127,11 @@ An actual stance about:
 - What matters and what doesn't?
 
 
+
 - What you're willing to trade?
 
 - What you refuse to compromise on regardless of the brief?
+
 
 
 Here's the uncomfortable part — most of what we think of as our taste is borrowed. We anchor to people we admire. That's fine as a starting point. The question is whether you ever **move past the anchor**.
@@ -134,9 +146,15 @@ My portfolio is a deliberate example: maximalist in content depth, minimalist in
 - **Make things outside your job. **Side projects are where your taste runs without client constraints or sprint cycles. If your personal work looks indistinguishable from your professional work, that's worth examining.
 
 
+
 - **Notice the choices you keep making.** What do you consistently reach for? What do you avoid? Those patterns are the outline of your taste even before you can articulate it.
 
 - **Write about what you're building and why.** Not for an audience — for yourself. Articulating a decision forces you to either find the reason or admit you don't have one.
+
+
+
+
+
 
 
 
@@ -149,8 +167,13 @@ My portfolio is a deliberate example: maximalist in content depth, minimalist in
 
 
 
+
+
+
+
 ## Part 4: Applying Your Taste to What You Build
  This is where taste stops being personal and becomes **professional.**
+
 
 
 

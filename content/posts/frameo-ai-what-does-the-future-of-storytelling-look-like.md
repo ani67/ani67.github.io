@@ -7,9 +7,9 @@ image: "https://res.cloudinary.com/duw0custw/image/upload/v1773772895/01_twuv4o.
 published: true
 ---
 
-In early 2025, I worked as the product designer alongside the CTO and three developers building a chat-based AI video creation platform.
+In early 2025, I worked as the product designer alongside the CTO and three developers building a chat-based AI video creation platform, [Frameo.AI](http://Frameo.AI).
 
-The team was small, which meant my scope went well beyond end to end design: AI workflow, prompt engineering, running evals, fine-tuning the prompting system, user research, support handling, Mixpanel. This was one of the initial versions that went live in June 2025.
+The team was small, which meant my scope went well beyond end to end design (including the logo, website, merch, product experience) - AI workflow, prompt engineering, running evals, fine-tuning the prompting system, user research, support handling, Mixpanel. This was one of the initial versions that went live in June 2025.
 
 ![Frameo.ai, 2025](https://res.cloudinary.com/duw0custw/image/upload/v1773772895/01_twuv4o.png "Frameo.ai, 2025")
 
