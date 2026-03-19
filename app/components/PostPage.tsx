@@ -1,7 +1,20 @@
 import { format, parseISO, isValid } from 'date-fns';
 import { MDXRemote } from 'next-mdx-remote/rsc';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import type { Post } from '@/lib/posts';
 import { BlogLayout } from './layout/BlogLayout';
+import { VideoAutoplay } from './AutoplayVideo';
+
+const rehypeRawOptions = {
+  passThrough: [
+    'mdxFlowExpression',
+    'mdxJsxFlowElement',
+    'mdxJsxTextElement',
+    'mdxTextExpression',
+    'mdxjsEsm',
+  ],
+};
 
 interface PostPageProps {
   post: Post;
@@ -29,7 +42,6 @@ function MDXImage({ src, alt, title }: { src?: string; alt?: string; title?: str
 // Custom video component
 function MDXVideo({ src, controls, style, ...props }: any) {
   if (!src) return null;
-  // Ignore style prop - let CSS handle the width
   return <video src={src} controls={controls !== false} />;
 }
 
@@ -107,8 +119,18 @@ export default function PostPageClient({ post, popularTags }: PostPageProps) {
             <p className="mt-4 lg:mt-6 text-xl lg:text-2xl text-white/50">{post.description}</p>
           </header>
 
+          <VideoAutoplay />
           <div className="prose prose-lg lg:prose-2xl max-w-none prose-headings:font-normal prose-headings:text-white prose-headings:leading-tight prose-headings:mt-8 prose-headings:mb-4 prose-p:text-white/90 prose-p:mb-6 prose-a:text-white prose-a:underline hover:prose-a:text-white prose-strong:text-white prose-code:text-white/90 prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-white/10 prose-pre:border prose-pre:border-white/30 prose-ul:text-white/90 prose-ol:text-white/90 prose-li:text-white/90 prose-li:marker:text-white/90">
-            <MDXRemote source={post.content} components={components} />
+            <MDXRemote
+              source={post.content}
+              components={components}
+              options={{
+                mdxOptions: {
+                  remarkPlugins: [remarkGfm],
+                  rehypePlugins: [[rehypeRaw, rehypeRawOptions]],
+                },
+              }}
+            />
           </div>
 
           <time className="block mt-8 text-xl text-white/40">{formattedDate}</time>

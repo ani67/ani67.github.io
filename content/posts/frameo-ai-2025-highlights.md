@@ -1,7 +1,7 @@
 ---
-title: "Frameo.AI | What does the future of storytelling look like?"
+title: "Frameo.AI 2025 | Highlights"
 date: "2026-03-17T18:39"
-description: "Highlights from the journey building Frameo.AI, a chat-first AI native storytelling tool. "
+description: "Highlights from 2025, on the journey building Frameo.AI, a chat-first AI native storytelling tool. "
 tags: ["work"]
 image: "https://res.cloudinary.com/duw0custw/image/upload/v1773772895/01_twuv4o.png"
 published: true
