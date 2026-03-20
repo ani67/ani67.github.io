@@ -71,6 +71,7 @@ body {
 .ProseMirror .image-with-caption,
 .prose .image-with-caption {
   position: relative;
+  display: block;
   margin: 2rem 0;
 }
 

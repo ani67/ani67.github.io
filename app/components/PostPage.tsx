@@ -28,12 +28,12 @@ function MDXImage({ src, alt, title }: { src?: string; alt?: string; title?: str
   if (!src) return null;
 
   if (title) {
-    // Image with caption - hanging in margin
+    // Image with caption - using spans to avoid invalid p > div/figure nesting
     return (
-      <figure className="image-with-caption">
+      <span className="image-with-caption">
         <img src={src} alt={alt || ''} />
-        <figcaption className="caption-text">{title}</figcaption>
-      </figure>
+        <span className="caption-text">{title}</span>
+      </span>
     );
   }
 
@@ -68,7 +68,7 @@ function MDXDiv({ className, children, class: _class, ...props }: any) {
 }
 
 // Custom iframe component for YouTube embeds
-function MDXIframe({ src, ...props }: any) {
+function MDXIframe({ src, frameborder, allowfullscreen, frameBorder: _fb, ...props }: any) {
   if (!src) return null;
   return (
     <iframe

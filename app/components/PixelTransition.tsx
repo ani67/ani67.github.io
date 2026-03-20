@@ -30,7 +30,13 @@ export function PixelTransition() {
   };
 
   const startReveal = () => {
-    if (window.innerWidth < 768) return;
+    // Remove the static white cover from layout (first load only)
+    const cover = document.getElementById('initial-cover');
+    if (cover) cover.remove();
+
+    if (window.innerWidth < 768) {
+      return;
+    }
     clearAllTimeouts();
 
     const { cols, rows } = gridRef.current;
