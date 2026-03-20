@@ -1,9 +1,5 @@
-'use client';
-
-import { useState, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { MobileHeader } from './MobileHeader';
-import { MobileMenu } from './MobileMenu';
+import { ReactNode } from 'react';
+import { MobileMenuController } from './MobileMenuController';
 import { Sidebar } from './Sidebar';
 import type { PostMetadata } from '@/lib/posts';
 
@@ -17,16 +13,15 @@ interface BlogLayoutProps {
   onNewPost?: () => void;
   useLinks?: boolean;
   rightSidebar?: ReactNode;
+  navContent?: ReactNode;
+  mobileNavContent?: ReactNode;
 }
 
 /**
- * Main blog layout with responsive navigation
+ * Main blog layout with responsive navigation (server component)
  * Combines mobile header, mobile menu, and desktop sidebar
  */
-export function BlogLayout({ children, popularTags, selectedTag, onTagSelect, editorPosts, onPostSelect, onNewPost, useLinks, rightSidebar }: BlogLayoutProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const router = useRouter();
-
+export function BlogLayout({ children, popularTags, selectedTag, onTagSelect, editorPosts, onPostSelect, onNewPost, useLinks, rightSidebar, navContent, mobileNavContent }: BlogLayoutProps) {
   return (
     <div className="min-h-screen text-white relative z-10">
       {/* Skip to main content link for accessibility */}
@@ -37,16 +32,12 @@ export function BlogLayout({ children, popularTags, selectedTag, onTagSelect, ed
         Skip to main content
       </a>
 
-      <MobileHeader
-        onToggleMenu={() => setMenuOpen(!menuOpen)}
-        onBack={useLinks ? () => router.push('/') : undefined}
-      />
-      <MobileMenu
-        isOpen={menuOpen}
-        onClose={() => setMenuOpen(false)}
+      <MobileMenuController
+        showBackButton={useLinks}
         popularTags={popularTags}
         selectedTag={selectedTag}
         onTagSelect={onTagSelect}
+        useLinks={!useLinks && !onTagSelect}
       />
 
       {/* Desktop Layout with max-width container and 12-column grid */}
@@ -61,6 +52,7 @@ export function BlogLayout({ children, popularTags, selectedTag, onTagSelect, ed
             onPostSelect={onPostSelect}
             onNewPost={onNewPost}
             useLinks={useLinks}
+            navContent={navContent}
           />
 
           {/* Column 3: Empty */}

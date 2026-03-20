@@ -24,7 +24,7 @@ export function PostCard({ post }: PostCardProps) {
     });
   }, []);
 
-  const clipId = useMemo(() => `squircle-${Math.random().toString(36).substr(2, 9)}`, []);
+  const clipId = useMemo(() => `squircle-${post.slug}`, [post.slug]);
 
   return (
     <article

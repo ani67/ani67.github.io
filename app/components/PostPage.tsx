@@ -28,10 +28,10 @@ function MDXImage({ src, alt, title }: { src?: string; alt?: string; title?: str
   if (title) {
     // Image with caption - hanging in margin
     return (
-      <div className="image-with-caption">
+      <figure className="image-with-caption">
         <img src={src} alt={alt || ''} />
-        <div className="caption-text">{title}</div>
-      </div>
+        <figcaption className="caption-text">{title}</figcaption>
+      </figure>
     );
   }
 
@@ -46,22 +46,23 @@ function MDXVideo({ src, controls, style, ...props }: any) {
 }
 
 // Custom div component to handle video-with-caption divs
-function MDXDiv({ className, children, ...props }: any) {
-  if (className === 'video-with-caption') {
+function MDXDiv({ className, children, class: _class, ...props }: any) {
+  const resolvedClass = className || _class;
+  if (resolvedClass === 'video-with-caption') {
     return (
-      <div className="video-with-caption" {...props}>
+      <div className="video-with-caption">
         {children}
       </div>
     );
   }
-  if (className === 'caption-text') {
+  if (resolvedClass === 'caption-text') {
     return (
-      <div className="caption-text" {...props}>
+      <div className="caption-text">
         {children}
       </div>
     );
   }
-  return <div className={className} {...props}>{children}</div>;
+  return <div className={resolvedClass} {...props}>{children}</div>;
 }
 
 // Custom iframe component for YouTube embeds
