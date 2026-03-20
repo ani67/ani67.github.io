@@ -64,7 +64,7 @@ function MDXDiv({ className, children, class: _class, ...props }: any) {
       </div>
     );
   }
-  return <div className={resolvedClass} {...props}>{children}</div>;
+  return <div className={resolvedClass}>{children}</div>;
 }
 
 // Custom iframe component for YouTube embeds
