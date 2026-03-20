@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
@@ -35,24 +36,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const gambarino = localFont({
-  src: '../public/fonts/Gambarino-Regular.woff2',
-  variable: "--font-gambarino",
-});
-
 const mondwest = localFont({
   src: '../public/fonts/PPMondwest-Regular.ttf',
   variable: "--font-mondwest",
 });
 
+const mori = localFont({
+  src: '../public/fonts/PPMori-Book.woff',
+  variable: "--font-mori",
+});
+
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-});
-
-const rightGroteskMono = localFont({
-  src: '../public/fonts/PPRightGroteskMono-Regular.woff',
-  variable: "--font-right-grotesk-mono",
 });
 
 const inter = Inter({
@@ -117,7 +113,7 @@ export default function RootLayout({
         gtag('config', 'G-5F61ZX6857');
       `}</Script>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${gambarino.variable} ${mondwest.variable} ${inter.variable} ${rightGroteskMono.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${mondwest.variable} ${mori.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {/* Global SVG definitions for squircle clip paths - 2% corner radius, matches home page */}
         <svg width="0" height="0" style={{ position: 'absolute' }}>
@@ -132,7 +128,7 @@ export default function RootLayout({
         <ThemeProvider>
           <Analytics />
           <ThemeTransition />
-          <PixelTransition />
+          <Suspense><PixelTransition /></Suspense>
           {children}
         </ThemeProvider>
       </body>

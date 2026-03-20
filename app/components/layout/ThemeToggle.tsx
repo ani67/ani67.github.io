@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Sunrise, Sun, Moon } from 'lucide-react';
 import { ScrambleText } from '../ScrambleText';
 
-export function ThemeToggle() {
+export function ThemeToggle({ inline }: { inline?: boolean } = {}) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -44,7 +44,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(nextTheme)}
-      className="mt-8 flex items-center gap-2 text-white/50 hover:text-white transition-colors focus:outline-none group"
+      className={`${inline ? '' : 'mt-8 '}flex items-center gap-2 text-white/50 hover:text-white transition-colors focus:outline-none group`}
       aria-label={`Switch to ${nextTheme} mode`}
     >
       <span className="text-xl font-[family-name:var(--font-mondwest)]">

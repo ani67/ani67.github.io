@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ReactNode } from 'react';
 import { NavigationLinks } from './NavigationLinks';
 import { ScrambleText } from '../ScrambleText';
-import { ThemeToggle } from './ThemeToggle';
+
 import type { PostMetadata } from '@/lib/posts';
 
 interface SidebarProps {
@@ -80,8 +80,6 @@ export function Sidebar({ selectedTag, onTagSelect, editorPosts, onPostSelect, o
             />
           ) : null}
         </div>
-
-        <ThemeToggle />
       </div>
     </aside>
   );

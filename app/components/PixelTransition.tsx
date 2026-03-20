@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 const SQUARE_SIZE = 150;
 const STEPS = 10;
@@ -14,6 +14,7 @@ const STEP_INTERVAL = 40;
  */
 export function PixelTransition() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isVisible, setIsVisible] = useState(false);
   const [visibleSquares, setVisibleSquares] = useState<Set<number>>(new Set());
   const [gridSize, setGridSize] = useState({ cols: 13, rows: 8 });
@@ -101,13 +102,13 @@ export function PixelTransition() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Route change
+  // Route or search param change
   useEffect(() => {
     navCountRef.current++;
     if (navCountRef.current === 1) return; // skip the initial mount fire
     startReveal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   // Cleanup on unmount
   useEffect(() => {

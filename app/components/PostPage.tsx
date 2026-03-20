@@ -5,6 +5,7 @@ import rehypeRaw from 'rehype-raw';
 import type { Post } from '@/lib/posts';
 import { BlogLayout } from './layout/BlogLayout';
 import { VideoAutoplay } from './AutoplayVideo';
+import { ReadMore } from './ReadMore';
 
 const rehypeRawOptions = {
   passThrough: [
@@ -19,6 +20,7 @@ const rehypeRawOptions = {
 interface PostPageProps {
   post: Post;
   popularTags: { tag: string; count: number }[];
+  relatedPosts?: import('@/lib/posts').PostMetadata[];
 }
 
 // Custom image component with caption support
@@ -99,7 +101,7 @@ const components = {
 /**
  * Post page component for displaying individual blog posts
  */
-export default function PostPageClient({ post, popularTags }: PostPageProps) {
+export default function PostPageClient({ post, popularTags, relatedPosts = [] }: PostPageProps) {
   // Validate and format date
   const postDate = parseISO(post.date);
   const formattedDate = isValid(postDate)
@@ -135,6 +137,8 @@ export default function PostPageClient({ post, popularTags }: PostPageProps) {
           </div>
 
           <time className="block mt-8 text-xl text-white/40">{formattedDate}</time>
+
+          <ReadMore posts={relatedPosts} />
       </article>
     </BlogLayout>
   );

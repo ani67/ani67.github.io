@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ScrambleText } from '../ScrambleText';
+import { ThemeToggle } from './ThemeToggle';
 
 interface NavigationLinksProps {
   selectedTag: string | null;
@@ -14,11 +15,10 @@ interface NavigationLinksProps {
  * Main navigation links
  */
 export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassName = 'space-y-2', itemClassName = 'text-xl', inactiveClassName = 'text-white/50 hover:text-white' }: NavigationLinksProps) {
-  const navItems = [
-    { label: 'Work', tag: 'work', href: null },
-    { label: 'Art', tag: 'art', href: null },
-    { label: 'Vibes', tag: 'vibes', href: null },
-    { label: 'About', tag: 'about', href: '/about' },
+  const tagItems = [
+    { label: 'Work', tag: 'work' },
+    { label: 'Art', tag: 'art' },
+    { label: 'Vibes', tag: 'vibes' },
   ];
 
   // Only show Editor in development mode
@@ -26,17 +26,11 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
 
   return (
     <nav>
+      <p className="text-[10px] text-white/30 mb-3 font-[family-name:var(--font-mori)]">Filter by</p>
       <ul className={listClassName}>
-        {navItems.map(({ label, tag, href }) => (
+        {tagItems.map(({ label, tag }) => (
           <li key={tag}>
-            {href ? (
-              <Link
-                href={href}
-                className={`${itemClassName} transition-colors focus:outline-none block ${inactiveClassName}`}
-              >
-                <ScrambleText text={label} />
-              </Link>
-            ) : useLinks ? (
+            {useLinks ? (
               <Link
                 href={`/?tag=${tag}`}
                 className={`${itemClassName} transition-colors focus:outline-none block ${
@@ -57,6 +51,19 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
             )}
           </li>
         ))}
+      </ul>
+      <ul className={`${listClassName} mt-12`}>
+        <li>
+          <Link
+            href="/about"
+            className={`${itemClassName} transition-colors focus:outline-none block ${inactiveClassName}`}
+          >
+            <ScrambleText text="About" />
+          </Link>
+        </li>
+        <li>
+          <ThemeToggle inline />
+        </li>
         {isDevMode && (
           <li>
             <a
