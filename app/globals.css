@@ -51,6 +51,12 @@ body {
 /* Apply squircle effect to all prose images and videos */
 .prose img {
   clip-path: url(#squircle-image);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.prose img:hover {
+  opacity: 0.85;
 }
 
 .ProseMirror img {
