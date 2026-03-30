@@ -75,6 +75,20 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
           </li>
         )}
       </ul>
+
+      <div className="mt-12">
+        <p className="text-[10px] text-white/30 mb-3 font-[family-name:var(--font-mori)]">Tools</p>
+        <ul className={listClassName}>
+          <li>
+            <Link
+              href="/canvas"
+              className={`${itemClassName} transition-colors focus:outline-none block ${inactiveClassName}`}
+            >
+              <ScrambleText text="Canvas" />
+            </Link>
+          </li>
+        </ul>
+      </div>
     </nav>
   );
 }
