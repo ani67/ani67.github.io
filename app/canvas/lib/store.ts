@@ -60,6 +60,7 @@ export class CanvasStore {
   camera: Camera = { x: 0, y: 0, zoom: 1 };
   selectedIds = new Set<string>();
   dirty = true;
+  version = 0;
 
   // Undo/redo stacks hold snapshots of the objects array
   private undoStack: CanvasObject[][] = [];
@@ -77,7 +78,7 @@ export class CanvasStore {
     return () => this.listeners.delete(fn);
   }
 
-  private notify() { this.listeners.forEach(fn => fn()); }
+  private notify() { this.version++; this.listeners.forEach(fn => fn()); }
   markDirty() { this.dirty = true; }
 
   // --- Snapshot management ---
@@ -114,6 +115,22 @@ export class CanvasStore {
   addObject(obj: CanvasObject) {
     this.pushUndo();
     this.objects.push(obj);
+    this.dirty = true;
+    this.notify();
+    this.scheduleSave();
+  }
+
+  updateObject(id: string, updates: Partial<CanvasObject>) {
+    this.pushUndo();
+    this.objects = this.objects.map(o => {
+      if (o.id !== id) return o;
+      const merged = { ...o, ...updates } as CanvasObject;
+      // Deep-merge style so individual properties aren't lost
+      if (o.style && updates.style) {
+        merged.style = { ...o.style, ...updates.style };
+      }
+      return merged;
+    });
     this.dirty = true;
     this.notify();
     this.scheduleSave();
@@ -159,6 +176,7 @@ export class CanvasStore {
   setCamera(cam: Partial<Camera>) {
     Object.assign(this.camera, cam);
     this.dirty = true;
+    this.notify();
     this.scheduleSave();
   }
 

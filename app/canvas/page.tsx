@@ -43,20 +43,22 @@ export default function CanvasPage() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
 
-  // Subscribe to store for UI updates (toolbar, selection indicator)
+  // Subscribe to store for UI updates — version increments on every notify()
   const storeVersion = useSyncExternalStore(
     (cb) => store.subscribe(cb),
-    () => store.objects.length + store.selectedIds.size + store.camera.zoom,
-    () => 0, // server snapshot
+    () => store.version,
+    () => 0,
   );
   void storeVersion;
 
-  const [activeTool, setActiveTool] = useState<Tool>('draw');
+  const [activeTool, setActiveTool] = useState<Tool>('select');
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string } | null>(null);
+  const [editPanelOpen, setEditPanelOpen] = useState(false);
+  const [contextPos, setContextPos] = useState<{ x: number; y: number } | null>(null);
   const textInputRef = useRef<HTMLTextAreaElement>(null);
 
   // Interaction state (all refs — no React re-renders during pointer events)
-  const toolRef = useRef<Tool>('draw');
+  const toolRef = useRef<Tool>('select');
   const interactionType = useRef<InteractionType>(null);
   const startPoint = useRef<Point | null>(null);
   const drawPoints = useRef<Point[]>([]);
@@ -87,6 +89,10 @@ export default function CanvasPage() {
           camera: store.camera,
           colors,
         });
+        // Hide context menu during interactions
+        if (interactionType.current) {
+          setContextPos(null);
+        }
       }
       rafRef.current = requestAnimationFrame(loop);
     };
@@ -330,6 +336,17 @@ export default function CanvasPage() {
     interactionType.current = null;
     startPoint.current = null;
     dragOffset.current = null;
+
+    // Reposition context menu after interaction ends
+    if (store.selectedIds.size === 1) {
+      const id = [...store.selectedIds][0];
+      const obj = store.objects.find(o => o.id === id);
+      if (obj) {
+        const b = getBounds(obj, store.objects);
+        const c = store.camera;
+        setContextPos({ x: b.maxX * c.zoom + c.x + 12, y: b.minY * c.zoom + c.y - 4 });
+      }
+    }
   }, []);
 
   // --- Wheel zoom ---
@@ -498,13 +515,166 @@ export default function CanvasPage() {
   const cam = store.camera;
   const zoomPercent = Math.round(cam.zoom * 100);
 
+  // Close edit panel and reposition when selection changes
+  useEffect(() => {
+    setEditPanelOpen(false);
+    if (store.selectedIds.size === 1) {
+      const id = [...store.selectedIds][0];
+      const obj = store.objects.find(o => o.id === id);
+      if (obj) {
+        const b = getBounds(obj, store.objects);
+        const c = store.camera;
+        setContextPos({ x: b.maxX * c.zoom + c.x + 12, y: b.minY * c.zoom + c.y - 4 });
+        return;
+      }
+    }
+    setContextPos(null);
+  }, [store.selectedIds.size]);
+
+  // --- Selected object ---
+  const getSelectedObj = (): CanvasObject | null => {
+    if (store.selectedIds.size !== 1) return null;
+    const id = [...store.selectedIds][0];
+    return store.objects.find(o => o.id === id) || null;
+  };
+
+  const selectedObj = getSelectedObj();
+
+  // Editable properties per type
+  const renderEditPanel = () => {
+    if (!selectedObj || !editPanelOpen) return null;
+    const pos = contextPos;
+    if (!pos) return null;
+
+    // Always read fresh style from store to avoid stale closures
+    const getFreshStyle = () => {
+      const obj = store.objects.find(o => o.id === selectedObj.id);
+      return obj?.style || {};
+    };
+
+    const updateStyle = (updates: Record<string, unknown>) => {
+      const current = getFreshStyle();
+      store.updateObject(selectedObj.id, { style: { ...current, ...updates } } as Partial<CanvasObject>);
+    };
+
+    const s = getFreshStyle();
+    const colorOptions = ['#ffffff', '#ff4444', '#44aaff', '#44ff88', '#ffcc00', '#ff88ff', '#ff8844', '#888888'];
+
+    return (
+      <div className="absolute z-30 w-48 rounded-2xl p-[1px]"
+        style={{ left: pos.x, top: pos.y, background: 'linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03), rgba(255,255,255,0.08))' }}>
+        <div className="bg-white/[0.03] backdrop-blur-xl rounded-2xl p-3 space-y-3">
+
+          {/* Stroke color */}
+          {selectedObj.type !== 'image' && selectedObj.type !== 'group' && (
+            <div>
+              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Color</div>
+              <div className="flex gap-1.5 flex-wrap">
+                {colorOptions.map(c => (
+                  <button key={c} onClick={() => updateStyle({ strokeColor: c })}
+                    className={`w-5 h-5 rounded-full transition-all ${s.strokeColor === c ? 'ring-1 ring-white ring-offset-1 ring-offset-transparent scale-110' : 'opacity-60 hover:opacity-100'}`}
+                    style={{ backgroundColor: c }} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Fill */}
+          {(selectedObj.type === 'rectangle' || selectedObj.type === 'ellipse') && (
+            <div>
+              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Fill</div>
+              <div className="flex gap-1.5 flex-wrap">
+                <button onClick={() => updateStyle({ fillColor: undefined })}
+                  className={`w-5 h-5 rounded-full border border-white/20 transition-all relative ${!s.fillColor ? 'ring-1 ring-white ring-offset-1 ring-offset-transparent' : 'opacity-60 hover:opacity-100'}`}>
+                  <svg className="absolute inset-0" viewBox="0 0 20 20"><line x1="3" y1="17" x2="17" y2="3" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" /></svg>
+                </button>
+                {colorOptions.map(c => (
+                  <button key={c} onClick={() => updateStyle({ fillColor: c })}
+                    className={`w-5 h-5 rounded-full transition-all ${s.fillColor === c ? 'ring-1 ring-white ring-offset-1 ring-offset-transparent scale-110' : 'opacity-60 hover:opacity-100'}`}
+                    style={{ backgroundColor: c }} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Stroke width */}
+          {['draw', 'line', 'rectangle', 'ellipse'].includes(selectedObj.type) && (
+            <div>
+              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Weight</div>
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 5, 8].map(w => (
+                  <button key={w} onClick={() => updateStyle({ strokeWidth: w })}
+                    className={`flex-1 py-1 rounded-lg text-[11px] font-[family-name:var(--font-mori)] transition-colors ${(s.strokeWidth ?? 2) === w ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'}`}>
+                    {w}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Font size */}
+          {selectedObj.type === 'text' && (
+            <div>
+              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Size</div>
+              <div className="flex gap-0.5">
+                {[14, 20, 28, 40, 64].map(fs => (
+                  <button key={fs} onClick={() => updateStyle({ fontSize: fs })}
+                    className={`flex-1 py-1 rounded-lg text-[11px] font-[family-name:var(--font-mori)] transition-colors ${(s.fontSize ?? 20) === fs ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'}`}>
+                    {fs}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Frame label */}
+          {selectedObj.type === 'frame' && (
+            <div>
+              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Label</div>
+              <input type="text" value={selectedObj.label}
+                onChange={e => store.updateObject(selectedObj.id, { label: e.target.value } as Partial<CanvasObject>)}
+                className="w-full bg-white/[0.04] border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[11px] text-white outline-none focus:border-white/15 font-[family-name:var(--font-mori)]" />
+            </div>
+          )}
+
+          {/* Opacity */}
+          {selectedObj.type !== 'group' && (
+            <div>
+              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Opacity</div>
+              <input type="range" min="0" max="1" step="0.05" value={s.opacity ?? 1}
+                onChange={e => updateStyle({ opacity: parseFloat(e.target.value) })}
+                className="w-full h-0.5 appearance-none bg-white/10 rounded-full accent-white cursor-pointer" />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-50" style={{ backgroundColor: colors.bg }}>
-      <div className="absolute top-6 left-6 z-10">
-        <span className="text-white/40 text-2xl font-[family-name:var(--font-mondwest)]">Canvas</span>
+      <div className="absolute top-6 left-6 z-10 flex items-center gap-2.5">
+        <svg width="24" height="22" viewBox="0 0 32 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="3.88235" y1="0" x2="3.88235" y2="30" stroke="url(#clogo0)" strokeWidth="1.76471"/>
+          <line x1="20.8824" y1="0" x2="20.8824" y2="30" stroke="url(#clogo1)" strokeWidth="1.76471"/>
+          <path d="M3 3H21.5625L30 27H11.4375L3 3Z" fill="url(#clogo2)"/>
+          <mask id="clogo-m" fill="white"><path d="M3 3H21.5625L29.6484 26H11.0859L3 3Z"/></mask>
+          <path d="M3 3C4.43142 3 5.86283 3 7.29425 3C12.0503 3 16.8064 3 21.5625 3C21.5625 3 21.5625 3 21.5625 3C24.2578 10.6667 26.1984 18.5987 28.8937 26.2653C28.8937 26.2653 28.8937 26.2653 28.8937 26.2653L29.6484 25.2C23.4609 25.2 17.2734 26 11.0859 26C11.0859 26 11.0859 26 11.0859 26C8.86537 19.6837 6.64481 13.3675 4.42424 7.05118C3.9495 5.70079 3.47475 4.35039 3 3C3.47475 4.35039 3.9495 5.70079 4.42424 7.05118C6.64481 13.3675 8.86537 19.6837 11.0859 26C11.0859 26 11.0859 26 11.0859 26C17.2734 26 23.4609 26.8 29.6484 26.8C29.6484 26.8 29.6484 26.8 29.6484 26.8H30.7777L30.4032 25.7347C27.7078 18.068 24.2578 10.6667 21.5625 3C21.5625 3 21.5625 3 21.5625 3C16.8064 3 12.0503 3 7.29425 3C5.86283 3 4.43142 3 3 3ZM3 3" fill="url(#clogo3)" mask="url(#clogo-m)"/>
+          <line x1="24" y1="3.88235" x2="0" y2="3.88235" stroke="url(#clogo4)" strokeWidth="1.76471"/>
+          <line x1="32" y1="26.8824" x2="0" y2="26.8824" stroke="url(#clogo5)" strokeWidth="1.76471"/>
+          <defs>
+            <linearGradient id="clogo0" x1="2.5" y1="0" x2="2.5" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#D90423"/><stop offset="0.8" stopColor="#FFF7A0"/><stop offset="1" stopColor="white"/></linearGradient>
+            <linearGradient id="clogo1" x1="19.5" y1="0" x2="19.5" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#FFF7A0"/><stop offset="0.394326" stopColor="#FFF7A0"/></linearGradient>
+            <linearGradient id="clogo2" x1="16.5" y1="3" x2="16.5" y2="27" gradientUnits="userSpaceOnUse"><stop offset="0.511518" stopColor="#5F1090"/><stop offset="1" stopColor="#FF0000"/></linearGradient>
+            <linearGradient id="clogo3" x1="20.7502" y1="26" x2="7.57439" y2="3" gradientUnits="userSpaceOnUse"><stop stopColor="white"/><stop offset="1" stopColor="white" stopOpacity="0"/></linearGradient>
+            <linearGradient id="clogo4" x1="0" y1="2.5" x2="24" y2="2.5" gradientUnits="userSpaceOnUse"><stop offset="0.8" stopColor="#D90423"/><stop offset="1" stopColor="#FFF7A0"/></linearGradient>
+            <linearGradient id="clogo5" x1="32" y1="25.5" x2="0" y2="25.5" gradientUnits="userSpaceOnUse"><stop stopColor="#D90423"/><stop offset="0.8" stopColor="#FFF7A0"/><stop offset="1" stopColor="white"/></linearGradient>
+          </defs>
+        </svg>
+        <span className="text-white text-2xl font-[family-name:var(--font-mondwest)]">Canvas</span>
       </div>
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-10">
-        <span className="text-white/30 text-xs font-[family-name:var(--font-mondwest)]">{zoomPercent}%</span>
+        <span className="text-white/30 text-xs font-[family-name:var(--font-mori)]">{zoomPercent}%</span>
       </div>
       <button onClick={() => router.back()} className="absolute top-6 right-6 z-10 text-white/40 hover:text-white transition-colors focus:outline-none" aria-label="Close canvas">
         <svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="4" y1="4" x2="16" y2="16" /><line x1="16" y1="4" x2="4" y2="16" /></svg>
@@ -513,6 +683,22 @@ export default function CanvasPage() {
       <canvas ref={canvasRef} className="w-full h-full touch-none" style={{ cursor: getCursor() }}
         onMouseDown={handleDown} onMouseMove={handleMove} onMouseUp={handleUp} onMouseLeave={handleUp}
         onTouchStart={handleDown} onTouchMove={handleMove} onTouchEnd={handleUp} />
+
+      {/* Contextual edit button */}
+      {contextPos && selectedObj && !editPanelOpen && (
+        <button
+          className="absolute z-20 p-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white/50 hover:text-white hover:bg-white/20 transition-all"
+          style={{ left: contextPos.x, top: contextPos.y }}
+          onClick={() => setEditPanelOpen(true)}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="7" cy="3" r="0.5" fill="currentColor" /><circle cx="7" cy="7" r="0.5" fill="currentColor" /><circle cx="7" cy="11" r="0.5" fill="currentColor" />
+          </svg>
+        </button>
+      )}
+
+      {/* Edit panel */}
+      {renderEditPanel()}
 
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
 
@@ -525,7 +711,8 @@ export default function CanvasPage() {
           style={{ left: textInput.x * cam.zoom + cam.x, top: textInput.y * cam.zoom + cam.y, fontSize: `${20 * cam.zoom}px`, lineHeight: `${26 * cam.zoom}px`, minWidth: '100px', minHeight: '26px' }} />
       )}
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 bg-white/5 backdrop-blur-md rounded-full px-2 py-2">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 rounded-full p-[2px]" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.04), rgba(255,255,255,0.12))' }}>
+      <div className="flex items-center gap-1 bg-white/[0.03] backdrop-blur-xl rounded-full px-2 py-2">
         {TOOL_IDS.map((id) => (
           <button key={id} title={TOOL_LABELS[id]}
             onClick={() => { if (textInput) commitText(); setTool(id); if (id !== 'select') store.setSelection(new Set()); }}
@@ -540,6 +727,7 @@ export default function CanvasPage() {
         <button title="Download as PNG" onClick={handleDownload} className="p-2.5 rounded-full text-white/40 hover:text-white transition-colors focus:outline-none">
           <svg width="22" height="22" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3v9m0 0l-3-3m3 3l3-3" /><path d="M3 13v1a1 1 0 001 1h10a1 1 0 001-1v-1" /></svg>
         </button>
+      </div>
       </div>
     </div>
   );

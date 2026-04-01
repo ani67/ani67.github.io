@@ -11,10 +11,18 @@ interface RenderState {
   colors: { bg: string; stroke: string };
 }
 
-function drawObject(ctx: CanvasRenderingContext2D, obj: CanvasObject, stroke: string, zoom: number) {
+function drawObject(ctx: CanvasRenderingContext2D, obj: CanvasObject, defaultStroke: string, zoom: number) {
+  const s = obj.style;
+  const stroke = s?.strokeColor || defaultStroke;
+  const lw = (s?.strokeWidth ?? 2) / zoom;
+  const fill = s?.fillColor;
+  const opacity = s?.opacity ?? 1;
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
   ctx.strokeStyle = stroke;
   ctx.fillStyle = stroke;
-  ctx.lineWidth = 2 / zoom;
+  ctx.lineWidth = lw;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
@@ -30,20 +38,26 @@ function drawObject(ctx: CanvasRenderingContext2D, obj: CanvasObject, stroke: st
       ctx.beginPath(); ctx.moveTo(obj.x1, obj.y1); ctx.lineTo(obj.x2, obj.y2); ctx.stroke();
       break;
     case 'rectangle':
+      if (fill) { ctx.fillStyle = fill; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); }
       ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
       break;
     case 'ellipse':
-      ctx.beginPath(); ctx.ellipse(obj.cx, obj.cy, Math.abs(obj.rx), Math.abs(obj.ry), 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(obj.cx, obj.cy, Math.abs(obj.rx), Math.abs(obj.ry), 0, 0, Math.PI * 2);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      ctx.stroke();
       break;
-    case 'text':
-      ctx.font = '20px PP Mondwest, sans-serif';
+    case 'text': {
+      const fs = s?.fontSize ?? 20;
+      ctx.font = `${fs}px PP Mondwest, sans-serif`;
       ctx.textBaseline = 'top';
-      obj.value.split('\n').forEach((line, i) => ctx.fillText(line, obj.x, obj.y + i * 26));
+      obj.value.split('\n').forEach((line, i) => ctx.fillText(line, obj.x, obj.y + i * (fs * 1.3)));
       break;
+    }
     case 'image':
       ctx.drawImage(obj.img, obj.x, obj.y, obj.w, obj.h);
       break;
   }
+  ctx.restore();
 }
 
 function drawSelectionOutline(ctx: CanvasRenderingContext2D, obj: CanvasObject, allObjects: CanvasObject[], zoom: number) {
@@ -72,22 +86,23 @@ export function render(canvas: HTMLCanvasElement, state: RenderState) {
   ctx.translate(panX, panY);
   ctx.scale(zoom, zoom);
 
-  // + grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-  ctx.lineWidth = 1 / zoom;
-  ctx.lineCap = 'round';
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 2 / zoom;
   const vMinX = -panX / zoom, vMinY = -panY / zoom;
   const vMaxX = (canvas.width - panX) / zoom, vMaxY = (canvas.height - panY) / zoom;
   const startX = Math.floor(vMinX / GRID_SPACING) * GRID_SPACING;
   const startY = Math.floor(vMinY / GRID_SPACING) * GRID_SPACING;
+  ctx.beginPath();
   for (let gx = startX; gx <= vMaxX; gx += GRID_SPACING) {
-    for (let gy = startY; gy <= vMaxY; gy += GRID_SPACING) {
-      ctx.beginPath();
-      ctx.moveTo(gx, gy - GRID_PLUS_SIZE); ctx.lineTo(gx, gy + GRID_PLUS_SIZE);
-      ctx.moveTo(gx - GRID_PLUS_SIZE, gy); ctx.lineTo(gx + GRID_PLUS_SIZE, gy);
-      ctx.stroke();
-    }
+    ctx.moveTo(gx, vMinY);
+    ctx.lineTo(gx, vMaxY);
   }
+  for (let gy = startY; gy <= vMaxY; gy += GRID_SPACING) {
+    ctx.moveTo(vMinX, gy);
+    ctx.lineTo(vMaxX, gy);
+  }
+  ctx.stroke();
 
   const allObjects = preview ? [...objects, preview] : objects;
   const frames = allObjects.filter(o => o.type === 'frame');

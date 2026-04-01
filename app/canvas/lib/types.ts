@@ -5,7 +5,15 @@ export type Handle = 'nw' | 'ne' | 'sw' | 'se';
 export type Point = { x: number; y: number };
 export type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
 
-export type BaseObj = { id: string; parentId?: string };
+export interface ObjStyle {
+  strokeColor?: string;
+  strokeWidth?: number;
+  fillColor?: string;
+  fontSize?: number;
+  opacity?: number;
+}
+
+export type BaseObj = { id: string; parentId?: string; style?: ObjStyle };
 
 export type CanvasObject =
   | (BaseObj & { type: 'draw'; points: Point[] })
@@ -34,5 +42,5 @@ export const THEME_COLORS: Record<string, { bg: string; stroke: string }> = {
 export const MIN_ZOOM = 0.1;
 export const MAX_ZOOM = 5;
 export const HANDLE_SIZE = 6;
-export const GRID_SPACING = 140;
+export const GRID_SPACING = 240;
 export const GRID_PLUS_SIZE = 3;
