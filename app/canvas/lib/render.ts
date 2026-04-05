@@ -9,6 +9,7 @@ interface RenderState {
   marquee: { x: number; y: number; w: number; h: number } | null;
   camera: Camera;
   colors: { bg: string; stroke: string };
+  dropTargetId: string | null;
 }
 
 function drawObject(ctx: CanvasRenderingContext2D, obj: CanvasObject, defaultStroke: string, zoom: number) {
@@ -74,7 +75,7 @@ function drawSelectionOutline(ctx: CanvasRenderingContext2D, obj: CanvasObject, 
 export function render(canvas: HTMLCanvasElement, state: RenderState) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  const { objects, preview, selectedIds, marquee, camera, colors } = state;
+  const { objects, preview, selectedIds, marquee, camera, colors, dropTargetId } = state;
   const { x: panX, y: panY, zoom } = camera;
 
   // Clear
@@ -105,30 +106,43 @@ export function render(canvas: HTMLCanvasElement, state: RenderState) {
   ctx.stroke();
 
   const allObjects = preview ? [...objects, preview] : objects;
-  const frames = allObjects.filter(o => o.type === 'frame');
   const freeObjects = allObjects.filter(o => o.type !== 'frame' && o.type !== 'group' && !o.parentId);
+  const topFrames = allObjects.filter(o => o.type === 'frame' && !o.parentId);
 
-  // Frames (Figma-style)
-  for (const frame of frames) {
-    if (frame.type !== 'frame') continue;
+  // Recursive frame renderer (supports nesting)
+  function drawFrame(frame: CanvasObject) {
+    if (frame.type !== 'frame' || !ctx) return;
     const fx = Math.min(frame.x, frame.x + frame.w);
     const fy = Math.min(frame.y, frame.y + frame.h);
     const fw = Math.abs(frame.w);
     const fh = Math.abs(frame.h);
 
     // Label
-    ctx.fillStyle = selectedIds.has(frame.id) ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.35)';
-    ctx.font = '12px PP Mondwest, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,1)';
+    ctx.font = '12px PP Mori, sans-serif';
     ctx.textBaseline = 'bottom';
     ctx.fillText(frame.label, fx, fy - 6);
 
     // Background + border
     ctx.save();
-    ctx.fillStyle = frame.fill || 'rgba(255,255,255,0.02)';
+    ctx.fillStyle = frame.fill || 'rgba(0,0,0,0)';
     ctx.fillRect(fx, fy, fw, fh);
-    ctx.strokeStyle = selectedIds.has(frame.id) ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 1 / zoom;
+    const frameBorderColor = frame.style?.strokeColor || 'rgba(255,255,255,0.4)';
+    ctx.strokeStyle = selectedIds.has(frame.id) ? 'rgba(255,255,255,0.6)' : frameBorderColor;
+    ctx.lineWidth = (frame.style?.strokeWidth ?? 1) / zoom;
     ctx.strokeRect(fx, fy, fw, fh);
+
+    // Drop target highlight
+    if (frame.id === dropTargetId) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(100, 149, 237, 0.8)';
+      ctx.lineWidth = 3 / zoom;
+      ctx.setLineDash([6 / zoom, 3 / zoom]);
+      ctx.strokeRect(fx - 2 / zoom, fy - 2 / zoom, fw + 4 / zoom, fh + 4 / zoom);
+      ctx.fillStyle = 'rgba(100, 149, 237, 0.06)';
+      ctx.fillRect(fx, fy, fw, fh);
+      ctx.restore();
+    }
 
     // Clip + draw children
     ctx.save();
@@ -137,14 +151,21 @@ export function render(canvas: HTMLCanvasElement, state: RenderState) {
     ctx.clip();
     const children = getFrameChildren(frame.id, allObjects);
     for (const child of children) {
-      drawObject(ctx, child, colors.stroke, zoom);
-      if (selectedIds.has(child.id)) drawSelectionOutline(ctx, child, allObjects, zoom);
+      if (child.type === 'frame') {
+        drawFrame(child); // nested frame
+      } else {
+        drawObject(ctx, child, colors.stroke, zoom);
+        if (selectedIds.has(child.id)) drawSelectionOutline(ctx, child, allObjects, zoom);
+      }
     }
     ctx.restore();
     ctx.restore();
 
     if (selectedIds.has(frame.id)) drawSelectionOutline(ctx, frame, allObjects, zoom);
   }
+
+  // Draw top-level frames (recurses into nested ones)
+  for (const frame of topFrames) drawFrame(frame);
 
   // Free objects
   for (const obj of freeObjects) {
@@ -181,4 +202,69 @@ export function render(canvas: HTMLCanvasElement, state: RenderState) {
   }
 
   ctx.restore();
+}
+
+export function renderObjectsToCanvas(
+  objects: CanvasObject[],
+  targetIds: Set<string>,
+  defaultStroke: string,
+  padding = 20,
+  scale = 2,
+): HTMLCanvasElement | null {
+  const exportObjs: CanvasObject[] = [];
+  for (const obj of objects) {
+    if (targetIds.has(obj.id)) {
+      exportObjs.push(obj);
+      if (obj.type === 'frame') {
+        for (const c of objects) {
+          if (c.parentId === obj.id && !targetIds.has(c.id)) exportObjs.push(c);
+        }
+      }
+    }
+  }
+  if (exportObjs.length === 0) return null;
+
+  const b = combineBounds(exportObjs.map(o => getBounds(o, objects)));
+  const w = b.maxX - b.minX + padding * 2;
+  const h = b.maxY - b.minY + padding * 2;
+
+  const offscreen = document.createElement('canvas');
+  offscreen.width = w * scale;
+  offscreen.height = h * scale;
+  const ctx = offscreen.getContext('2d');
+  if (!ctx) return null;
+
+  ctx.scale(scale, scale);
+  ctx.translate(-b.minX + padding, -b.minY + padding);
+
+  const frames = exportObjs.filter(o => o.type === 'frame');
+  const frameIds = new Set(frames.map(f => f.id));
+  for (const frame of frames) {
+    if (frame.type !== 'frame') continue;
+    const fx = Math.min(frame.x, frame.x + frame.w);
+    const fy = Math.min(frame.y, frame.y + frame.h);
+    const fw = Math.abs(frame.w);
+    const fh = Math.abs(frame.h);
+    ctx.fillStyle = frame.fill || 'rgba(255,255,255,1)';
+    ctx.fillRect(fx, fy, fw, fh);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(fx, fy, fw, fh);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(fx, fy, fw, fh);
+    ctx.clip();
+    for (const child of objects.filter(o => o.parentId === frame.id)) {
+      drawObject(ctx, child, defaultStroke, 1);
+    }
+    ctx.restore();
+  }
+
+  for (const obj of exportObjs) {
+    if (obj.type === 'frame' || obj.type === 'group') continue;
+    if (obj.parentId && frameIds.has(obj.parentId)) continue;
+    drawObject(ctx, obj, defaultStroke, 1);
+  }
+
+  return offscreen;
 }

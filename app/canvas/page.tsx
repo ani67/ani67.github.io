@@ -6,9 +6,9 @@ import { useTheme } from 'next-themes';
 
 import type { Tool, Point, CanvasObject, InteractionType, Handle } from './lib/types';
 import { THEME_COLORS, MIN_ZOOM, MAX_ZOOM } from './lib/types';
-import { hitTest, getBounds, combineBounds, boundsIntersect, moveObject, screenToCanvas, getResizeHandle, expandSelection, resolveSelection, autoParent, findFrameAtPoint, getFrameChildren } from './lib/geometry';
+import { hitTest, getBounds, combineBounds, boundsIntersect, moveObject, screenToCanvas, getResizeHandle, expandSelection, resolveSelection, autoParent, findFrameAtPoint, getFrameChildren, computeChildrenBounds } from './lib/geometry';
 import { CanvasStore, uid } from './lib/store';
-import { render } from './lib/render';
+import { render, renderObjectsToCanvas } from './lib/render';
 
 // --- Tool icons ---
 
@@ -24,12 +24,12 @@ function ToolIcon({ tool, size = 22 }: { tool: Tool; size?: number }) {
   switch (tool) {
     case 'select': return (<svg width={s} height={s} viewBox="0 0 18 18" {...p}><path d="M3 2l5 14 2-5.5 5.5-2L3 2z" /></svg>);
     case 'hand': return (<svg width={s} height={s} viewBox="0 0 18 18" {...p}><path d="M6.5 9V4a1.5 1.5 0 013 0v5m0-4.5a1.5 1.5 0 013 0V9m0-3a1.5 1.5 0 013 0v5.5a6 6 0 01-6 6h-.5a6 6 0 01-6-6V6.5a1.5 1.5 0 013 0V9" /></svg>);
-    case 'draw': return (<svg width={s} height={s} viewBox="0 0 18 18" {...p}><path d="M2.5 15.5l1.5-4L13 2.5a1.4 1.4 0 012 2L6 13.5l-3.5 2z" /><path d="M11 4.5l2.5 2.5" /></svg>);
+    case 'draw': return (<svg width={s} height={s} viewBox="0 0 24 24" {...p}><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>);
     case 'line': return (<svg width={s} height={s} viewBox="0 0 18 18" {...p}><line x1="3" y1="15" x2="15" y2="3" /></svg>);
     case 'rectangle': return (<svg width={s} height={s} viewBox="0 0 18 18" {...p}><rect x="3" y="3" width="12" height="12" rx="1" /></svg>);
     case 'ellipse': return (<svg width={s} height={s} viewBox="0 0 18 18" {...p}><circle cx="9" cy="9" r="6" /></svg>);
     case 'text': return (<svg width={s} height={s} viewBox="0 0 18 18" {...p}><path d="M4 4h10M9 4v11M6.5 15h5" /></svg>);
-    case 'frame': return (<svg width={s} height={s} viewBox="0 0 18 18" {...p}><rect x="2" y="4" width="14" height="12" rx="1" /><text x="4" y="3.5" fontSize="5" fill="currentColor" stroke="none" fontFamily="sans-serif">F</text></svg>);
+    case 'frame': return (<svg width={s} height={s} viewBox="0 0 24 24" {...p}><path d="M22 6H2M22 18H2M6 2v20M18 2v20" /></svg>);
   }
 }
 
@@ -69,6 +69,8 @@ export default function CanvasPage() {
   const resizeStartBounds = useRef<{ minX: number; minY: number; maxX: number; maxY: number } | null>(null);
   const previewRef = useRef<CanvasObject | null>(null);
   const marqueeRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
+  const dropTargetRef = useRef<string | null>(null);
+  const clipboardRef = useRef<CanvasObject[]>([]);
 
   const setTool = useCallback((t: Tool) => { toolRef.current = t; setActiveTool(t); }, []);
   const colors = THEME_COLORS[resolvedTheme || 'day'] || THEME_COLORS.day;
@@ -87,6 +89,7 @@ export default function CanvasPage() {
           selectedIds: store.selectedIds,
           marquee: marqueeRef.current,
           camera: store.camera,
+          dropTargetId: dropTargetRef.current,
           colors,
         });
         // Hide context menu during interactions
@@ -167,16 +170,39 @@ export default function CanvasPage() {
         return;
       }
 
-      // Hit test
+      // Hit test — Figma-like click-through for frames
       let hit: CanvasObject | null = null;
+
+      // 1. Check non-frame objects first
       for (let i = store.objects.length - 1; i >= 0; i--) {
         const o = store.objects[i];
         if (o.type === 'group' || o.type === 'frame') continue;
         if (hitTest(o, pt, 8 / store.camera.zoom)) { hit = o; break; }
       }
-      if (!hit) {
-        const frame = findFrameAtPoint(pt, store.objects);
-        if (frame) hit = frame;
+
+      // 2. Find the frame at this point
+      const frameAtPt = findFrameAtPoint(pt, store.objects);
+
+      if (hit && frameAtPt) {
+        // Child is inside a frame — Figma-like selection:
+        // If the parent frame is NOT already selected, select the frame first.
+        // If the parent frame IS already selected, click-through to the child.
+        // Exception: if the child is fully contained (smaller on both axes), select child directly.
+        const childBounds = getBounds(hit, store.objects);
+        const frameBounds = getBounds(frameAtPt, store.objects);
+        const childW = childBounds.maxX - childBounds.minX;
+        const childH = childBounds.maxY - childBounds.minY;
+        const frameW = frameBounds.maxX - frameBounds.minX;
+        const frameH = frameBounds.maxY - frameBounds.minY;
+        const fullyContained = childW < frameW && childH < frameH;
+
+        if (!fullyContained && hit.parentId === frameAtPt.id && !store.selectedIds.has(frameAtPt.id) && !store.selectedIds.has(hit.id)) {
+          // First click: select the frame
+          hit = frameAtPt;
+        }
+        // Otherwise: child is fully contained or frame already selected — select child
+      } else if (!hit && frameAtPt) {
+        hit = frameAtPt;
       }
 
       if (hit) {
@@ -254,6 +280,15 @@ export default function CanvasPage() {
       }
       const allIds = new Set([...ids, ...frameChildIds]);
       store.mutateObjects(prev => prev.map(o => allIds.has(o.id) ? moveObject(o, dx, dy) : o));
+      // Track drop target for visual feedback
+      const candidateFrame = findFrameAtPoint(pt, store.objects.filter(
+        o => o.type === 'frame' && !allIds.has(o.id)
+      ));
+      const newTarget = candidateFrame?.id ?? null;
+      if (newTarget !== dropTargetRef.current) {
+        dropTargetRef.current = newTarget;
+        store.markDirty();
+      }
       return;
     }
 
@@ -278,7 +313,7 @@ export default function CanvasPage() {
       if (tool === 'line') p = { type: 'line', id: '_preview', x1: sx, y1: sy, x2: pt.x, y2: pt.y };
       else if (tool === 'rectangle') p = { type: 'rectangle', id: '_preview', x: sx, y: sy, w: pt.x - sx, h: pt.y - sy };
       else if (tool === 'ellipse') p = { type: 'ellipse', id: '_preview', cx: (sx + pt.x) / 2, cy: (sy + pt.y) / 2, rx: Math.abs(pt.x - sx) / 2, ry: Math.abs(pt.y - sy) / 2 };
-      else if (tool === 'frame') p = { type: 'frame', id: '_preview', x: sx, y: sy, w: pt.x - sx, h: pt.y - sy, label: 'Frame', fill: 'rgba(255,255,255,0.02)' };
+      else if (tool === 'frame') p = { type: 'frame', id: '_preview', x: sx, y: sy, w: pt.x - sx, h: pt.y - sy, label: 'Frame', fill: 'rgba(0,0,0,0)' };
       if (p) { previewRef.current = p; store.markDirty(); }
     }
   }, []);
@@ -301,16 +336,32 @@ export default function CanvasPage() {
       previewRef.current = null;
       if (snap && snap.id === '_preview') {
         const obj = { ...snap, id: uid() };
-        const pid = obj.type !== 'frame' ? autoParent(obj, store.objects) : undefined;
+        const pid = autoParent(obj, store.objects);
         store.addObject(pid ? { ...obj, parentId: pid } : obj);
+
+        // When a new frame is created, adopt free objects inside it and switch to select tool
+        if (obj.type === 'frame') {
+          setTool('select');
+          const fb = getBounds(obj, store.objects);
+          store.mutateObjects(prev => prev.map(o => {
+            if (o.id === obj.id || o.type === 'group' || o.parentId) return o;
+            const ob = getBounds(o, prev);
+            const cx = (ob.minX + ob.maxX) / 2, cy = (ob.minY + ob.maxY) / 2;
+            if (cx >= fb.minX && cx <= fb.maxX && cy >= fb.minY && cy <= fb.maxY) {
+              return { ...o, parentId: obj.id } as CanvasObject;
+            }
+            return o;
+          }));
+        }
       }
       store.markDirty();
     } else if (iType === 'drag') {
+      dropTargetRef.current = null;
       // Re-parent after drop
       store.mutateObjects(prev => {
         const ids = expandSelection(store.selectedIds, prev);
         return prev.map(o => {
-          if (!ids.has(o.id) || o.type === 'frame' || o.type === 'group') return o;
+          if (!ids.has(o.id) || o.type === 'group') return o;
           const pid = autoParent(o, prev);
           if (pid !== o.parentId) return { ...o, parentId: pid } as CanvasObject;
           return o;
@@ -443,6 +494,75 @@ export default function CanvasPage() {
         }
       }
 
+      // Select all
+      if (e.key === 'a' && meta) {
+        e.preventDefault();
+        store.setSelection(new Set(store.objects.map(o => o.id)));
+      }
+
+      // Copy
+      if (e.key === 'c' && meta && store.selectedIds.size > 0) {
+        e.preventDefault();
+        const ids = expandSelection(store.selectedIds, store.objects);
+        clipboardRef.current = store.objects.filter(o => ids.has(o.id)).map(o => ({ ...o } as CanvasObject));
+      }
+
+      // Cut
+      if (e.key === 'x' && meta && store.selectedIds.size > 0) {
+        e.preventDefault();
+        const ids = expandSelection(store.selectedIds, store.objects);
+        clipboardRef.current = store.objects.filter(o => ids.has(o.id)).map(o => ({ ...o } as CanvasObject));
+        store.deleteSelected();
+      }
+
+      // Paste
+      if (e.key === 'v' && meta && clipboardRef.current.length > 0) {
+        e.preventDefault();
+        const offset = 20;
+        const idMap = new Map<string, string>();
+        const newObjs: CanvasObject[] = clipboardRef.current.map(o => {
+          const newId = uid();
+          idMap.set(o.id, newId);
+          return { ...o, id: newId } as CanvasObject;
+        });
+        // Remap parentIds and group childIds
+        for (const o of newObjs) {
+          if (o.parentId && idMap.has(o.parentId)) (o as CanvasObject).parentId = idMap.get(o.parentId);
+          if (o.type === 'group') o.childIds = o.childIds.map(c => idMap.get(c) || c);
+        }
+        // Offset pasted objects
+        const shifted = newObjs.map(o => moveObject(o, offset, offset));
+        store.pushUndo();
+        store.mutateObjects(prev => [...prev, ...shifted]);
+        store.setSelection(new Set(shifted.map(o => o.id)));
+        store.markDirty();
+        // Update clipboard to the shifted positions for repeated paste
+        clipboardRef.current = shifted.map(o => ({ ...o } as CanvasObject));
+      }
+
+      // Duplicate (Cmd+D)
+      if (e.key === 'd' && meta && store.selectedIds.size > 0) {
+        e.preventDefault();
+        const ids = expandSelection(store.selectedIds, store.objects);
+        const originals = store.objects.filter(o => ids.has(o.id));
+        const offset = 20;
+        const idMap = new Map<string, string>();
+        const newObjs: CanvasObject[] = originals.map(o => {
+          const newId = uid();
+          idMap.set(o.id, newId);
+          return { ...o, id: newId } as CanvasObject;
+        });
+        for (const o of newObjs) {
+          if (o.parentId && idMap.has(o.parentId)) (o as CanvasObject).parentId = idMap.get(o.parentId);
+          if (o.type === 'group') o.childIds = o.childIds.map(c => idMap.get(c) || c);
+        }
+        const shifted = newObjs.map(o => moveObject(o, offset, offset));
+        store.pushUndo();
+        store.mutateObjects(prev => [...prev, ...shifted]);
+        store.setSelection(new Set(shifted.map(o => o.id)));
+        store.markDirty();
+      }
+
       // Tool shortcuts
       if (!meta) {
         if (e.key === 'v' || e.key === 'V') setTool('select');
@@ -493,13 +613,24 @@ export default function CanvasPage() {
   }, []);
 
   const handleDownload = useCallback(() => {
+    if (store.selectedIds.size > 0) {
+      const ids = expandSelection(store.selectedIds, store.objects);
+      const offscreen = renderObjectsToCanvas(store.objects, ids, colors.stroke);
+      if (offscreen) {
+        const link = document.createElement('a');
+        link.download = 'selection.png';
+        link.href = offscreen.toDataURL('image/png');
+        link.click();
+        return;
+      }
+    }
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
     link.download = 'canvas.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
-  }, []);
+  }, [colors.stroke]);
 
   const getCursor = () => {
     if (spaceHeld.current) return 'grab';
@@ -568,7 +699,7 @@ export default function CanvasPage() {
           {/* Stroke color */}
           {selectedObj.type !== 'image' && selectedObj.type !== 'group' && (
             <div>
-              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Color</div>
+              <div className="text-[10px] text-white mb-2 font-[family-name:var(--font-mori)]">Color</div>
               <div className="flex gap-1.5 flex-wrap">
                 {colorOptions.map(c => (
                   <button key={c} onClick={() => updateStyle({ strokeColor: c })}
@@ -582,7 +713,7 @@ export default function CanvasPage() {
           {/* Fill */}
           {(selectedObj.type === 'rectangle' || selectedObj.type === 'ellipse') && (
             <div>
-              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Fill</div>
+              <div className="text-[10px] text-white mb-2 font-[family-name:var(--font-mori)]">Fill</div>
               <div className="flex gap-1.5 flex-wrap">
                 <button onClick={() => updateStyle({ fillColor: undefined })}
                   className={`w-5 h-5 rounded-full border border-white/20 transition-all relative ${!s.fillColor ? 'ring-1 ring-white ring-offset-1 ring-offset-transparent' : 'opacity-60 hover:opacity-100'}`}>
@@ -600,7 +731,7 @@ export default function CanvasPage() {
           {/* Stroke width */}
           {['draw', 'line', 'rectangle', 'ellipse'].includes(selectedObj.type) && (
             <div>
-              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Weight</div>
+              <div className="text-[10px] text-white mb-2 font-[family-name:var(--font-mori)]">Weight</div>
               <div className="flex gap-0.5">
                 {[1, 2, 3, 5, 8].map(w => (
                   <button key={w} onClick={() => updateStyle({ strokeWidth: w })}
@@ -615,7 +746,7 @@ export default function CanvasPage() {
           {/* Font size */}
           {selectedObj.type === 'text' && (
             <div>
-              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Size</div>
+              <div className="text-[10px] text-white mb-2 font-[family-name:var(--font-mori)]">Size</div>
               <div className="flex gap-0.5">
                 {[14, 20, 28, 40, 64].map(fs => (
                   <button key={fs} onClick={() => updateStyle({ fontSize: fs })}
@@ -627,20 +758,44 @@ export default function CanvasPage() {
             </div>
           )}
 
-          {/* Frame label */}
+          {/* Frame controls */}
           {selectedObj.type === 'frame' && (
-            <div>
-              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Label</div>
-              <input type="text" value={selectedObj.label}
-                onChange={e => store.updateObject(selectedObj.id, { label: e.target.value } as Partial<CanvasObject>)}
-                className="w-full bg-white/[0.04] border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[11px] text-white outline-none focus:border-white/15 font-[family-name:var(--font-mori)]" />
-            </div>
+            <>
+              <div>
+                <div className="text-[10px] text-white mb-2 font-[family-name:var(--font-mori)]">Label</div>
+                <input type="text" value={selectedObj.label}
+                  onChange={e => store.updateObject(selectedObj.id, { label: e.target.value } as Partial<CanvasObject>)}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[11px] text-white outline-none focus:border-white/15 font-[family-name:var(--font-mori)]" />
+              </div>
+              <div>
+                <div className="text-[10px] text-white mb-2 font-[family-name:var(--font-mori)]">Background</div>
+                <div className="flex gap-1.5 flex-wrap">
+                  <button onClick={() => store.updateObject(selectedObj.id, { fill: 'rgba(0,0,0,0)' } as Partial<CanvasObject>)}
+                    className={`w-5 h-5 rounded-full border border-white/20 transition-all relative ${selectedObj.fill === 'rgba(0,0,0,0)' ? 'ring-1 ring-white ring-offset-1 ring-offset-transparent' : 'opacity-60 hover:opacity-100'}`}>
+                    <svg className="absolute inset-0" viewBox="0 0 20 20"><line x1="3" y1="17" x2="17" y2="3" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" /></svg>
+                  </button>
+                  {colorOptions.map(c => (
+                    <button key={c} onClick={() => store.updateObject(selectedObj.id, { fill: c } as Partial<CanvasObject>)}
+                      className={`w-5 h-5 rounded-full transition-all ${selectedObj.fill === c ? 'ring-1 ring-white ring-offset-1 ring-offset-transparent scale-110' : 'opacity-60 hover:opacity-100'}`}
+                      style={{ backgroundColor: c }} />
+                  ))}
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  const bounds = computeChildrenBounds(selectedObj.id, store.objects);
+                  if (bounds) store.updateObject(selectedObj.id, { x: bounds.minX, y: bounds.minY, w: bounds.maxX - bounds.minX, h: bounds.maxY - bounds.minY } as Partial<CanvasObject>);
+                }}
+                className="w-full py-1.5 rounded-lg text-[11px] font-[family-name:var(--font-mori)] bg-white/[0.06] text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+                Fit to children
+              </button>
+            </>
           )}
 
           {/* Opacity */}
           {selectedObj.type !== 'group' && (
             <div>
-              <div className="text-[10px] text-white/30 mb-2 font-[family-name:var(--font-mori)]">Opacity</div>
+              <div className="text-[10px] text-white mb-2 font-[family-name:var(--font-mori)]">Opacity</div>
               <input type="range" min="0" max="1" step="0.05" value={s.opacity ?? 1}
                 onChange={e => updateStyle({ opacity: parseFloat(e.target.value) })}
                 className="w-full h-0.5 appearance-none bg-white/10 rounded-full accent-white cursor-pointer" />
@@ -674,7 +829,7 @@ export default function CanvasPage() {
         <span className="text-white text-2xl font-[family-name:var(--font-mondwest)]">Canvas</span>
       </div>
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-10">
-        <span className="text-white/30 text-xs font-[family-name:var(--font-mori)]">{zoomPercent}%</span>
+        <span className="text-white text-xs font-[family-name:var(--font-mori)]">{zoomPercent}%</span>
       </div>
       <button onClick={() => router.back()} className="absolute top-6 right-6 z-10 text-white/40 hover:text-white transition-colors focus:outline-none" aria-label="Close canvas">
         <svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="4" y1="4" x2="16" y2="16" /><line x1="16" y1="4" x2="4" y2="16" /></svg>

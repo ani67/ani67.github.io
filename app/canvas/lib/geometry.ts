@@ -125,10 +125,19 @@ export function findFrameAtPoint(pt: Point, objects: CanvasObject[]): (CanvasObj
 }
 
 export function autoParent(obj: CanvasObject, objects: CanvasObject[]): string | undefined {
-  if (obj.type === 'frame' || obj.type === 'group') return undefined;
+  if (obj.type === 'group') return undefined;
   const b = getBounds(obj, objects);
   const cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2;
-  return findFrameAtPoint({ x: cx, y: cy }, objects)?.id;
+  // Find a frame at center point, but not the object itself (for frame-in-frame)
+  const candidates = objects.filter(o => o.type === 'frame' && o.id !== obj.id);
+  return findFrameAtPoint({ x: cx, y: cy }, candidates)?.id;
+}
+
+export function computeChildrenBounds(frameId: string, objects: CanvasObject[], padding = 0): Bounds | null {
+  const children = getFrameChildren(frameId, objects);
+  if (children.length === 0) return null;
+  const b = combineBounds(children.map(c => getBounds(c, objects)));
+  return { minX: b.minX - padding, minY: b.minY - padding, maxX: b.maxX + padding, maxY: b.maxY + padding };
 }
 
 // --- Selection helpers ---
