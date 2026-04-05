@@ -4,7 +4,7 @@ date: "2026-03-12"
 description: "A designer with no ML background spent a week building a neural network that grows its own architecture from scratch, and documented exactly what worked, what didn't, and why it might matter anyway. "
 tags: ["vibes"]
 image: "https://res.cloudinary.com/duw0custw/image/upload/v1773349104/monkey_ak_47_srk1h4.jpg"
-published: true
+published: false
 ---
 
 Of course, it is still a theory and doesn't really work. Yet.
@@ -37,6 +37,7 @@ So what if you tried to build something closer to that?
 
 
 
+
 ![The whole system running: 
 3D latent space on the left, teacher-student dialogue on the right.](https://res.cloudinary.com/duw0custw/image/upload/v1773348213/Screenshot_2026-03-10_at_2.32.10_AM_t04r38.png "The whole system running: 
 3D latent space on the left, teacher-student dialogue on the right.")
@@ -44,12 +45,27 @@ So what if you tried to build something closer to that?
 
 
 
+
+
+
 ## What I built
- I call it the Baby Model. It starts with almost nothing and grows.
+
+I call it the Baby Model. It starts with almost nothing and grows.
+
+
 
 Instead of fixed layers, it has clusters: groups of nodes with shared activation patterns. Instead of predetermined connections, it has dynamic edges that form when clusters co-activate frequently, and prune away when they're not used. Instead of a static depth, it has layers that insert themselves when the model needs more abstraction to handle what it's seeing.
 
 Six things can happen to the structure at any point:
+
+
+
+
+
+
+
+
+
 
 
 
@@ -79,6 +95,12 @@ DORMANT  → a whole cluster goes to sleep from long
 
 
 
+
+
+
+
+
+
 The shape of the network is a direct record of what it has learned. Which felt right to me. The structure should mean something.
 
 ## No backpropagation
@@ -99,8 +121,14 @@ It learns while it runs. Without stopping.
 
 
 
+
+
+
 ## How it actually learns
- The model doesn't just sit and wait for data. It has a learning loop that drives the whole process:
+
+The model doesn't just sit and wait for data. It has a learning loop that drives the whole process:
+
+
 
 1. Look at the current state of the latent space. What's uncertain? What's novel? Where are the gaps?
 
@@ -148,6 +176,7 @@ You can watch it grow in real time. There's a 3D visualizer that shows the laten
 You can also talk to it. There's a chat interface that routes your message through the same pipeline and decodes the model's output back into text.
 
 ![I said hello. It said 'style news general corner receives should scene similar hard keep nice forest both zoom horse.'](https://res.cloudinary.com/duw0custw/image/upload/v1773348745/bb03_vmmpdm.png "I said hello. It said 'style news general corner receives should scene similar hard keep nice forest both zoom horse.'")
+
 
 
 
