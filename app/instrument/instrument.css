@@ -1,0 +1,68 @@
+/* ==========================================================================
+   Instrument — scoped styles. All theme tokens live in globals.css @theme so
+   Tailwind can generate bg-inst-card etc.; this file is recipes + layout.
+   ========================================================================== */
+
+.instrument-root {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1rem;
+  background-color: hsl(var(--inst-background));
+  color: hsl(var(--inst-foreground));
+  font-family: system-ui, -apple-system, Inter, sans-serif;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Watercolour bg — painted below instrument content, pinned to the viewport. */
+.instrument-root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/instrument-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Glass recipes — reusable frosted-panel surfaces. Scoped so they never leak.
+   ========================================================================== */
+
+.instrument-root .inst-glass {
+  border: 1px solid hsl(var(--inst-border) / 0.6);
+  background-color: hsl(var(--inst-card) / 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-inst-glass);
+}
+
+.instrument-root .inst-glass-soft {
+  border: 1px solid hsl(0 0% 100% / 0.1);
+  background-color: hsl(0 0% 100% / 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-inst-glass-soft);
+}
+
+/* Keys and pads — frame + blur. Background is set per-state by the component
+   so there's no cascade tug-of-war with conditional bg utilities. */
+.instrument-root .inst-glass-key {
+  border: 1px solid hsl(0 0% 100% / 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Header pills / Kbd — same recipe with a default translucent fill since they
+   don't need the state-specific background-swapping that keys do. */
+.instrument-root .inst-glass-chip {
+  border: 1px solid hsl(0 0% 100% / 0.1);
+  background-color: hsl(0 0% 100% / 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}

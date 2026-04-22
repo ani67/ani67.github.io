@@ -30,6 +30,61 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Instrument (see /instrument route) — tokens are applied under `.instrument-root`. */
+  --color-inst-background:             hsl(var(--inst-background));
+  --color-inst-foreground:             hsl(var(--inst-foreground));
+  --color-inst-card:                   hsl(var(--inst-card));
+  --color-inst-card-foreground:        hsl(var(--inst-card-foreground));
+  --color-inst-primary:                hsl(var(--inst-primary));
+  --color-inst-primary-foreground:     hsl(var(--inst-primary-foreground));
+  --color-inst-secondary:              hsl(var(--inst-secondary));
+  --color-inst-secondary-foreground:   hsl(var(--inst-secondary-foreground));
+  --color-inst-muted:                  hsl(var(--inst-muted));
+  --color-inst-muted-foreground:       hsl(var(--inst-muted-foreground));
+  --color-inst-accent:                 hsl(var(--inst-accent));
+  --color-inst-accent-foreground:      hsl(var(--inst-accent-foreground));
+  --color-inst-destructive:            hsl(var(--inst-destructive));
+  --color-inst-destructive-foreground: hsl(var(--inst-destructive-foreground));
+  --color-inst-border:                 hsl(var(--inst-border));
+  --color-inst-input:                  hsl(var(--inst-input));
+  --color-inst-ring:                   hsl(var(--inst-ring));
+  --color-inst-ok:                     hsl(var(--inst-ok));
+  --color-inst-warn:                   hsl(var(--inst-warn));
+  --color-inst-highlight:              hsl(var(--inst-highlight));
+  --color-inst-highlight-soft:         hsl(var(--inst-highlight-soft));
+
+  --ease-inst-out-expo: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-inst-pop:      cubic-bezier(0.2, 0.9, 0.35, 1.2);
+
+  --shadow-inst-glass:      0 1px 0 0 hsl(0 0% 100% / 0.06) inset, 0 20px 60px -20px rgba(0,0,0,0.55);
+  --shadow-inst-glass-soft: 0 1px 0 0 hsl(0 0% 100% / 0.04) inset, 0 10px 30px -15px rgba(0,0,0,0.4);
+}
+
+/* Instrument token values — shadcn-style HSL triplets used via hsl(var(--inst-*)).
+   Kept at :root so they're always defined, but only consumed inside `.instrument-root`. */
+:root {
+  --inst-background:             230 25% 3%;
+  --inst-foreground:             230 20% 94%;
+  --inst-card:                   230 20% 8%;
+  --inst-card-foreground:        230 20% 94%;
+  --inst-primary:                45 95% 68%;
+  --inst-primary-foreground:     230 20% 8%;
+  --inst-secondary:              230 15% 14%;
+  --inst-secondary-foreground:   230 20% 94%;
+  --inst-muted:                  230 15% 12%;
+  --inst-muted-foreground:       230 12% 68%;
+  --inst-accent:                 230 15% 16%;
+  --inst-accent-foreground:      230 20% 94%;
+  --inst-destructive:            0 72% 55%;
+  --inst-destructive-foreground: 0 0% 100%;
+  --inst-border:                 230 15% 24%;
+  --inst-input:                  230 15% 24%;
+  --inst-ring:                   45 95% 68%;
+  --inst-ok:                     145 55% 63%;
+  --inst-warn:                   17 90% 68%;
+  --inst-highlight:              330 80% 72%;
+  --inst-highlight-soft:         325 40% 22%;
 }
 
 body {

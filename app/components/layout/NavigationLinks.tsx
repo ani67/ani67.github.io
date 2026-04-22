@@ -87,6 +87,14 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
               <ScrambleText text="Canvas" />
             </Link>
           </li>
+          <li>
+            <Link
+              href="/instrument"
+              className={`${itemClassName} transition-colors focus:outline-none block ${inactiveClassName}`}
+            >
+              <ScrambleText text="Instrument" />
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>
