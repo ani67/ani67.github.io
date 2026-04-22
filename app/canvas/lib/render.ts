@@ -208,7 +208,7 @@ export function renderObjectsToCanvas(
   objects: CanvasObject[],
   targetIds: Set<string>,
   defaultStroke: string,
-  padding = 20,
+  padding = 0,
   scale = 2,
 ): HTMLCanvasElement | null {
   const exportObjs: CanvasObject[] = [];
