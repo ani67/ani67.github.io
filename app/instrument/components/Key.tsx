@@ -7,6 +7,7 @@ import { isInRaga, PC_TO_SRUTI, simpleStepInRaga, SRUTI_LABELS, SRUTI_RATIOS } f
 import { midiToName } from '../lib/util';
 import { resolveKeyDown } from '../lib/keymap/resolver';
 import { dispatch } from '../lib/dispatch';
+import { ensureRunning } from '../lib/audio/context';
 import { KeyPicker } from './KeyPicker';
 
 const LETTER: Record<string, string> = {
@@ -93,12 +94,15 @@ export function Key({ code, row, degree, className }: { code: string; row: RowId
   }
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Prime AudioContext synchronously inside the user gesture (iOS Safari
+    // requires resume() to be called within the gesture window).
+    void ensureRunning();
     const s = useStore.getState();
     if (s.pickerArmed) { openPicker(code); return; }
     if (s.pickerCode) return;
     if (isDeleted) return;
     e.preventDefault();
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* not supported */ }
     const a = resolveKeyDown(
       { code, shiftKey: false, altKey: s.optionLock, repeat: false },
       {
@@ -142,7 +146,7 @@ export function Key({ code, row, degree, className }: { code: string; row: RowId
                 : 'rgba(255, 255, 255, 0.04)',
       }}
       className={cn(
-        'inst-glass-key relative flex min-h-[72px] flex-col justify-between rounded-md p-2 transition-all duration-[120ms] ease-inst-pop touch-none select-none',
+        'inst-glass-key relative flex min-h-[72px] flex-col justify-between rounded-md p-2 transition-all duration-[120ms] ease-inst-pop touch-none select-none cursor-pointer',
         isDeleted && 'opacity-30',
         !isDeleted && !active && !inContext && 'opacity-80',
         active && 'translate-y-[1px] scale-[0.98] shadow-[0_0_22px_2px_hsl(var(--inst-highlight)/0.9)]',
