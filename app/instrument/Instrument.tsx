@@ -13,7 +13,9 @@ import { Kbd } from './components/ui/kbd';
 import { TuningToggle } from './components/TuningToggle';
 import { ModeToggle } from './components/ModeToggle';
 import { ChordContext } from './components/ChordContext';
+import { OptionToggle } from './components/OptionToggle';
 import { PITCH_CLASS_NAMES } from './lib/util';
+import { PC_TO_SRUTI, SRUTI_LABELS } from './lib/tuning/sruti';
 import { extractAccent, applyAccent } from './lib/accent';
 
 export function Instrument() {
@@ -23,8 +25,9 @@ export function Instrument() {
   const root   = useStore((s) => s.root);
   const oct    = useStore((s) => s.octaveShift);
 
-  const rootName = PITCH_CLASS_NAMES[root];
-  const octLabel = oct === 0 ? '±0' : oct > 0 ? `+${oct}` : `${oct}`;
+  const rootName    = PITCH_CLASS_NAMES[root];
+  const tonicSvara  = SRUTI_LABELS[PC_TO_SRUTI[root]];
+  const octLabel    = oct === 0 ? '±0' : oct > 0 ? `+${oct}` : `${oct}`;
 
   // First click anywhere unlocks audio.
   useEffect(() => {
@@ -42,10 +45,6 @@ export function Instrument() {
     extractAccent('/instrument-bg.png').then((hsl) => { if (hsl) applyAccent(hsl); });
   }, []);
 
-  const chordHint = tuning === 'sruti'
-    ? <span><Kbd>⌥ Option</Kbd> + key = rāga-stack (or ±1 cluster if out of rāga)</span>
-    : <span><Kbd>⌥ Option</Kbd> + key = scale-diatonic chord (or major if out of scale)</span>;
-
   return (
     <main className="flex w-full max-w-[1100px] flex-col gap-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -57,11 +56,24 @@ export function Instrument() {
           <RecordButton />
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Pill label={tuning === 'sruti' ? 'sa' : 'root'} value={rootName} />
-          <Pill label="oct" value={octLabel} />
+          <Pill
+            label={tuning === 'sruti' ? 'tonic' : 'root'}
+            value={tuning === 'sruti' ? `${tonicSvara} · ${rootName}` : rootName}
+            tooltip={
+              tuning === 'sruti'
+                ? <>Tonic — the absolute pitch the keyboard is anchored to, shown as its svara name (fixed-Sa convention) plus the Western pitch class. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
+                : <>Root note — the tonic the active scale and Option-chords are built from. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
+            }
+          />
+          <Pill
+            label="oct"
+            value={octLabel}
+            tooltip={<>Octave shift relative to the default range. Use <Kbd>[</Kbd> and <Kbd>]</Kbd> to nudge down/up.</>}
+          />
           <ChordContext />
           <TuningToggle />
           <ModeToggle />
+          <OptionToggle />
           <Link
             href="/"
             title="close instrument"
@@ -76,13 +88,6 @@ export function Instrument() {
       </header>
 
       <Keyboard />
-
-      <footer className="flex flex-wrap gap-6 text-sm text-inst-muted-foreground/80">
-        <span><Kbd>[</Kbd> <Kbd>]</Kbd> octave</span>
-        <span><Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> transpose</span>
-        {chordHint}
-        <span>click the {tuning === 'sruti' ? 'rāga' : 'scale'} pill to cycle</span>
-      </footer>
     </main>
   );
 }

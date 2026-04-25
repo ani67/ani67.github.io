@@ -13,7 +13,10 @@ export function useKeyboard(): void {
       if (e.metaKey || e.ctrlKey) return;
       e.preventDefault();
       const s = useStore.getState();
-      const a = resolveKeyDown(e, {
+      const evt = s.optionLock
+        ? { code: e.code, shiftKey: e.shiftKey, altKey: true, repeat: e.repeat }
+        : e;
+      const a = resolveKeyDown(evt, {
         root: s.root,
         baseOctave: s.baseOctave,
         octaveShift: s.octaveShift,

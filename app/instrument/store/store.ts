@@ -12,6 +12,7 @@ interface Store {
   mode: Mode;                                     // 'simple' | 'chromatic'
   chordScaleTET:   ScaleName;                     // context for chord + highlight in 12-TET
   chordScaleSruti: RagaName;                      // context for chord + highlight in Śruti
+  optionLock: boolean;                             // sticky ⌥ — chord modifier without holding Alt
   activeCodes: Set<string>;
   audioReady: boolean;
 
@@ -25,6 +26,7 @@ interface Store {
   allNotesOff:             () => void;
   cycleChordScaleTET:      () => void;
   cycleChordScaleSruti:    () => void;
+  toggleOptionLock:        () => void;
   setAudioReady:           (ready: boolean) => void;
 }
 
@@ -36,6 +38,7 @@ export const useStore = create<Store>((set) => ({
   mode: 'simple',
   chordScaleTET:   'major',
   chordScaleSruti: 'yaman',
+  optionLock: false,
   activeCodes: new Set<string>(),
   audioReady: false,
 
@@ -79,6 +82,8 @@ export const useStore = create<Store>((set) => ({
 
   cycleChordScaleSruti: () =>
     set((s) => ({ chordScaleSruti: nextRaga(s.chordScaleSruti) })),
+
+  toggleOptionLock: () => set((s) => ({ optionLock: !s.optionLock })),
 
   setAudioReady: (ready) => set({ audioReady: ready }),
 }));

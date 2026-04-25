@@ -25,6 +25,27 @@ export const SRUTI_LABELS: readonly string[] = [
 ];
 
 /**
+ * Fixed-Sa convention — each Western pitch class maps to its canonical Hindustani
+ * svara (Sa=C, re=C#, Re=D, ga=Eb, Ga=E, Ma=F, tMa=F#, Pa=G, dha=G#, Dha=A, ni=Bb, Ni=B).
+ * Indexes into SRUTI_LABELS / SRUTI_RATIOS, picking the just-intonation svara closest
+ * to each TET semitone.
+ */
+export const PC_TO_SRUTI: readonly number[] = [
+  0,  // C  → Sa
+  2,  // C# → re
+  4,  // D  → Re
+  6,  // Eb → ga
+  7,  // E  → Ga
+  9,  // F  → Ma
+  11, // F# → tMa
+  13, // G  → Pa
+  15, // G# → dha
+  16, // A  → Dha
+  19, // Bb → ni
+  20, // B  → Ni
+];
+
+/**
  * Rāgas — ordered lists of śruti indices forming the ascending scale.
  * CONTEXT ONLY — used for chord-mode voicing and visual highlight.
  * The keyboard plays every śruti regardless of the current rāga.

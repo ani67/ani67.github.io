@@ -3,7 +3,7 @@ import { cn } from '../lib/utils';
 import type { RowId } from '../lib/types';
 import { positionToStep } from '../lib/keymap/grid';
 import { isInScale, simpleStepToSemitone } from '../lib/keymap/scales';
-import { isInRaga, simpleStepInRaga, SRUTI_LABELS, SRUTI_RATIOS } from '../lib/tuning/sruti';
+import { isInRaga, PC_TO_SRUTI, simpleStepInRaga, SRUTI_LABELS, SRUTI_RATIOS } from '../lib/tuning/sruti';
 import { midiToName } from '../lib/util';
 
 const LETTER: Record<string, string> = {
@@ -37,15 +37,24 @@ export function Key({ code, row, degree }: { code: string; row: RowId; degree: n
   let pitchLabel: string;
   let inContext: boolean;
   if (tuning === 'sruti') {
+    // Fixed-Sa labelling: shift the svara labels by where root sits in the 22-śruti grid,
+    // so the label on each key matches the absolute pitch it plays.
+    const N      = SRUTI_RATIOS.length;
+    const offset = PC_TO_SRUTI[root];
     if (mode === 'simple') {
       const { sruti, octaves } = simpleStepInRaga(chordScaleSruti, step);
-      pitchLabel = svaraLabel(sruti, octaves);
+      const total    = sruti + offset;
+      const absSruti = ((total % N) + N) % N;
+      const extraOct = Math.floor(total / N);
+      pitchLabel = svaraLabel(absSruti, octaves + extraOct);
       inContext  = true;
     } else {
-      const sruti   = step % SRUTI_RATIOS.length;
-      const octaves = Math.floor(step / SRUTI_RATIOS.length);
-      pitchLabel    = svaraLabel(sruti, octaves);
-      inContext     = isInRaga(chordScaleSruti, sruti);
+      const relSruti = ((step % N) + N) % N;
+      const total    = step + offset;
+      const absSruti = ((total % N) + N) % N;
+      const absOct   = Math.floor(total / N);
+      pitchLabel     = svaraLabel(absSruti, absOct);
+      inContext      = isInRaga(chordScaleSruti, relSruti);
     }
   } else {
     if (mode === 'simple') {
