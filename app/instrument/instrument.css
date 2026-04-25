@@ -28,6 +28,7 @@
   background-position: center;
   background-repeat: no-repeat;
   pointer-events: none;
+  transform: scaleY(-1);
 }
 
 /* ==========================================================================

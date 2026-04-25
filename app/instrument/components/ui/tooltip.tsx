@@ -24,9 +24,14 @@ export function Tooltip({ content, children, align = 'center', className }: Tool
       {children}
       <span
         role="tooltip"
+        style={{
+          backdropFilter: 'blur(16px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(140%)',
+          backgroundColor: 'hsl(0 0% 6% / 0.55)',
+        }}
         className={cn(
           'pointer-events-none absolute top-full z-50 mt-2 w-max max-w-[260px] rounded-lg',
-          'inst-glass-chip px-3 py-2 text-left font-mono text-[11px] leading-snug text-inst-foreground',
+          'border border-white/10 px-3 py-2 text-left font-mono text-[11px] leading-snug text-inst-foreground',
           'opacity-0 translate-y-[-2px] transition duration-[180ms] ease-inst-out-expo',
           'group-hover:opacity-100 group-hover:translate-y-0',
           'group-focus-within:opacity-100 group-focus-within:translate-y-0',

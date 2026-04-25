@@ -120,7 +120,7 @@ export function Key({ code, row, degree }: { code: string; row: RowId; degree: n
     >
       <div
         className={cn(
-          'font-[family-name:var(--font-mondwest)] text-2xl',
+          'font-mono text-lg font-semibold',
           isDeleted ? 'text-inst-muted-foreground/60'
             : !active && inContext ? 'text-inst-highlight'
             : 'text-inst-foreground'
