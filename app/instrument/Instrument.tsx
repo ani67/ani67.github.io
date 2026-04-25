@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useStore } from './store/store';
+import { dispatch } from './lib/dispatch';
 import { ensureRunning } from './lib/audio/context';
 import { useKeyboard } from './hooks/useKeyboard';
 import { AudioStatus } from './components/AudioStatus';
@@ -89,11 +90,29 @@ export function Instrument() {
                   : <>Root note — the tonic the active scale and Option-chords are built from. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
               }
             />
-            <Pill
-              label="oct"
-              value={octLabel}
-              tooltip={<>Octave shift relative to the default range. Use <Kbd>[</Kbd> and <Kbd>]</Kbd> to nudge down/up.</>}
-            />
+            <span className="inline-flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => void dispatch({ type: 'ShiftOctave', delta: -1 })}
+                aria-label="octave down"
+                className="inst-glass-chip inline-flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm text-inst-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-inst-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring md:hidden"
+              >
+                −
+              </button>
+              <Pill
+                label="oct"
+                value={octLabel}
+                tooltip={<>Octave shift relative to the default range. Use <Kbd>[</Kbd> and <Kbd>]</Kbd> to nudge down/up.</>}
+              />
+              <button
+                type="button"
+                onClick={() => void dispatch({ type: 'ShiftOctave', delta: +1 })}
+                aria-label="octave up"
+                className="inst-glass-chip inline-flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm text-inst-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-inst-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring md:hidden"
+              >
+                +
+              </button>
+            </span>
             <ChordContext />
             <TuningToggle />
             <ModeToggle />

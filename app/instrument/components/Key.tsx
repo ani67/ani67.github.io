@@ -5,6 +5,8 @@ import { positionToStep } from '../lib/keymap/grid';
 import { isInScale, simpleStepToSemitone } from '../lib/keymap/scales';
 import { isInRaga, PC_TO_SRUTI, simpleStepInRaga, SRUTI_LABELS, SRUTI_RATIOS } from '../lib/tuning/sruti';
 import { midiToName } from '../lib/util';
+import { resolveKeyDown } from '../lib/keymap/resolver';
+import { dispatch } from '../lib/dispatch';
 import { KeyPicker } from './KeyPicker';
 
 const LETTER: Record<string, string> = {
@@ -25,7 +27,7 @@ function svaraLabel(sruti: number, octaves: number): string {
        : name;
 }
 
-export function Key({ code, row, degree }: { code: string; row: RowId; degree: number }) {
+export function Key({ code, row, degree, className }: { code: string; row: RowId; degree: number; className?: string }) {
   const active          = useStore((s) => s.activeCodes.has(code));
   const tuning          = useStore((s) => s.tuning);
   const mode            = useStore((s) => s.mode);
@@ -90,6 +92,34 @@ export function Key({ code, row, degree }: { code: string; row: RowId; degree: n
     }
   }
 
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const s = useStore.getState();
+    if (s.pickerArmed) { openPicker(code); return; }
+    if (s.pickerCode) return;
+    if (isDeleted) return;
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const a = resolveKeyDown(
+      { code, shiftKey: false, altKey: s.optionLock, repeat: false },
+      {
+        root: s.root,
+        baseOctave: s.baseOctave,
+        octaveShift: s.octaveShift,
+        tuning: s.tuning,
+        mode: s.mode,
+        chordScaleTET:   s.chordScaleTET,
+        chordScaleSruti: s.chordScaleSruti,
+        customMapTET:    s.customMapTET,
+        customMapSruti:  s.customMapSruti,
+      },
+    );
+    if (a) void dispatch(a);
+  };
+
+  const onPointerEnd = () => {
+    void dispatch({ type: 'NoteOff', code });
+  };
+
   return (
     <div
       data-active={active}
@@ -97,7 +127,9 @@ export function Key({ code, row, degree }: { code: string; row: RowId; degree: n
       data-in-scale={inContext}
       data-deleted={isDeleted || undefined}
       data-override={isOverride || undefined}
-      onClick={() => { if (pickerArmed) openPicker(code); }}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerEnd}
+      onPointerCancel={onPointerEnd}
       style={{
         backgroundColor: isDeleted
           ? 'rgba(255, 255, 255, 0.02)'
@@ -110,12 +142,13 @@ export function Key({ code, row, degree }: { code: string; row: RowId; degree: n
                 : 'rgba(255, 255, 255, 0.04)',
       }}
       className={cn(
-        'inst-glass-key relative flex min-h-[72px] flex-col justify-between rounded-md p-2 transition-all duration-[120ms] ease-inst-pop',
+        'inst-glass-key relative flex min-h-[72px] flex-col justify-between rounded-md p-2 transition-all duration-[120ms] ease-inst-pop touch-none select-none',
         isDeleted && 'opacity-30',
         !isDeleted && !active && !inContext && 'opacity-80',
         active && 'translate-y-[1px] scale-[0.98] shadow-[0_0_22px_2px_hsl(var(--inst-highlight)/0.9)]',
         pickerArmed && 'cursor-crosshair ring-1 ring-inst-ring/40',
-        pickerOpen && 'ring-2 ring-inst-ring'
+        pickerOpen && 'ring-2 ring-inst-ring',
+        className
       )}
     >
       <div
