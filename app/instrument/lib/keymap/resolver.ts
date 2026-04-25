@@ -1,8 +1,9 @@
 import type { Action, Mode, RagaName, ScaleName, Tuning } from '../types';
-import { CONTROLS, KEY_SELECTOR, CODE_TO_ROW, positionToStep } from './grid';
+import { CONTROLS, KEY_SELECTOR, CODE_TO_ROW, positionToStep, stepToCode } from './grid';
 import { simpleStepToSemitone, triadInScale } from './scales';
 import { simpleStepInRaga, srutiToHz, SRUTI_RATIOS, triadInRaga } from '../tuning/sruti';
 import { midiToHz } from '../util';
+import type { SrutiOverride, TETOverride } from '../../store/store';
 
 export interface KeyEventLike {
   code: string;
@@ -19,6 +20,8 @@ export interface ResolverState {
   mode: Mode;
   chordScaleTET:   ScaleName;
   chordScaleSruti: RagaName;
+  customMapTET:    Record<string, TETOverride>;
+  customMapSruti:  Record<string, SrutiOverride>;
 }
 
 /** Pure. No side effects, no audio, no DOM. */
@@ -35,6 +38,11 @@ export function resolveKeyDown(event: KeyEventLike, st: ResolverState): Action |
 
   const rowInfo = CODE_TO_ROW.get(code);
   if (rowInfo) {
+    // Deleted-in-simple-mode → silent. Chromatic mode ignores overrides.
+    if (st.mode === 'simple') {
+      const ov = st.tuning === '12tet' ? st.customMapTET[code] : st.customMapSruti[code];
+      if (ov && 'deleted' in ov) return null;
+    }
     const step = positionToStep(rowInfo.row, rowInfo.degree);
     const freqs = st.tuning === 'sruti'
       ? computeSrutiFreqs(step, altKey, st)
@@ -57,10 +65,23 @@ function compute12TETFreqs(step: number, alt: boolean, st: ResolverState): numbe
   const baseMidi = 12 * (st.baseOctave + st.octaveShift + 1) + st.root;
 
   if (st.mode === 'simple') {
-    // Walk the scale — each step = next scale note.
-    const stepToMidi = (s: number) => baseMidi + simpleStepToSemitone(st.chordScaleTET, s);
+    // Walk the scale — each step = next scale note. Per-key overrides win.
+    const stepToMidi = (s: number): number | null => {
+      const c = stepToCode(s);
+      if (c) {
+        const ov = st.customMapTET[c];
+        if (ov && 'deleted' in ov) return null;
+        if (ov) return baseMidi + ov.semitone;
+      }
+      return baseMidi + simpleStepToSemitone(st.chordScaleTET, s);
+    };
     const pressed = stepToMidi(step);
-    if (alt) return [pressed, stepToMidi(step + 2), stepToMidi(step + 4)].map(midiToHz);
+    if (pressed === null) return [];
+    if (alt) {
+      return [pressed, stepToMidi(step + 2), stepToMidi(step + 4)]
+        .filter((m): m is number => m !== null)
+        .map(midiToHz);
+    }
     return [midiToHz(pressed)];
   }
 
@@ -80,13 +101,23 @@ function computeSrutiFreqs(step: number, alt: boolean, st: ResolverState): numbe
   const rootHz   = midiToHz(rootMidi);
 
   if (st.mode === 'simple') {
-    // Walk the rāga — each step = next svara.
-    const stepToHz = (s: number) => {
+    // Walk the rāga — each step = next svara. Per-key overrides win.
+    const stepToHz = (s: number): number | null => {
+      const c = stepToCode(s);
+      if (c) {
+        const ov = st.customMapSruti[c];
+        if (ov && 'deleted' in ov) return null;
+        if (ov) return srutiToHz(rootHz, ov.sruti, ov.octaves);
+      }
       const { sruti, octaves } = simpleStepInRaga(st.chordScaleSruti, s);
       return srutiToHz(rootHz, sruti, octaves);
     };
     const pressed = stepToHz(step);
-    if (alt) return [pressed, stepToHz(step + 2), stepToHz(step + 4)];
+    if (pressed === null) return [];
+    if (alt) {
+      return [pressed, stepToHz(step + 2), stepToHz(step + 4)]
+        .filter((h): h is number => h !== null);
+    }
     return [pressed];
   }
 

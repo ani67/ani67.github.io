@@ -25,6 +25,15 @@ export function positionToStep(row: RowId, degree: number): number {
   return (4 - row) * 10 + degree;
 }
 
+/** Inverse of positionToStep — physical step (0..39) → keyboard event.code, or null if out of range. */
+export function stepToCode(step: number): string | null {
+  if (step < 0 || step > 39) return null;
+  const rowIdx = 4 - Math.floor(step / 10);
+  const degree = step % 10;
+  if (rowIdx < 1 || rowIdx > 4) return null;
+  return ROWS[rowIdx as RowId].keys[degree] ?? null;
+}
+
 /** Shift + these keys sets the root. Covers all 12 chromatic pitch classes. */
 export const KEY_SELECTOR: Record<string, number> = {
   Digit1: 0,  Digit2: 1,  Digit3: 2,  Digit4: 3,
