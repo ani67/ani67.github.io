@@ -1,7 +1,6 @@
 import { useStore } from '../store/store';
 import { cn } from '../lib/utils';
 import type { RowId } from '../lib/types';
-import { positionToStep } from '../lib/keymap/grid';
 import { isInScale, simpleStepToSemitone } from '../lib/keymap/scales';
 import { isInRaga, PC_TO_SRUTI, simpleStepInRaga, SRUTI_LABELS, SRUTI_RATIOS } from '../lib/tuning/sruti';
 import { midiToName } from '../lib/util';
@@ -28,7 +27,7 @@ function svaraLabel(sruti: number, octaves: number): string {
        : name;
 }
 
-export function Key({ code, row, degree, className }: { code: string; row: RowId; degree: number; className?: string }) {
+export function Key({ code, row, step, className }: { code: string; row: RowId; step: number; className?: string }) {
   const active          = useStore((s) => s.activeCodes.has(code));
   const tuning          = useStore((s) => s.tuning);
   const mode            = useStore((s) => s.mode);
@@ -43,7 +42,6 @@ export function Key({ code, row, degree, className }: { code: string; row: RowId
   const pickerArmed     = useStore((s) => s.pickerArmed);
   const openPicker      = useStore((s) => s.openPicker);
 
-  const step = positionToStep(row, degree);
   const ov         = tuning === '12tet' ? tetOv : srutiOv;
   const isDeleted  = mode === 'simple' && !!ov && 'deleted' in ov;
   const isOverride = mode === 'simple' && !!ov && !('deleted' in ov);
@@ -116,6 +114,7 @@ export function Key({ code, row, degree, className }: { code: string; row: RowId
         customMapTET:    s.customMapTET,
         customMapSruti:  s.customMapSruti,
       },
+      step,
     );
     if (a) void dispatch(a);
   };

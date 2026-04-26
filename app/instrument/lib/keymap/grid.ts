@@ -25,6 +25,27 @@ export function positionToStep(row: RowId, degree: number): number {
   return (4 - row) * 10 + degree;
 }
 
+/**
+ * Mobile layout — 4 keys × 4 rows = 16 cells, contiguous in step-space with the
+ * top of one row repeating at the bottom of the next so the octave note is
+ * reachable from both ends:
+ *   Row 4 (bottom) → 0,1,2,3
+ *   Row 3          → 4,5,6,7
+ *   Row 2          → 7,8,9,10   (deg 0 overlaps row 3 deg 3 at step 7)
+ *   Row 1 (top)    → 11,12,13,14
+ * Total: 15 unique steps, 2 octaves in heptatonic simple mode.
+ */
+const MOBILE_STEP: Record<RowId, readonly number[]> = {
+  4: [0, 1, 2, 3],
+  3: [4, 5, 6, 7],
+  2: [7, 8, 9, 10],
+  1: [11, 12, 13, 14],
+};
+
+export function mobilePositionToStep(row: RowId, degree: number): number {
+  return MOBILE_STEP[row][degree] ?? 0;
+}
+
 /** Inverse of positionToStep — physical step (0..39) → keyboard event.code, or null if out of range. */
 export function stepToCode(step: number): string | null {
   if (step < 0 || step > 39) return null;

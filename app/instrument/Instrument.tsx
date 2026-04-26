@@ -20,6 +20,10 @@ import { PITCH_CLASS_NAMES } from './lib/util';
 import { PC_TO_SRUTI, SRUTI_LABELS } from './lib/tuning/sruti';
 import { extractAccent, applyAccent } from './lib/accent';
 
+// Module-scoped so the +1 default is applied once per page load — surviving
+// remounts when the user navigates away from /instrument and back.
+let mobileDefaultsApplied = false;
+
 export function Instrument() {
   useKeyboard();
 
@@ -45,6 +49,15 @@ export function Instrument() {
   // Sample the accent color from the background image at runtime.
   useEffect(() => {
     extractAccent('/instrument-bg.png').then((hsl) => { if (hsl) applyAccent(hsl); });
+  }, []);
+
+  // Mobile (< md): default octave shift to +1 on first mount.
+  useEffect(() => {
+    if (mobileDefaultsApplied) return;
+    if (!window.matchMedia('(max-width: 767px)').matches) return;
+    if (useStore.getState().octaveShift !== 0) return;
+    useStore.getState().shiftOctave(+1);
+    mobileDefaultsApplied = true;
   }, []);
 
   return (

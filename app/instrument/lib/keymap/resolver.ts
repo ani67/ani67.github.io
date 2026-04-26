@@ -24,8 +24,10 @@ export interface ResolverState {
   customMapSruti:  Record<string, SrutiOverride>;
 }
 
-/** Pure. No side effects, no audio, no DOM. */
-export function resolveKeyDown(event: KeyEventLike, st: ResolverState): Action | null {
+/** Pure. No side effects, no audio, no DOM. explicitStep overrides the desktop
+ *  position-to-step formula — used by mobile-touch cells whose visual layout
+ *  maps to a different step than the same code on a physical keyboard. */
+export function resolveKeyDown(event: KeyEventLike, st: ResolverState, explicitStep?: number): Action | null {
   if (event.repeat) return null;
   const { code, shiftKey, altKey } = event;
 
@@ -43,7 +45,7 @@ export function resolveKeyDown(event: KeyEventLike, st: ResolverState): Action |
       const ov = st.tuning === '12tet' ? st.customMapTET[code] : st.customMapSruti[code];
       if (ov && 'deleted' in ov) return null;
     }
-    const step = positionToStep(rowInfo.row, rowInfo.degree);
+    const step = explicitStep ?? positionToStep(rowInfo.row, rowInfo.degree);
     const freqs = st.tuning === 'sruti'
       ? computeSrutiFreqs(step, altKey, st)
       : compute12TETFreqs(step, altKey, st);
