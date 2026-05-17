@@ -74,6 +74,27 @@ export function isInRaga(ragaName: RagaName, sruti: number): boolean {
 }
 
 /**
+ * Nearest in-rāga step in the 22-śruti grid, preserving octave context.
+ * Used by chromatic-mode chord voicing: an out-of-rāga press is harmonised
+ * by snapping to the closest svara and stacking the chord there.
+ */
+export function nearestRagaStep(ragaName: RagaName, step: number): number {
+  const srutis = RAGAS[ragaName].srutis;
+  const N      = SRUTI_RATIOS.length;
+  const baseOct = Math.floor(step / N) * N;
+  let best = step;
+  let bestDist = Infinity;
+  for (const sv of srutis) {
+    for (const oct of [baseOct - N, baseOct, baseOct + N]) {
+      const cand = sv + oct;
+      const d = Math.abs(cand - step);
+      if (d < bestDist) { best = cand; bestDist = d; }
+    }
+  }
+  return best;
+}
+
+/**
  * Stack of "thirds" (next-next svara) through a rāga, from the pressed śruti.
  * Returns total-step offsets relative to the pressed step (so the synth multiplies
  * by the right SRUTI_RATIO and adds octave multiplications from 2^n).

@@ -1,7 +1,7 @@
 import type { Action, Mode, RagaName, ScaleName, Tuning } from '../types';
 import { CONTROLS, KEY_SELECTOR, CODE_TO_ROW, positionToStep, stepToCode } from './grid';
-import { simpleStepToSemitone, triadInScale } from './scales';
-import { simpleStepInRaga, srutiToHz, SRUTI_RATIOS, triadInRaga } from '../tuning/sruti';
+import { nearestScaleStep, simpleStepToSemitone, triadInScale } from './scales';
+import { nearestRagaStep, simpleStepInRaga, srutiToHz, SRUTI_RATIOS, triadInRaga } from '../tuning/sruti';
 import { midiToHz } from '../util';
 import type { SrutiOverride, TETOverride } from '../../store/store';
 
@@ -94,8 +94,13 @@ function compute12TETFreqs(step: number, alt: boolean, st: ResolverState): numbe
   // Scale-context chord: stack thirds through the chosen scale from this semitone.
   const offsets = triadInScale(st.chordScaleTET, step);
   if (offsets) return offsets.map((off) => midiToHz(midi + off));
-  // Out of scale → fixed major triad so every key still yields something.
-  return [midi, midi + 4, midi + 7].map(midiToHz);
+  // Out of scale → harmonise as a chromatic passing tone: snap to the nearest
+  // in-scale degree, voice the scale-diatonic triad there, keep the pressed
+  // pitch as a top voice. Every chord tone stays in-scale except the press.
+  const snapped     = nearestScaleStep(st.chordScaleTET, step);
+  const snappedMidi = baseMidi + snapped;
+  const snapOffsets = triadInScale(st.chordScaleTET, snapped)!;
+  return [...snapOffsets.map((o) => snappedMidi + o), midi].map(midiToHz);
 }
 
 function computeSrutiFreqs(step: number, alt: boolean, st: ResolverState): number[] {
@@ -137,5 +142,11 @@ function computeSrutiFreqs(step: number, alt: boolean, st: ResolverState): numbe
   const absSruti = ((step % n) + n) % n;
   const offsets  = triadInRaga(st.chordScaleSruti, absSruti);
   if (offsets) return offsets.map((off) => stepToFreq(step + off));
-  return [stepToFreq(step - 1), melody, stepToFreq(step + 1)];
+  // Out of rāga → harmonise as a chromatic passing svara: snap to the nearest
+  // in-rāga step, voice the rāga triad there, keep the pressed śruti on top.
+  // Replaces the old ±1 adjacent-śruti cluster, which beat instead of voicing.
+  const snappedStep  = nearestRagaStep(st.chordScaleSruti, step);
+  const snappedSruti = ((snappedStep % n) + n) % n;
+  const snapOffsets  = triadInRaga(st.chordScaleSruti, snappedSruti)!;
+  return [...snapOffsets.map((o) => stepToFreq(snappedStep + o)), melody];
 }

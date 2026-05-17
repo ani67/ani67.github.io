@@ -36,6 +36,26 @@ export function isInScale(scaleName: ScaleName, semitoneFromRoot: number): boole
 }
 
 /**
+ * Nearest in-scale semitone-from-root, preserving octave context.
+ * Used by chromatic-mode chord voicing: an out-of-scale press is harmonised
+ * by snapping to the closest scale degree and stacking the chord there.
+ */
+export function nearestScaleStep(scaleName: ScaleName, semitoneFromRoot: number): number {
+  const intervals = SCALES[scaleName].intervals;
+  const baseOct = Math.floor(semitoneFromRoot / 12) * 12;
+  let best = semitoneFromRoot;
+  let bestDist = Infinity;
+  for (const iv of intervals) {
+    for (const oct of [baseOct - 12, baseOct, baseOct + 12]) {
+      const cand = iv + oct;
+      const d = Math.abs(cand - semitoneFromRoot);
+      if (d < bestDist) { best = cand; bestDist = d; }
+    }
+  }
+  return best;
+}
+
+/**
  * Simple-mode pitch: given a physical step index 0..N, walk the scale
  * (octaves wrap past the scale length) and return the semitone offset from root.
  */
