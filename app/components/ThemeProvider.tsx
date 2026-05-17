@@ -11,7 +11,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="day"
+      defaultTheme="night"
       themes={['dawn', 'day', 'night']}
     >
       {children}

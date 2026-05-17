@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Audiovisualizer</title>
+<style>
+  :root { color-scheme: dark; }
+  @font-face {
+    font-family: 'PP Mondwest';
+    src: url('/fonts/PPMondwest-Regular.ttf') format('truetype');
+    font-display: swap;
+  }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  #wordmark {
+    position: fixed; top: 24px; left: 24px; z-index: 60;
+    color: #fff; font-family: 'PP Mondwest', serif;
+    font-size: 24px; line-height: 1; letter-spacing: .01em;
+    pointer-events: none; user-select: none;
+  }
+  #closeX {
+    position: fixed; top: 24px; right: 24px; z-index: 60;
+    color: rgba(255,255,255,0.4); text-decoration: none;
+    transition: color .15s;
+  }
+  #closeX:hover { color: #fff; }
+  #app {
+    position: relative;
+    width: 100vw; height: 100vh;
+    min-height: 240px; max-height: 100vh;
+    overflow: hidden; resize: vertical;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+  }
+  canvas { display: block; }
+
+  #ui {
+    position: fixed; top: 64px; left: 14px; width: 244px;
+    padding: 14px 16px 16px; border-radius: 14px;
+    background: rgba(12, 13, 18, 0.62);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    color: #e8eaf2; font-size: 12px; user-select: none;
+    box-shadow: 0 14px 50px rgba(0,0,0,0.6);
+  }
+  #ui h1 { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    margin: 0 0 3px; color: #99a; font-weight: 600; }
+  #ui .sub { font-size: 10px; color: #555a6e; margin: 0 0 12px; letter-spacing: .02em; }
+  .row { margin: 11px 0; }
+  .row > label { display: flex; justify-content: space-between; color: #9aa0b4;
+    margin-bottom: 5px; }
+  .row > label > span:last-child { color: #cfd3e6; font-variant-numeric: tabular-nums; }
+  .seg { display: flex; gap: 4px; }
+  .seg button {
+    flex: 1; padding: 6px 0; font-size: 11px; cursor: pointer;
+    color: #aeb3c7; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 7px;
+    transition: all .15s;
+  }
+  .seg button:hover { background: rgba(255,255,255,0.1); }
+  .seg button.active { background: #6f7dff; color: #fff; border-color: #6f7dff; }
+  select { width: 100%; background: rgba(255,255,255,0.06); color: #e8eaf2;
+    font-size: 12px; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px; padding: 6px; }
+  input[type=range] { width: 100%; -webkit-appearance: none; height: 4px;
+    border-radius: 4px; background: rgba(255,255,255,0.14); margin: 4px 0; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none;
+    width: 14px; height: 14px; border-radius: 50%; background: #6f7dff;
+    cursor: pointer; box-shadow: 0 0 0 3px rgba(111,125,255,0.2); }
+  .file { display: flex; gap: 6px; }
+  .file button { flex:1; padding: 7px 0; font-size: 11px; cursor: pointer;
+    color: #e8eaf2; background: rgba(111,125,255,0.16);
+    border: 1px solid rgba(111,125,255,0.4); border-radius: 7px; }
+  .file button:hover { background: rgba(111,125,255,0.3); }
+  input[type=checkbox] { accent-color: #6f7dff; }
+  .audio-sec { margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.09); }
+  #mic.on { border-color: #36e2ec; color: #bff;
+    background: rgba(54,226,236,0.16); }
+  .level { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.1);
+    overflow: hidden; display: none; margin-top: 8px; }
+  #levelBar { height: 100%; width: 0%;
+    background: linear-gradient(90deg,#6f7dff,#36e2ec);
+    transition: width .05s linear; }
+  #hint { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+    color: #4a4f63; font-size: 11px; letter-spacing: .03em; pointer-events: none; }
+  #drop { position: fixed; inset: 0; display: none; align-items: center;
+    justify-content: center; background: rgba(111,125,255,0.12);
+    border: 2px dashed rgba(111,125,255,0.6); color: #cdd6ff; font-size: 18px;
+    z-index: 50; }
+  #drop.show { display: flex; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="wordmark">Audiovisualizer</div>
+<a id="closeX" href="/" title="close" aria-label="close audiovisualizer">
+  <svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+    <line x1="4" y1="4" x2="16" y2="16" />
+    <line x1="16" y1="4" x2="4" y2="16" />
+  </svg>
+</a>
+
+<div id="ui">
+  <h1>RGB Particle Swarm</h1>
+  <p class="sub">pixel RGB → particle XYZ position</p>
+
+  <div class="row">
+    <label><span>Resolution</span><span id="resLbl">128 × 128</span></label>
+    <div class="seg" id="resSeg">
+      <button data-res="32">32</button>
+      <button data-res="64">64</button>
+      <button data-res="128" class="active">128</button>
+      <button data-res="256">256</button>
+      <button data-res="1024">1024</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <label><span>Mapping</span></label>
+    <select id="mode">
+      <option value="0">RGB Sphere</option>
+      <option value="1">RGB Cube</option>
+      <option value="2">RGB Shell</option>
+      <option value="3">Image Plane</option>
+      <option value="4">Sphere + Waves</option>
+      <option value="5">Cube + Swirl</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label><span>Shell depth</span><span id="shellLbl">1.0</span></label>
+    <input type="range" id="shell" min="0.6" max="5" step="0.1" value="1" />
+  </div>
+  <div class="row">
+    <label><span>Point size</span><span id="sizeLbl">8.0×</span></label>
+    <input type="range" id="size" min="0.2" max="64" step="0.1" value="8" />
+  </div>
+  <div class="row">
+    <label><span>Brightness</span><span id="brightLbl">0.60</span></label>
+    <input type="range" id="bright" min="0.2" max="3" step="0.05" value="0.6" />
+  </div>
+  <div class="row">
+    <label><span>Flow (animation)</span><span id="flowLbl">0.50</span></label>
+    <input type="range" id="flow" min="0" max="3" step="0.05" value="0.5" />
+  </div>
+  <div class="row">
+    <label><span>Mouse radius</span><span id="radLbl">1.00</span></label>
+    <input type="range" id="rad" min="0.15" max="1.8" step="0.01" value="1" />
+  </div>
+  <div class="row">
+    <label><span>Cohesion</span><span id="cohLbl">0.07</span></label>
+    <input type="range" id="coh" min="0.02" max="0.3" step="0.01" value="0.07" />
+  </div>
+  <div class="row">
+    <label><span>Bloom</span><span id="bloomLbl">0.30</span></label>
+    <input type="range" id="bloom" min="0" max="2.5" step="0.05" value="0.3" />
+  </div>
+  <div class="row" style="display:flex;gap:8px;align-items:center;">
+    <input type="checkbox" id="autorot" checked />
+    <label style="margin:0;color:#9aa0b4;">Auto-rotate</label>
+  </div>
+  <div class="row">
+    <label><span>Rotation speed</span><span id="rotLbl">0.35</span></label>
+    <input type="range" id="rot" min="0" max="2" step="0.05" value="0.35" />
+  </div>
+
+  <div class="row file">
+    <button id="pick">Load image</button>
+    <button id="renoise">New noise</button>
+    <input type="file" id="fileInput" accept="image/*" hidden />
+  </div>
+
+  <div class="audio-sec">
+    <div class="file"><button id="mic">Enable microphone</button></div>
+    <div class="row">
+      <label><span>Audio amount</span><span id="audioLbl">1.00</span></label>
+      <input type="range" id="audio" min="0" max="2" step="0.05" value="1" />
+    </div>
+    <div class="level" id="levelRow"><div id="levelBar"></div></div>
+  </div>
+</div>
+
+<div id="hint">RGB of every pixel = its position · move the mouse to gather the swarm onto a sphere · drag to orbit · drop an image</div>
+<div id="drop">drop image to drive the swarm</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
+import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ===========================================================================
+//  SIMULATION SHADER
+//  Runs once per particle, per frame, entirely on the GPU.
+//  Core idea: a pixel's normalized RGB *is* its XYZ position.
+//  `texturePosition` and `resolution` are injected by GPUComputationRenderer.
+// ===========================================================================
+const simShader = /* glsl */`
+  #define PI 3.14159265359
+  #define NUM_ZONES 4
+
+  uniform sampler2D uImage;
+  uniform float uTime;
+  uniform int   uMode;
+  uniform float uShell;        // brightness->radius curve
+  uniform float uFlow;         // animation amount
+  uniform vec3  uMouse;
+  uniform float uMouseRadius;
+  uniform float uMouseActive;
+  uniform float uDamping;      // cohesion / how fast it moves to target
+  uniform float uBass;         // audio: low-frequency energy 0..1
+  uniform float uTreble;       // audio: high-frequency energy 0..1
+  uniform float uBeat;         // audio: decaying beat envelope 0..1
+  uniform float uAudio;        // audio: master reactivity amount
+  uniform vec4  uZones[NUM_ZONES];  // beat-spawned scatter zones: xyz=centre, w=strength
+
+  float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+  mat3 rotY(float a){ float c=cos(a),s=sin(a); return mat3(c,0.,-s, 0.,1.,0., s,0.,c); }
+  mat3 rotX(float a){ float c=cos(a),s=sin(a); return mat3(1.,0.,0., 0.,c,-s, 0.,s,c); }
+
+  void main(){
+    vec2 uv  = gl_FragCoord.xy / resolution.xy;
+    vec3 pos = texture2D(texturePosition, uv).xyz;
+
+    // --- the "movement": an animated domain-warp / image-filter on the
+    //     texture, so the structure slowly flows over time ----------------
+    vec2 warp = vec2(sin(uv.y * 6.2831 + uTime * 0.30),
+                     cos(uv.x * 6.2831 + uTime * 0.27));
+    vec3 rgb = texture2D(uImage, uv + warp * uFlow * 0.04).rgb;
+
+    // --- RGB DETERMINES POSITION --------------------------------------------
+    vec3  cube = (rgb - 0.5) * 2.0;          // RGB -> XYZ in [-1,1]
+    float L    = length(cube);               // 0 at neutral grey, ~1.7 at corners
+    vec3  dir  = cube / max(L, 1e-4);         // direction from RGB (safe near grey)
+
+    vec3 target;
+    if (uMode == 0) {                 // RGB Sphere
+      // Radius grows with colour SATURATION (distance of RGB from grey), not
+      // luminance. Luminance is green-weighted, which biased the whole shell
+      // to bulge along +Y. length(cube) is axis-symmetric, so every particle
+      // inflates on its own terms. It also means grey pixels sit at the
+      // centre, so a particle whose colour animates through grey passes
+      // THROUGH the origin instead of snapping to the far side of the sphere.
+      // uShell = how fast colour reaches the outer shell.
+      target = dir * clamp(L * uShell, 0.0, 1.0) * 1.30;
+    } else if (uMode == 1) {          // RGB Cube — literal RGB->XYZ point cloud
+      target = cube * 1.30;
+    } else if (uMode == 2) {          // RGB Shell — thin even shell
+      target = dir * 1.15;
+    } else if (uMode == 3) {          // Image Plane
+      float bright = (rgb.r + rgb.g + rgb.b) / 3.0;
+      target = vec3((uv - 0.5) * 2.4, (bright - 0.5) * 0.7);
+    } else if (uMode == 4) {          // Sphere + parametric waves
+      float r = clamp(L * uShell, 0.0, 1.0) * 1.26;
+      r += sin(dir.y * 9.0 + uTime * 1.6) * 0.05
+         + cos(dir.x * 7.0 - uTime * 1.2) * 0.04;
+      target = dir * r;
+    } else {                          // Cube + swirl
+      target = rotY(L * 1.6 + uTime * 0.3) * (cube * 1.30);
+    }
+
+    // slow whole-body rotation = parametric drift
+    target = rotY(uTime * 0.06) * target;
+
+    // --- audio reactivity ---------------------------------------------------
+    // The sphere keeps its base size — audio DEFORMS it locally instead of
+    // inflating it uniformly.
+    vec3 nrm = normalize(target + 1e-4);
+    // bass -> lumpy radial deformation: higher spatial frequency + per-particle
+    // grain so it breaks into scattered bumps, not one smooth global wave.
+    // Signed, mean ~0, so the overall sphere size stays constant.
+    float d1 = sin(nrm.x * 9.0 + uTime * 1.1) * sin(nrm.y * 11.0 - uTime * 0.8);
+    float d2 = sin(nrm.z * 13.0 + uTime * 1.4) * cos(nrm.x * 7.0 + uTime * 0.6);
+    float grain = hash(uv * 37.0) - 0.5;
+    target += nrm * ((d1 + d2) * 0.4 + grain * 0.7) * uBass * 0.6 * uAudio;
+    // beat -> scattered outward burst, per-particle uneven
+    target += nrm * uBeat * (0.35 + 1.3 * hash(uv * 13.0)) * 0.35 * uAudio;
+    // beat-spawned ZONES: every beat lights up a random patch of the sphere
+    // that violently scatters its particles — like the mouse effect, but
+    // auto-triggered and transient. This is what gives the dramatic, uneven,
+    // localised chaos instead of a uniform global deformation.
+    for (int i = 0; i < NUM_ZONES; i++) {
+      vec4 z = uZones[i];
+      if (z.w < 0.001) continue;
+      float inf = z.w * smoothstep(0.8, 0.0, distance(target, z.xyz));
+      if (inf > 0.001) {
+        vec3 rdir = normalize(vec3(
+          hash(uv * 7.0  + float(i) * 2.1) - 0.5,
+          hash(uv * 11.0 - float(i) * 3.7) - 0.5,
+          hash(uv * 17.0 + float(i) * 5.3) - 0.5) + 1e-4);
+        vec3 fromZone = normalize(target - z.xyz + 1e-4);
+        target += (fromZone * 0.55 + rdir * 0.8) * inf * uAudio;
+      }
+    }
+    // treble -> per-particle high-frequency scatter / shimmer
+    vec3 jit = vec3(hash(uv * 71.0 + uTime),
+                    hash(uv * 53.0 - uTime),
+                    hash(uv * 89.0 + uTime * 1.7)) - 0.5;
+    target += jit * uTreble * 0.40 * uAudio;
+
+    // --- mouse interaction --------------------------------------------------
+    // Particles whose home position is within the pointer radius re-target
+    // onto a sphere shell around the pointer. Shell points are HASHED per
+    // particle, not index-based: with coherent imagery, particles near each
+    // other in 3D also have near texture indices, so an index-based spread
+    // made them clump on one patch of the sphere instead of covering it.
+    // Influence is measured from the home target (not the live position) so
+    // there is no feedback wobble.
+    float d    = distance(target, uMouse);
+    float infl = uMouseActive * smoothstep(uMouseRadius, 0.0, d);
+    if (infl > 0.001) {
+      float h1 = hash(uv * 1.7 + 3.1);
+      float h2 = hash(uv * 2.3 + 7.7);
+      float ph = acos(2.0 * h1 - 1.0);            // uniform point on the sphere
+      float th = 6.28318530718 * h2;
+      vec3  sd = vec3(sin(ph) * cos(th), sin(ph) * sin(th), cos(ph));
+      sd = rotY(uTime * 0.5) * rotX(uTime * 0.3) * sd;
+      float sr = uMouseRadius * (0.6 + 0.12 * hash(uv + 5.0));
+      target = mix(target, uMouse + sd * sr, infl);
+    }
+
+    pos = mix(pos, target, uDamping);    // smooth, damped move toward target
+    gl_FragColor = vec4(pos, 1.0);
+  }
+`;
+
+// ===========================================================================
+//  POINT RENDERING SHADERS
+// ===========================================================================
+const pointsVertex = /* glsl */`
+  #define NUM_ZONES 4
+  attribute vec2 reference;
+  uniform sampler2D texturePosition;
+  uniform sampler2D uImage;
+  uniform float uSize;
+  uniform float uDpr;
+  uniform vec4  uZones[NUM_ZONES];
+  varying vec3  vColor;
+  varying float vBright;
+  varying float vZone;
+
+  void main(){
+    vec3 pos = texture2D(texturePosition, reference).xyz;
+    vec3 rgb = texture2D(uImage, reference).rgb;        // particle's own RGB
+    vColor   = rgb;
+    vBright  = dot(rgb, vec3(0.299, 0.587, 0.114));
+
+    // how strongly this particle sits inside a beat-spawned scatter zone
+    float zone = 0.0;
+    for (int i = 0; i < NUM_ZONES; i++) {
+      vec4 z = uZones[i];
+      zone += z.w * smoothstep(0.85, 0.0, distance(pos, z.xyz));
+    }
+    vZone = clamp(zone, 0.0, 1.5);
+
+    vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+    // brighter particles (and particles caught in a beat zone) render larger
+    gl_PointSize = clamp(uSize * uDpr * (0.55 + vBright + vZone * 0.8) * (3.0 / -mv.z), 1.0, 160.0);
+    gl_Position  = projectionMatrix * mv;
+  }
+`;
+
+const pointsFragment = /* glsl */`
+  precision highp float;
+  varying vec3  vColor;
+  varying float vBright;
+  varying float vZone;
+  uniform float uBrightness;
+  uniform float uBass;
+  uniform float uTreble;
+  uniform float uAudio;
+
+  void main(){
+    vec2 c = gl_PointCoord - 0.5;
+    if (dot(c, c) > 0.25) discard;                  // crisp, opaque round dot
+    vec3 col = pow(vColor, vec3(1.6)) * uBrightness;
+    col += vColor * vBright * 0.5 * (1.0 - smoothstep(0.0, 0.32, length(c)));
+    // audio frequency tint: bass -> warm, treble -> cool, weighted toward the
+    // bright shell so the dusty core stays close to the image's own colour
+    vec3 warm = vec3(1.0, 0.45, 0.16);
+    vec3 cool = vec3(0.22, 0.62, 1.0);
+    col += warm * vBright * uBass   * uAudio * 0.8;
+    col += cool * vBright * uTreble * uAudio * 0.8;
+    // beat-zone flash: particles caught in a scatter zone flare bright
+    col += vec3(1.0, 0.95, 0.88) * vZone * uAudio * 0.7;
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+
+// ===========================================================================
+//  DEFAULT IMAGE — coherent (fractal) colour noise.
+//  Coherent noise means neighbouring pixels have similar RGB, so neighbouring
+//  particles land near each other -> the swarm forms continents/streaks
+//  instead of uniform static.
+// ===========================================================================
+function makeNoiseImage(size = 256) {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = size;
+  const ctx = cv.getContext('2d');
+  const id = ctx.createImageData(size, size);
+  const D = id.data;
+
+  const hash = (i, j, s) => {
+    let n = (i * 374761393 + j * 668265263 + s * 1013904223) | 0;
+    n = ((n ^ (n >> 13)) * 1274126177) | 0;
+    return ((n ^ (n >> 16)) >>> 0) / 4294967295;
+  };
+  const vnoise = (x, y, s) => {
+    const xi = Math.floor(x), yi = Math.floor(y);
+    const xf = x - xi, yf = y - yi;
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    const a = hash(xi, yi, s),     b = hash(xi + 1, yi, s);
+    const c = hash(xi, yi + 1, s), e = hash(xi + 1, yi + 1, s);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + e) * u * v;
+  };
+  const fbm = (x, y, s) => {
+    let f = 0, amp = 0.5, freq = 1;
+    for (let o = 0; o < 6; o++) { f += amp * vnoise(x * freq, y * freq, s + o * 131); freq *= 2; amp *= 0.5; }
+    return f;
+  };
+  const seed = (Math.random() * 1e6) | 0;
+  const scale = 4.0;
+  const N = size * size;
+  const ch = [new Float32Array(N), new Float32Array(N), new Float32Array(N)];
+  const seeds = [seed + 1, seed + 7919, seed + 51437];
+
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const u = (x / size) * scale, v = (y / size) * scale;
+      const i = y * size + x;
+      ch[0][i] = fbm(u, v, seeds[0]);
+      ch[1][i] = fbm(u, v, seeds[1]);
+      ch[2][i] = fbm(u, v, seeds[2]);
+    }
+  }
+  // Histogram-equalize each channel so its values fill the full 0..1 range
+  // uniformly. Raw fractal noise clusters around 0.5 — since RGB *is* the
+  // position, that would collapse every particle to the origin. Equalizing
+  // makes RGB->XYZ actually spread through space.
+  for (const c of ch) {
+    const order = Array.from(c.keys()).sort((a, b) => c[a] - c[b]);
+    for (let r = 0; r < N; r++) c[order[r]] = r / (N - 1);
+  }
+  for (let i = 0; i < N; i++) {
+    D[i * 4]     = ch[0][i] * 255;
+    D[i * 4 + 1] = ch[1][i] * 255;
+    D[i * 4 + 2] = ch[2][i] * 255;
+    D[i * 4 + 3] = 255;
+  }
+  ctx.putImageData(id, 0, 0);
+  return cv;
+}
+
+// ===========================================================================
+//  SCENE
+// ===========================================================================
+const app = document.getElementById('app');
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(app.clientWidth, app.clientHeight);
+renderer.setClearColor(0x000000, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+app.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, app.clientWidth / app.clientHeight, 0.1, 100);
+// pulled back so the sphere (radius ~1.3) sits with padding top and bottom
+// rather than filling the whole viewport height
+camera.position.set(0, 0, 4.3);
+
+// the swarm lives in its own group, so the "auto-rotate" toggle can spin it
+// independently of the camera controls
+const swarm = new THREE.Group();
+scene.add(swarm);
+
+// TrackballControls, not OrbitControls: OrbitControls keeps a fixed "up", so
+// the vertical angle is clamped at the poles — you get stuck rotating over the
+// top. TrackballControls has no such limit: free rotation in every direction.
+const controls = new TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.5;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.6;
+controls.staticMoving = false;          // inertia / damping
+controls.dynamicDampingFactor = 0.12;
+controls.minDistance = 1.6;
+controls.maxDistance = 9;
+let autoRotate = true;
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(app.clientWidth, app.clientHeight),
+  0.30,   // strength
+  0.25,   // radius — tight glow, not a wide haze
+  0.55);  // threshold — only genuinely bright particles bloom
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
+
+// source-image texture (raw normalized RGB — no colour-space decode)
+const imageTexture = new THREE.Texture(makeNoiseImage(256));
+imageTexture.colorSpace = THREE.NoColorSpace;
+imageTexture.minFilter = THREE.LinearFilter;
+imageTexture.magFilter = THREE.LinearFilter;
+imageTexture.generateMipmaps = false;
+imageTexture.wrapS = imageTexture.wrapT = THREE.ClampToEdgeWrapping;
+imageTexture.needsUpdate = true;
+
+// ===========================================================================
+//  SIMULATION + POINTS  (rebuilt on resolution change)
+// ===========================================================================
+const params = {
+  res: 128, mode: 0, shell: 1, size: 8, bright: 0.6,
+  flow: 0.5, rad: 1, coh: 0.07, bloom: 0.30, audio: 1, rotSpeed: 0.35,
+};
+const sizeBase = { 32: 4.2, 64: 2.7, 128: 1.8, 256: 1.2, 1024: 0.7 };
+
+// beat-spawned scatter zones — one vec4 each: xyz = centre, w = strength.
+// the same array backs both the sim material and the points material.
+const zoneVec4 = [new THREE.Vector4(), new THREE.Vector4(),
+                  new THREE.Vector4(), new THREE.Vector4()];
+
+let gpu, posVar, points;
+
+const pointsMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    texturePosition: { value: null },
+    uImage: { value: imageTexture },
+    uSize: { value: sizeBase[params.res] * params.size },
+    uDpr: { value: renderer.getPixelRatio() },
+    uBrightness: { value: params.bright },
+    uBass: { value: 0 },
+    uTreble: { value: 0 },
+    uAudio: { value: params.audio },
+    uZones: { value: zoneVec4 },
+  },
+  vertexShader: pointsVertex,
+  fragmentShader: pointsFragment,
+  // opaque dots with real depth testing: front particles occlude back ones,
+  // so it reads as a solid sphere instead of a translucent milky blob
+  transparent: false,
+  depthTest: true,
+  depthWrite: true,
+});
+
+function buildSimulation(width) {
+  if (points) { swarm.remove(points); points.geometry.dispose(); }
+  if (posVar && posVar.renderTargets) posVar.renderTargets.forEach(rt => rt.dispose());
+
+  gpu = new GPUComputationRenderer(width, width, renderer);
+  const tex = gpu.createTexture();
+  const data = tex.image.data;
+  // seed with the RGB->position mapping so it starts already formed
+  for (let i = 0; i < width * width; i++) {
+    data[i * 4 + 0] = (Math.random() - 0.5) * 2;
+    data[i * 4 + 1] = (Math.random() - 0.5) * 2;
+    data[i * 4 + 2] = (Math.random() - 0.5) * 2;
+    data[i * 4 + 3] = 1;
+  }
+
+  posVar = gpu.addVariable('texturePosition', simShader, tex);
+  gpu.setVariableDependencies(posVar, [posVar]);
+  Object.assign(posVar.material.uniforms, {
+    uImage:        { value: imageTexture },
+    uTime:         { value: 0 },
+    uMode:         { value: params.mode },
+    uShell:        { value: params.shell },
+    uFlow:         { value: params.flow },
+    uMouse:        { value: new THREE.Vector3(999, 999, 999) },
+    uMouseRadius:  { value: params.rad },
+    uMouseActive:  { value: 0 },
+    uDamping:      { value: params.coh },
+    uBass:         { value: 0 },
+    uTreble:       { value: 0 },
+    uBeat:         { value: 0 },
+    uAudio:        { value: params.audio },
+    uZones:        { value: zoneVec4 },
+  });
+  const err = gpu.init();
+  if (err) console.error(err);
+
+  const count = width * width;
+  const positions = new Float32Array(count * 3);   // dummy — real pos is on GPU
+  const reference = new Float32Array(count * 2);
+  for (let i = 0; i < count; i++) {
+    reference[i * 2 + 0] = ((i % width) + 0.5) / width;
+    reference[i * 2 + 1] = (Math.floor(i / width) + 0.5) / width;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('reference', new THREE.BufferAttribute(reference, 2));
+
+  points = new THREE.Points(geo, pointsMaterial);
+  points.frustumCulled = false;
+  swarm.add(points);
+
+  pointsMaterial.uniforms.uSize.value = sizeBase[width] * params.size;
+}
+buildSimulation(params.res);
+
+// ===========================================================================
+//  POINTER -> world-space target on a camera-facing plane through the origin
+// ===========================================================================
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+const plane = new THREE.Plane();
+const planeNormal = new THREE.Vector3();
+const mouseWorld = new THREE.Vector3(999, 999, 999);
+let mouseActive = 0, mouseActiveTarget = 0, lastMove = 0;
+
+function onPointerMove(e) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  ndc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  ndc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  camera.getWorldDirection(planeNormal);
+  plane.setFromNormalAndCoplanarPoint(planeNormal, scene.position);
+  raycaster.setFromCamera(ndc, camera);
+  if (raycaster.ray.intersectPlane(plane, mouseWorld)) {
+    mouseActiveTarget = 1;
+    lastMove = performance.now();
+  }
+}
+renderer.domElement.addEventListener('pointermove', onPointerMove);
+renderer.domElement.addEventListener('pointerleave', () => { mouseActiveTarget = 0; });
+
+// ===========================================================================
+//  UI
+// ===========================================================================
+const $ = id => document.getElementById(id);
+
+$('resSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  params.res = +b.dataset.res;
+  [...$('resSeg').children].forEach(c => c.classList.toggle('active', c === b));
+  $('resLbl').textContent = `${params.res} × ${params.res}`;
+  buildSimulation(params.res);
+});
+$('mode').addEventListener('change', e => {
+  params.mode = +e.target.value;
+  posVar.material.uniforms.uMode.value = params.mode;
+});
+const bind = (id, key, lbl, fmt, apply) => {
+  $(id).addEventListener('input', e => {
+    params[key] = +e.target.value;
+    $(lbl).textContent = fmt(params[key]);
+    apply(params[key]);
+  });
+};
+bind('shell', 'shell', 'shellLbl', v => v.toFixed(1),
+  v => posVar.material.uniforms.uShell.value = v);
+bind('size', 'size', 'sizeLbl', v => v.toFixed(2) + '×',
+  v => pointsMaterial.uniforms.uSize.value = sizeBase[params.res] * v);
+bind('bright', 'bright', 'brightLbl', v => v.toFixed(2),
+  v => pointsMaterial.uniforms.uBrightness.value = v);
+bind('flow', 'flow', 'flowLbl', v => v.toFixed(2),
+  v => posVar.material.uniforms.uFlow.value = v);
+bind('rad', 'rad', 'radLbl', v => v.toFixed(2),
+  v => posVar.material.uniforms.uMouseRadius.value = v);
+bind('coh', 'coh', 'cohLbl', v => v.toFixed(2),
+  v => posVar.material.uniforms.uDamping.value = v);
+bind('bloom', 'bloom', 'bloomLbl', v => v.toFixed(2),
+  v => bloomPass.strength = v);
+bind('audio', 'audio', 'audioLbl', v => v.toFixed(2),
+  v => { posVar.material.uniforms.uAudio.value = v;
+         pointsMaterial.uniforms.uAudio.value = v; });
+bind('rot', 'rotSpeed', 'rotLbl', v => v.toFixed(2), () => {});
+$('autorot').addEventListener('change', e => { autoRotate = e.target.checked; });
+
+// image loading
+function setImage(src) {
+  imageTexture.image = src;
+  imageTexture.needsUpdate = true;
+}
+function loadImageFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => { setImage(img); URL.revokeObjectURL(url); };
+  img.src = url;
+}
+$('pick').addEventListener('click', () => $('fileInput').click());
+$('fileInput').addEventListener('change', e => loadImageFile(e.target.files[0]));
+$('renoise').addEventListener('click', () => setImage(makeNoiseImage(256)));
+
+const dropEl = $('drop');
+window.addEventListener('dragover', e => { e.preventDefault(); dropEl.classList.add('show'); });
+window.addEventListener('dragleave', e => { if (!e.relatedTarget) dropEl.classList.remove('show'); });
+window.addEventListener('drop', e => {
+  e.preventDefault(); dropEl.classList.remove('show');
+  if (e.dataTransfer.files.length) loadImageFile(e.dataTransfer.files[0]);
+});
+
+// ===========================================================================
+//  AUDIO REACTIVITY  (microphone -> bass / treble / beat / volume)
+// ===========================================================================
+const audio = { ready: false, bass: 0, mid: 0, treble: 0, volume: 0,
+                beat: 0, bassAvg: 0, lastBeat: 0, sampleRate: 44100 };
+let analyser = null, freqData = null;
+
+async function enableMic() {
+  if (audio.ready) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+    });
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await ctx.resume();
+    const src = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.8;
+    src.connect(analyser);                       // analyser only — not to output
+    freqData = new Uint8Array(analyser.frequencyBinCount);
+    audio.sampleRate = ctx.sampleRate;
+    audio.ready = true;
+    $('mic').textContent = 'Microphone on';
+    $('mic').classList.add('on');
+    $('levelRow').style.display = 'block';
+  } catch (e) {
+    $('mic').textContent = 'Mic blocked — click to retry';
+    console.error('Microphone error:', e);
+  }
+}
+$('mic').addEventListener('click', enableMic);
+
+// average a frequency range (in Hz) down to a single 0..1 energy value
+function bandEnergy(data, loHz, hiHz) {
+  const binHz = audio.sampleRate / (analyser.fftSize);
+  const lo = Math.max(1, Math.floor(loHz / binHz));
+  const hi = Math.min(data.length - 1, Math.ceil(hiHz / binHz));
+  let sum = 0;
+  for (let i = lo; i <= hi; i++) sum += data[i];
+  return sum / ((hi - lo + 1) * 255);
+}
+
+function updateAudio(t) {
+  if (!audio.ready) {                            // decay smoothly when mic off
+    audio.bass *= 0.9; audio.treble *= 0.9;
+    audio.volume *= 0.9; audio.beat *= 0.9;
+    return;
+  }
+  analyser.getByteFrequencyData(freqData);
+  const bass   = bandEnergy(freqData, 20, 150);
+  const mid    = bandEnergy(freqData, 150, 2000);
+  const treble = bandEnergy(freqData, 2000, 16000);
+  const volume = (bass + mid + treble) / 3;
+
+  audio.bass   += (bass   - audio.bass)   * 0.35;
+  audio.treble += (treble - audio.treble) * 0.35;
+  audio.volume += (volume - audio.volume) * 0.25;
+
+  // beat = bass spiking above its own running average
+  audio.bassAvg += (bass - audio.bassAvg) * 0.05;
+  if (bass > audio.bassAvg * 1.4 && bass > 0.15 && t - audio.lastBeat > 0.18) {
+    audio.beat = 1.0;
+    audio.lastBeat = t;
+    // light up a random patch of the sphere — reuse the weakest zone slot
+    let slot = 0;
+    for (let i = 1; i < zoneVec4.length; i++)
+      if (zoneVec4[i].w < zoneVec4[slot].w) slot = i;
+    const zc = Math.random() * 2 - 1;                // uniform point on sphere
+    const ang = Math.random() * Math.PI * 2;
+    const rr = Math.sqrt(1 - zc * zc);
+    const rad = 0.6 + Math.random() * 0.7;
+    zoneVec4[slot].set(rr * Math.cos(ang) * rad, rr * Math.sin(ang) * rad, zc * rad, 1.0);
+  }
+  audio.beat *= 0.88;                            // punchy decay envelope
+
+  $('levelBar').style.width = Math.min(100, audio.volume * 160) + '%';
+}
+
+// ===========================================================================
+//  RESIZE + RENDER LOOP
+// ===========================================================================
+function resize() {
+  const w = app.clientWidth, h = app.clientHeight;
+  if (w === 0 || h === 0) return;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+  controls.handleResize();
+  pointsMaterial.uniforms.uDpr.value = renderer.getPixelRatio();
+}
+window.addEventListener('resize', resize);
+// keep the renderer in sync when the user drags #app's resize handle
+new ResizeObserver(resize).observe(app);
+
+const clock = new THREE.Clock();
+let prevT = 0;
+const mouseLocal = new THREE.Vector3();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  const dt = Math.min(t - prevT, 0.05);
+  prevT = t;
+
+  if (autoRotate) swarm.rotation.y += dt * params.rotSpeed;
+
+  if (performance.now() - lastMove > 350) mouseActiveTarget = 0;
+  mouseActive += (mouseActiveTarget - mouseActive) * 0.12;
+
+  // the mouse point is found in world space — convert it into the swarm's
+  // local space so it stays aligned while the group auto-rotates
+  swarm.updateMatrixWorld();
+  mouseLocal.copy(mouseWorld);
+  swarm.worldToLocal(mouseLocal);
+
+  const u = posVar.material.uniforms;
+  u.uTime.value = t;
+  u.uMouse.value.copy(mouseLocal);
+  u.uMouseActive.value = mouseActive;
+
+  // audio: bass/treble/beat drive the sim; volume & beat drive the look
+  updateAudio(t);
+  const aud = params.audio;
+  u.uBass.value = audio.bass;
+  u.uTreble.value = audio.treble;
+  u.uBeat.value = audio.beat;
+  for (let i = 0; i < zoneVec4.length; i++) zoneVec4[i].w *= 0.91;  // decay zones
+  pointsMaterial.uniforms.uBass.value = audio.bass;
+  pointsMaterial.uniforms.uTreble.value = audio.treble;
+  pointsMaterial.uniforms.uBrightness.value =
+    params.bright * (1.0 + audio.volume * 1.3 * aud);
+  pointsMaterial.uniforms.uSize.value =
+    sizeBase[params.res] * params.size * (1.0 + audio.beat * 0.35 * aud);
+  bloomPass.strength = params.bloom + audio.volume * 0.5 * aud;
+
+  gpu.compute();
+  pointsMaterial.uniforms.texturePosition.value = gpu.getCurrentRenderTarget(posVar).texture;
+
+  controls.update();
+  composer.render();
+}
+animate();
+</script>
+</body>
+</html>

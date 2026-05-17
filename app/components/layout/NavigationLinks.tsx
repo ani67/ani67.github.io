@@ -95,6 +95,14 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
               <ScrambleText text="Instrument" />
             </Link>
           </li>
+          <li>
+            <a
+              href="/audiovisualizer.html"
+              className={`${itemClassName} transition-colors focus:outline-none block ${inactiveClassName}`}
+            >
+              <ScrambleText text="Audiovisualizer" />
+            </a>
+          </li>
         </ul>
       </div>
     </nav>
