@@ -1,7 +1,7 @@
 /**
  * Sample a dominant accent color from an image at runtime and apply it as
  * the `--inst-highlight` CSS variable. Keeps the key-highlight colour in visual
- * sync with whatever `public/instrument-bg.png` currently is.
+ * sync with whatever background image is currently set.
  *
  * Strategy: downsample to ~80×80, drop shadows / highlights / desaturated
  * pixels (noise), bucket remaining pixels by hue, pick the bucket with the
