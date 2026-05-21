@@ -12,12 +12,31 @@
     font-display: swap;
   }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  #wordmark {
+  #topbar {
     position: fixed; top: 24px; left: 24px; z-index: 60;
+    display: flex; align-items: center; gap: 14px;
+    user-select: none;
+  }
+  #wordmark {
     color: #fff; font-family: 'PP Mondwest', serif;
     font-size: 24px; line-height: 1; letter-spacing: .01em;
-    pointer-events: none; user-select: none;
+    pointer-events: none;
   }
+  #panelToggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 12px; min-height: 32px;
+    background: rgba(12, 13, 18, 0.62);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 999px; cursor: pointer;
+    color: rgba(255,255,255,0.78); font-size: 11px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    transition: color .15s, background .15s, border-color .15s;
+  }
+  #panelToggle:hover { color: #fff; background: rgba(28, 30, 42, 0.72); border-color: rgba(255,255,255,0.18); }
+  #panelToggle.open { background: rgba(111,125,255,0.18); border-color: rgba(111,125,255,0.45); color: #fff; }
+  #panelToggle svg { width: 14px; height: 14px; }
   #closeX {
     position: fixed; top: 24px; right: 24px; z-index: 60;
     color: rgba(255,255,255,0.4); text-decoration: none;
@@ -34,18 +53,52 @@
   canvas { display: block; }
 
   #ui {
-    position: fixed; top: 64px; left: 14px; width: 244px;
-    padding: 14px 16px 16px; border-radius: 14px;
+    position: fixed; top: 70px; left: 14px; width: 244px;
+    max-height: calc(100vh - 100px);
+    border-radius: 14px;
     background: rgba(12, 13, 18, 0.62);
     border: 1px solid rgba(255,255,255,0.08);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
     color: #e8eaf2; font-size: 12px; user-select: none;
     box-shadow: 0 14px 50px rgba(0,0,0,0.6);
+    display: flex; flex-direction: column;
+    transform-origin: top left;
+    transition: opacity .18s ease, transform .18s ease;
   }
-  #ui h1 { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  #ui[hidden] { display: none; }
+  #ui.opening { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  #ui-header {
+    flex: 0 0 auto;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  #ui-header .titles { min-width: 0; }
+  #ui-header h1 { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
     margin: 0 0 3px; color: #99a; font-weight: 600; }
-  #ui .sub { font-size: 10px; color: #555a6e; margin: 0 0 12px; letter-spacing: .02em; }
+  #ui-header .sub { font-size: 10px; color: #555a6e; margin: 0; letter-spacing: .02em; }
+  #panelClose {
+    flex: 0 0 auto;
+    width: 24px; height: 24px; padding: 0;
+    background: transparent; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.4); border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: color .15s, background .15s;
+  }
+  #panelClose:hover { color: #fff; background: rgba(255,255,255,0.06); }
+  #ui-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 8px 16px 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.18) transparent;
+  }
+  #ui-body::-webkit-scrollbar { width: 6px; }
+  #ui-body::-webkit-scrollbar-track { background: transparent; }
+  #ui-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 3px; }
+  #ui-body::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
   .row { margin: 11px 0; }
   .row > label { display: flex; justify-content: space-between; color: #9aa0b4;
     margin-bottom: 5px; }
@@ -89,12 +142,40 @@
     border: 2px dashed rgba(111,125,255,0.6); color: #cdd6ff; font-size: 18px;
     z-index: 50; }
   #drop.show { display: flex; }
+
+  @media (max-width: 640px) {
+    #topbar { top: 18px; left: 18px; gap: 10px; }
+    #wordmark { font-size: 20px; }
+    #panelToggle { padding: 8px 12px; min-height: 36px; }
+    #closeX { top: 18px; right: 18px; }
+    #ui {
+      top: 60px; left: 12px;
+      width: min(340px, calc(100vw - 24px));
+      max-height: calc(100vh - 90px);
+    }
+    .seg button { padding: 9px 0; font-size: 12px; }
+    .file button { padding: 10px 0; font-size: 12px; }
+    input[type=range] { height: 6px; }
+    input[type=range]::-webkit-slider-thumb { width: 18px; height: 18px; }
+    #hint { display: none; }
+  }
 </style>
 </head>
 <body>
 <div id="app"></div>
 
-<div id="wordmark">Audiovisualizer</div>
+<div id="topbar">
+  <span id="wordmark">Audiovisualizer</span>
+  <button id="panelToggle" type="button" aria-expanded="false" aria-controls="ui" aria-label="toggle controls">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <line x1="2.5" y1="4" x2="13.5" y2="4" />
+      <circle cx="6" cy="4" r="1.6" fill="currentColor" stroke="none" />
+      <line x1="2.5" y1="12" x2="13.5" y2="12" />
+      <circle cx="10" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </svg>
+    <span>Controls</span>
+  </button>
+</div>
 <a id="closeX" href="/" title="close" aria-label="close audiovisualizer">
   <svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
     <line x1="4" y1="4" x2="16" y2="16" />
@@ -102,10 +183,20 @@
   </svg>
 </a>
 
-<div id="ui">
-  <h1>RGB Particle Swarm</h1>
-  <p class="sub">pixel RGB → particle XYZ position</p>
-
+<div id="ui" hidden>
+  <div id="ui-header">
+    <div class="titles">
+      <h1>RGB Particle Swarm</h1>
+      <p class="sub">pixel RGB → particle XYZ position</p>
+    </div>
+    <button id="panelClose" type="button" aria-label="close controls">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <line x1="3" y1="3" x2="11" y2="11" />
+        <line x1="11" y1="3" x2="3" y2="11" />
+      </svg>
+    </button>
+  </div>
+  <div id="ui-body">
   <div class="row">
     <label><span>Resolution</span><span id="resLbl">128 × 128</span></label>
     <div class="seg" id="resSeg">
@@ -180,10 +271,45 @@
     </div>
     <div class="level" id="levelRow"><div id="levelBar"></div></div>
   </div>
+  </div><!-- /#ui-body -->
 </div>
 
 <div id="hint">RGB of every pixel = its position · move the mouse to gather the swarm onto a sphere · drag to orbit · drop an image</div>
 <div id="drop">drop image to drive the swarm</div>
+
+<script>
+  // Controls panel: collapsed by default, opens via the topbar chip, closes
+  // via its own X or Escape. Outside-click does NOT close — sliders need to
+  // stay accessible while watching the swarm react.
+  (function () {
+    const panel  = document.getElementById('ui');
+    const toggle = document.getElementById('panelToggle');
+    const closeBtn = document.getElementById('panelClose');
+    let open = false;
+
+    function setOpen(next) {
+      if (next === open) return;
+      open = next;
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) {
+        panel.hidden = false;
+        panel.classList.add('opening');
+        // next frame: drop the opening class so the transition runs in
+        requestAnimationFrame(() => panel.classList.remove('opening'));
+      } else {
+        panel.classList.add('opening');
+        setTimeout(() => { if (!open) panel.hidden = true; }, 180);
+      }
+    }
+
+    toggle.addEventListener('click', () => setOpen(!open));
+    closeBtn.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && open) setOpen(false);
+    });
+  })();
+</script>
 
 <script type="importmap">
 {
