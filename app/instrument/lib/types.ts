@@ -39,7 +39,7 @@ export type RagaName =
 
 /** Pre-computed Hz so the synth doesn't need to know about tuning systems or chord builders. */
 export type Action =
-  | { type: 'NoteOn';      freqs: number[]; row: RowId; code: string }
+  | { type: 'NoteOn';      freqs: number[]; row: RowId; code: string; voice?: string }
   | { type: 'NoteOff';     code: string }
   | { type: 'SetRoot';     pitchClass: number }
   | { type: 'ShiftOctave'; delta: number }

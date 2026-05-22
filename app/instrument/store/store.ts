@@ -2,6 +2,32 @@ import { create } from 'zustand';
 import type { Mode, RagaName, ScaleName, Tuning } from '../lib/types';
 import { nextScale } from '../lib/keymap/scales';
 import { nextRaga } from '../lib/tuning/sruti';
+import type { VoiceSpec } from '../lib/audio/voices';
+
+const USER_VOICES_KEY = 'instrument:userVoices:v1';
+const VOICE_PICK_KEY  = 'instrument:voice:v1';
+
+function readUserVoices(): Record<string, VoiceSpec> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(USER_VOICES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, VoiceSpec>;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch { return {}; }
+}
+function writeUserVoices(map: Record<string, VoiceSpec>): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.setItem(USER_VOICES_KEY, JSON.stringify(map)); } catch { /* quota */ }
+}
+function readVoicePick(): string | null {
+  if (typeof window === 'undefined') return null;
+  try { return window.localStorage.getItem(VOICE_PICK_KEY); } catch { return null; }
+}
+function writeVoicePick(id: string): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.setItem(VOICE_PICK_KEY, id); } catch { /* quota */ }
+}
 
 export type TETOverride   = { kind: 'tet';   semitone: number } | { kind: 'tet';   deleted: true };
 export type SrutiOverride = { kind: 'sruti'; sruti: number; octaves: number } | { kind: 'sruti'; deleted: true };
@@ -21,6 +47,10 @@ interface Store {
   mode: Mode;                                     // 'simple' | 'chromatic'
   chordScaleTET:   ScaleName;                     // context for chord + highlight in 12-TET
   chordScaleSruti: RagaName;                      // context for chord + highlight in Śruti
+  voice: string;                                   // active voice id — built-in or user-created
+  userVoices: Record<string, VoiceSpec>;           // user-created voices, keyed by id
+  voiceEditor: VoiceSpec | null;                   // live draft — when non-null, overrides voice
+  voiceEditorEditingId: string | null;             // id being edited (null = creating new)
   optionLock: boolean;                             // sticky ⌥ — chord modifier without holding Alt
   activeCodes: Set<string>;
   audioReady: boolean;
@@ -41,6 +71,13 @@ interface Store {
   allNotesOff:             () => void;
   cycleChordScaleTET:      () => void;
   cycleChordScaleSruti:    () => void;
+  hydrateVoicesFromStorage:() => void;
+  setVoice:                (id: string) => void;
+  openVoiceEditor:         (seed: VoiceSpec, editingId: string | null) => void;
+  updateVoiceEditor:       (spec: VoiceSpec) => void;
+  commitVoiceEditor:       () => string | null;     // returns new id on success, null if invalid
+  closeVoiceEditor:        () => void;
+  deleteUserVoice:         (id: string) => void;
   toggleOptionLock:        () => void;
   setAudioReady:           (ready: boolean) => void;
 
@@ -63,6 +100,13 @@ export const useStore = create<Store>((set) => ({
   mode: 'simple',
   chordScaleTET:   'major',
   chordScaleSruti: 'yaman',
+  // Defaults at module-init. localStorage hydration runs on mount —
+  // see hydrateFromStorage() and its caller in Instrument.tsx — to avoid
+  // hydration mismatches between SSR (window-undefined) and client.
+  voice: 'sine',
+  userVoices: {},
+  voiceEditor: null,
+  voiceEditorEditingId: null,
   optionLock: true,
   activeCodes: new Set<string>(),
   audioReady: false,
@@ -111,6 +155,55 @@ export const useStore = create<Store>((set) => ({
 
   cycleChordScaleSruti: () =>
     set((s) => ({ chordScaleSruti: nextRaga(s.chordScaleSruti) })),
+
+  hydrateVoicesFromStorage: () => {
+    const userVoices = readUserVoices();
+    const pick       = readVoicePick();
+    set((s) => ({
+      userVoices,
+      voice: pick ?? s.voice,
+    }));
+  },
+
+  setVoice: (id) => { writeVoicePick(id); set({ voice: id }); },
+
+  openVoiceEditor: (seed, editingId) =>
+    set({ voiceEditor: seed, voiceEditorEditingId: editingId }),
+
+  updateVoiceEditor: (spec) => set({ voiceEditor: spec }),
+
+  commitVoiceEditor: () => {
+    let outId: string | null = null;
+    set((s) => {
+      const draft = s.voiceEditor;
+      if (!draft) return {};
+      if (!draft.label.trim()) return {};   // require a name
+      if (!draft.id.trim()) return {};      // require a slug
+      const id = draft.id;
+      const next: VoiceSpec = { ...draft, id };
+      const userVoices = { ...s.userVoices, [id]: next };
+      writeUserVoices(userVoices);
+      writeVoicePick(id);
+      outId = id;
+      return { userVoices, voice: id, voiceEditor: null, voiceEditorEditingId: null };
+    });
+    return outId;
+  },
+
+  closeVoiceEditor: () =>
+    set({ voiceEditor: null, voiceEditorEditingId: null }),
+
+  deleteUserVoice: (id) =>
+    set((s) => {
+      if (!(id in s.userVoices)) return {};
+      const userVoices = { ...s.userVoices };
+      delete userVoices[id];
+      writeUserVoices(userVoices);
+      // If the deleted voice was active, fall back to sine.
+      const voice = s.voice === id ? 'sine' : s.voice;
+      if (voice !== s.voice) writeVoicePick(voice);
+      return { userVoices, voice, voiceEditor: null, voiceEditorEditingId: null };
+    }),
 
   toggleOptionLock: () => set((s) => ({ optionLock: !s.optionLock })),
 

@@ -15,7 +15,10 @@ import { TuningToggle } from './components/TuningToggle';
 import { ModeToggle } from './components/ModeToggle';
 import { ChordContext } from './components/ChordContext';
 import { OptionToggle } from './components/OptionToggle';
+import { VoicePicker } from './components/VoicePicker';
+import { VoiceEditor } from './components/VoiceEditor';
 import { CustomIO } from './components/CustomIO';
+import type { VoiceSpec } from './lib/audio/voices';
 import { PITCH_CLASS_NAMES } from './lib/util';
 import { PC_TO_SRUTI, SRUTI_LABELS } from './lib/tuning/sruti';
 import { extractAccent, applyAccent } from './lib/accent';
@@ -51,6 +54,12 @@ export function Instrument() {
     extractAccent('https://res.cloudinary.com/duw0custw/image/upload/v1778934187/instrument-bg_pdmqqo.png').then((hsl) => { if (hsl) applyAccent(hsl); });
   }, []);
 
+  // Hydrate persisted voice + user voices from localStorage on mount.
+  // Done here (not in store init) so SSR and first client render match.
+  useEffect(() => {
+    useStore.getState().hydrateVoicesFromStorage();
+  }, []);
+
   // Mobile (< md): default octave shift to +1 on first mount.
   useEffect(() => {
     if (mobileDefaultsApplied) return;
@@ -58,6 +67,26 @@ export function Instrument() {
     if (useStore.getState().octaveShift !== 0) return;
     useStore.getState().shiftOctave(+1);
     mobileDefaultsApplied = true;
+  }, []);
+
+  // Shareable voice via #voice=BASE64(json). On mount, decode if present and
+  // open the editor seeded with the decoded voice (user previews + decides
+  // whether to save). Clears the hash so reload doesn't re-trigger.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash;
+    if (!hash.startsWith('#voice=')) return;
+    try {
+      const b64 = hash.slice('#voice='.length);
+      const json = atob(decodeURIComponent(b64));
+      const decoded = JSON.parse(json) as VoiceSpec;
+      if (decoded && typeof decoded === 'object' && decoded.profile) {
+        useStore.getState().openVoiceEditor({ ...decoded, id: '' }, null);
+      }
+    } catch {
+      // Invalid hash — ignore silently.
+    }
+    history.replaceState(null, '', window.location.pathname + window.location.search);
   }, []);
 
   return (
@@ -164,12 +193,15 @@ export function Instrument() {
             <TuningToggle />
             <ModeToggle />
             <OptionToggle />
+            <VoicePicker />
             <CustomIO />
           </div>
         </header>
 
         <Keyboard />
       </main>
+
+      <VoiceEditor />
     </>
   );
 }
