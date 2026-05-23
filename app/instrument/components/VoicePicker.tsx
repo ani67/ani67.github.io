@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useStore } from '../store/store';
+import { loadPersistedDraft, useStore } from '../store/store';
 import {
   VOICES, VOICE_ORDER, blankVoice, lookupVoice, type VoiceSpec,
 } from '../lib/audio/voices';
@@ -51,7 +51,9 @@ export function VoicePicker() {
 
   const commitRow = (r: Row) => {
     if (r.kind === 'make') {
-      const seed = blankVoice();
+      // If the user had an unsaved draft from a previous session, pick it
+      // up so they don't lose work. Otherwise start blank.
+      const seed = loadPersistedDraft() ?? blankVoice();
       openVoiceEditor(seed, null);
       setOpen(false);
     } else {

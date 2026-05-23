@@ -43,6 +43,9 @@ function readDraft(): VoiceSpec | null {
   const raw = readJSON<unknown>(VOICE_DRAFT_KEY);
   return raw ? validateVoiceSpec(raw) : null;
 }
+// Public export so the picker can seed a new editor session from any draft
+// the user previously had in flight (commit/discard clears it).
+export function loadPersistedDraft(): VoiceSpec | null { return readDraft(); }
 function writeDraft(spec: VoiceSpec | null): void {
   if (spec) writeJSON(VOICE_DRAFT_KEY, spec); else clearKey(VOICE_DRAFT_KEY);
 }
@@ -202,16 +205,18 @@ export const useStore = create<Store>((set) => ({
   hydrateVoicesFromStorage: () => {
     const userVoices = readUserVoices();
     const pick       = readVoicePick();
-    const draft      = readDraft();
     const tuning     = readTuning();
     const optionLock = readOptionLock();
     set((s) => ({
       userVoices,
       voice:        pick ?? s.voice,
-      voiceEditor:  draft ?? s.voiceEditor,
       tuning:       tuning ?? s.tuning,
       optionLock:   optionLock ?? s.optionLock,
     }));
+    // Draft is NOT restored into voiceEditor on hydration — that would
+    // auto-open the modal on every reload, which is wrong. It stays in
+    // storage and gets used as the seed when the user clicks "Make your
+    // own" via consumePersistedDraft().
   },
 
   setVoice: (id) => { writeVoicePick(id); set({ voice: id }); },

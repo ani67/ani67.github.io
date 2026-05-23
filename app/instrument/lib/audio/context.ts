@@ -19,9 +19,30 @@ export function getMaster(): GainNode {
   return master as GainNode;
 }
 
+let primed = false;
+/**
+ * Play one sample of silence through the destination. Some browsers
+ * (notably iOS Safari) report the AudioContext as 'running' after
+ * resume() but won't actually emit sound until a render has happened.
+ * Cheap, idempotent, called once per context.
+ */
+function primeOnce(c: AudioContext): void {
+  if (primed) return;
+  primed = true;
+  try {
+    const buf = c.createBuffer(1, 1, c.sampleRate);
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    src.connect(c.destination);
+    src.start(0);
+    src.stop(c.currentTime + 0.001);
+  } catch { /* not catastrophic — best effort */ }
+}
+
 export async function ensureRunning(): Promise<boolean> {
   const c = getContext();
   if (c.state === 'suspended') await c.resume();
+  if (c.state === 'running') primeOnce(c);
   return c.state === 'running';
 }
 

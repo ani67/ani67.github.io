@@ -8,8 +8,8 @@ export function OptionToggle() {
   const toggle     = useStore((s) => s.toggleOptionLock);
 
   const tip = tuning === 'sruti'
-    ? <>Sticky <Kbd>⌥ Option</Kbd>. When on, every key press plays a rāga-stack chord (or a ±1 cluster if the note is out of the rāga) instead of a single svara — same as holding Option.</>
-    : <>Sticky <Kbd>⌥ Option</Kbd>. When on, every key press plays a scale-diatonic chord (or a fallback major triad if out of scale) instead of a single note — same as holding Option.</>;
+    ? <>Auto-chord. When on, every key plays a rāga-stack chord (or a ±1 cluster if the note is out of the rāga) instead of a single svara. Hold <Kbd>⌥ Option</Kbd> for the same effect momentarily.</>
+    : <>Auto-chord. When on, every key plays a scale-diatonic chord (or a fallback major triad if out of scale) instead of a single note. Hold <Kbd>⌥ Option</Kbd> for the same effect momentarily.</>;
 
   return (
     <Tooltip content={tip}>
@@ -25,7 +25,7 @@ export function OptionToggle() {
         ].join(' ')}
       >
         <span className="font-mono text-[10px] uppercase tracking-widest text-inst-muted-foreground">
-          ⌥ option
+          chord
         </span>
         <span className="font-mono text-sm text-inst-foreground">
           {optionLock ? 'on' : 'off'}

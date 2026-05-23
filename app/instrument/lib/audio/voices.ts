@@ -297,7 +297,8 @@ export function spawnFromProfile(
 
 export type VoiceId =
   | 'sine' | 'glass' | 'reed' | 'brass' | 'felt'
-  | 'pluck' | 'mallet' | 'pad' | 'drone' | 'hollow';
+  | 'pluck' | 'mallet' | 'pad' | 'drone' | 'hollow'
+  | 'kick' | 'fuzz';
 
 export const VOICES: Record<VoiceId, VoiceSpec> = {
   sine: {
@@ -446,11 +447,46 @@ export const VOICES: Record<VoiceId, VoiceSpec> = {
       masterGain: 0.16,
     },
   },
+
+  kick: {
+    id: 'kick',
+    label: 'Kick',
+    blurb: 'one-shot, percussive',
+    profile: {
+      oscillators: [
+        // Low sine — the "thump." Without a pitch envelope we can't sweep,
+        // so the body sits at a fixed sub-bass pitch via low ratio.
+        { wave: 'sine',  ratio: 0.25, gain: 1.0 },
+        // Noise burst — the click / transient on top.
+        { wave: 'noise', gain: 0.35 },
+      ],
+      amp: { attack: 0.001, decay: 0.18, sustain: 0.0, release: 0.10 },
+      filter: { type: 'lowpass', baseFreq: 220, q: 0.9 },
+      masterGain: 0.30,
+    },
+  },
+
+  fuzz: {
+    id: 'fuzz',
+    label: 'Fuzz Bass',
+    blurb: 'gritty, saturated',
+    profile: {
+      oscillators: [
+        { wave: 'sawtooth', detune: -7 },
+        { wave: 'sawtooth', detune:  7 },
+      ],
+      amp: { attack: 0.005, decay: 0.20, sustain: 0.65, release: 0.22 },
+      filter: { type: 'lowpass', baseFreq: 1300, q: 1.0 },
+      distortion: { amount: 0.62 },
+      masterGain: 0.16,
+    },
+  },
 };
 
 export const VOICE_ORDER: readonly VoiceId[] = [
   'sine', 'glass', 'reed', 'brass', 'felt',
   'pluck', 'mallet', 'pad', 'drone', 'hollow',
+  'kick', 'fuzz',
 ];
 
 /**
