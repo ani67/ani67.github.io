@@ -2,7 +2,7 @@
 title: "Vibe coding a musical instrument"
 date: "2026-05-01T15:58"
 description: " Introducing the Instrument - speculative exploration of a slightly different digital musical instrument. "
-tags: ["vibes"]
+tags: ["art"]
 image: "https://res.cloudinary.com/duw0custw/image/upload/v1779005824/ins004_bkrsov.png"
 published: true
 ---
