@@ -65,6 +65,26 @@ export function VoicePicker() {
     setOpen(false);
   };
 
+  // Open the editor seeded with a copy of `v` — new id, label suffixed with
+  // " copy". Used by the duplicate affordance on every row, so a built-in
+  // can become the starting point for a user voice without rebuilding it.
+  const startDuplicateVoice = (v: VoiceSpec) => {
+    const seed: VoiceSpec = {
+      id: '',
+      label: `${v.label} copy`,
+      blurb: v.blurb,
+      profile: {
+        ...v.profile,
+        oscillators: v.profile.oscillators.map((o) => ({ ...o })),
+        filter: v.profile.filter ? { ...v.profile.filter, env: v.profile.filter.env ? { ...v.profile.filter.env } : undefined } : undefined,
+        lfo:    v.profile.lfo    ? { ...v.profile.lfo } : undefined,
+        amp:    { ...v.profile.amp },
+      },
+    };
+    openVoiceEditor(seed, null);
+    setOpen(false);
+  };
+
   // Outside click + keyboard nav.
   useEffect(() => {
     if (!open) return;
@@ -187,7 +207,7 @@ export function VoicePicker() {
               ) : null;
 
               const row = (
-                <div key={v.id} className="group flex items-center gap-1">
+                <div key={v.id} className="group/row flex items-center gap-0.5">
                   <button
                     type="button"
                     role="option"
@@ -214,12 +234,27 @@ export function VoicePicker() {
                       {v.blurb}
                     </span>
                   </button>
+                  {/* Duplicate — works for both built-ins and user voices.
+                      Hover-revealed so the row stays calm at rest. */}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); startDuplicateVoice(v); }}
+                    aria-label={`duplicate ${v.label}`}
+                    title="duplicate"
+                    className="px-1.5 py-1 rounded-md text-inst-muted-foreground hover:text-inst-foreground hover:bg-white/[0.06] transition-colors opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2.5" y="2.5" width="7" height="7" rx="1" />
+                      <rect x="4.5" y="4.5" width="7" height="7" rx="1" />
+                    </svg>
+                  </button>
                   {r.isUser && (
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); startEditUserVoice(v); }}
                       aria-label={`edit ${v.label}`}
-                      className="px-2 py-1 rounded-md text-inst-muted-foreground hover:text-inst-foreground hover:bg-white/[0.06] transition-colors"
+                      title="edit"
+                      className="px-1.5 py-1 rounded-md text-inst-muted-foreground hover:text-inst-foreground hover:bg-white/[0.06] transition-colors opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100"
                     >
                       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M10.5 1.5l2 2-7.5 7.5H3v-2L10.5 1.5z" />

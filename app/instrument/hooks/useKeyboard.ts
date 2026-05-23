@@ -7,6 +7,19 @@ import { dispatch } from '../lib/dispatch';
 const PICKER_LEADER = 'Equal';
 const PICKER_TIMEOUT_MS = 1500;
 
+/**
+ * Editable text targets — when one of these is focused, the instrument
+ * keyboard listener stops intercepting so the user can type names, blurbs,
+ * etc. into form fields normally. Escape is excluded from this guard above
+ * so it can still bubble to per-component handlers.
+ */
+function isTextEditingTarget(t: EventTarget | null): boolean {
+  if (!(t instanceof HTMLElement)) return false;
+  const tag = t.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  return t.isContentEditable;
+}
+
 export function useKeyboard(): void {
   useEffect(() => {
     let armTimer: ReturnType<typeof setTimeout> | null = null;
@@ -26,6 +39,11 @@ export function useKeyboard(): void {
         }
         return;
       }
+
+      // When the user is typing in a text field, keep our hands off — no
+      // note-plays, no preventDefault, no picker-arming. Lets the voice
+      // editor's name / blurb inputs (and any future inputs) just work.
+      if (isTextEditingTarget(e.target)) return;
 
       // The leader key — arm picker for the next instrument keypress.
       if (e.code === PICKER_LEADER && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
@@ -72,6 +90,7 @@ export function useKeyboard(): void {
     };
 
     const onKeyUp = (e: KeyboardEvent) => {
+      if (isTextEditingTarget(e.target)) return;
       if (!INSTRUMENT_CODES.has(e.code)) return;
       const a = resolveKeyUp(e);
       if (a) void dispatch(a);

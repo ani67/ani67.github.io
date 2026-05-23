@@ -3,23 +3,34 @@ import type { Mode, RagaName, ScaleName, Tuning } from '../lib/types';
 import { nextScale } from '../lib/keymap/scales';
 import { nextRaga } from '../lib/tuning/sruti';
 import type { VoiceSpec } from '../lib/audio/voices';
+import { validateUserVoicesRecord, validateVoiceSpec } from '../lib/audio/voices';
 
-const USER_VOICES_KEY = 'instrument:userVoices:v1';
-const VOICE_PICK_KEY  = 'instrument:voice:v1';
+const USER_VOICES_KEY  = 'instrument:userVoices:v1';
+const VOICE_PICK_KEY   = 'instrument:voice:v1';
+const VOICE_DRAFT_KEY  = 'instrument:voiceDraft:v1';
+const TUNING_KEY       = 'instrument:tuning:v1';
+const OPTION_LOCK_KEY  = 'instrument:optionLock:v1';
+
+function readJSON<T>(key: string): T | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch { return null; }
+}
+function writeJSON(key: string, value: unknown): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.setItem(key, JSON.stringify(value)); } catch { /* quota */ }
+}
+function clearKey(key: string): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.removeItem(key); } catch { /* ignore */ }
+}
 
 function readUserVoices(): Record<string, VoiceSpec> {
-  if (typeof window === 'undefined') return {};
-  try {
-    const raw = window.localStorage.getItem(USER_VOICES_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as Record<string, VoiceSpec>;
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch { return {}; }
+  return validateUserVoicesRecord(readJSON(USER_VOICES_KEY));
 }
-function writeUserVoices(map: Record<string, VoiceSpec>): void {
-  if (typeof window === 'undefined') return;
-  try { window.localStorage.setItem(USER_VOICES_KEY, JSON.stringify(map)); } catch { /* quota */ }
-}
+function writeUserVoices(map: Record<string, VoiceSpec>): void { writeJSON(USER_VOICES_KEY, map); }
 function readVoicePick(): string | null {
   if (typeof window === 'undefined') return null;
   try { return window.localStorage.getItem(VOICE_PICK_KEY); } catch { return null; }
@@ -27,6 +38,37 @@ function readVoicePick(): string | null {
 function writeVoicePick(id: string): void {
   if (typeof window === 'undefined') return;
   try { window.localStorage.setItem(VOICE_PICK_KEY, id); } catch { /* quota */ }
+}
+function readDraft(): VoiceSpec | null {
+  const raw = readJSON<unknown>(VOICE_DRAFT_KEY);
+  return raw ? validateVoiceSpec(raw) : null;
+}
+function writeDraft(spec: VoiceSpec | null): void {
+  if (spec) writeJSON(VOICE_DRAFT_KEY, spec); else clearKey(VOICE_DRAFT_KEY);
+}
+function readTuning(): Tuning | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const v = window.localStorage.getItem(TUNING_KEY);
+    return v === '12tet' || v === 'sruti' ? v : null;
+  } catch { return null; }
+}
+function writeTuning(t: Tuning): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.setItem(TUNING_KEY, t); } catch { /* quota */ }
+}
+function readOptionLock(): boolean | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const v = window.localStorage.getItem(OPTION_LOCK_KEY);
+    if (v === 'true') return true;
+    if (v === 'false') return false;
+    return null;
+  } catch { return null; }
+}
+function writeOptionLock(v: boolean): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.setItem(OPTION_LOCK_KEY, String(v)); } catch { /* quota */ }
 }
 
 export type TETOverride   = { kind: 'tet';   semitone: number } | { kind: 'tet';   deleted: true };
@@ -76,7 +118,8 @@ interface Store {
   openVoiceEditor:         (seed: VoiceSpec, editingId: string | null) => void;
   updateVoiceEditor:       (spec: VoiceSpec) => void;
   commitVoiceEditor:       () => string | null;     // returns new id on success, null if invalid
-  closeVoiceEditor:        () => void;
+  closeVoiceEditor:        () => void;              // keeps the persisted draft for restore
+  discardVoiceDraft:       () => void;              // explicit discard — clears persistence
   deleteUserVoice:         (id: string) => void;
   toggleOptionLock:        () => void;
   setAudioReady:           (ready: boolean) => void;
@@ -101,9 +144,9 @@ export const useStore = create<Store>((set) => ({
   chordScaleTET:   'major',
   chordScaleSruti: 'yaman',
   // Defaults at module-init. localStorage hydration runs on mount —
-  // see hydrateFromStorage() and its caller in Instrument.tsx — to avoid
-  // hydration mismatches between SSR (window-undefined) and client.
-  voice: 'sine',
+  // see hydrateVoicesFromStorage() and its caller in Instrument.tsx — to
+  // avoid hydration mismatches between SSR (window-undefined) and client.
+  voice: 'drone',
   userVoices: {},
   voiceEditor: null,
   voiceEditorEditingId: null,
@@ -125,7 +168,7 @@ export const useStore = create<Store>((set) => ({
       return { octaveShift: n };
     }),
 
-  setTuning: (tuning) => set({ tuning }),
+  setTuning: (tuning) => { writeTuning(tuning); set({ tuning }); },
   setMode:   (mode)   => set({ mode }),
 
   noteOn: (code) =>
@@ -159,18 +202,29 @@ export const useStore = create<Store>((set) => ({
   hydrateVoicesFromStorage: () => {
     const userVoices = readUserVoices();
     const pick       = readVoicePick();
+    const draft      = readDraft();
+    const tuning     = readTuning();
+    const optionLock = readOptionLock();
     set((s) => ({
       userVoices,
-      voice: pick ?? s.voice,
+      voice:        pick ?? s.voice,
+      voiceEditor:  draft ?? s.voiceEditor,
+      tuning:       tuning ?? s.tuning,
+      optionLock:   optionLock ?? s.optionLock,
     }));
   },
 
   setVoice: (id) => { writeVoicePick(id); set({ voice: id }); },
 
-  openVoiceEditor: (seed, editingId) =>
-    set({ voiceEditor: seed, voiceEditorEditingId: editingId }),
+  openVoiceEditor: (seed, editingId) => {
+    writeDraft(seed);
+    set({ voiceEditor: seed, voiceEditorEditingId: editingId });
+  },
 
-  updateVoiceEditor: (spec) => set({ voiceEditor: spec }),
+  updateVoiceEditor: (spec) => {
+    writeDraft(spec);
+    set({ voiceEditor: spec });
+  },
 
   commitVoiceEditor: () => {
     let outId: string | null = null;
@@ -184,14 +238,22 @@ export const useStore = create<Store>((set) => ({
       const userVoices = { ...s.userVoices, [id]: next };
       writeUserVoices(userVoices);
       writeVoicePick(id);
+      writeDraft(null);                     // saved → draft cleared
       outId = id;
       return { userVoices, voice: id, voiceEditor: null, voiceEditorEditingId: null };
     });
     return outId;
   },
 
+  // Close keeps the draft in storage so it auto-restores next session.
   closeVoiceEditor: () =>
     set({ voiceEditor: null, voiceEditorEditingId: null }),
+
+  // Explicit user intent to throw the draft away — also closes the editor.
+  discardVoiceDraft: () => {
+    writeDraft(null);
+    set({ voiceEditor: null, voiceEditorEditingId: null });
+  },
 
   deleteUserVoice: (id) =>
     set((s) => {
@@ -199,13 +261,19 @@ export const useStore = create<Store>((set) => ({
       const userVoices = { ...s.userVoices };
       delete userVoices[id];
       writeUserVoices(userVoices);
-      // If the deleted voice was active, fall back to sine.
-      const voice = s.voice === id ? 'sine' : s.voice;
+      // If the deleted voice was active, fall back to the default.
+      const voice = s.voice === id ? 'drone' : s.voice;
       if (voice !== s.voice) writeVoicePick(voice);
+      writeDraft(null);
       return { userVoices, voice, voiceEditor: null, voiceEditorEditingId: null };
     }),
 
-  toggleOptionLock: () => set((s) => ({ optionLock: !s.optionLock })),
+  toggleOptionLock: () =>
+    set((s) => {
+      const next = !s.optionLock;
+      writeOptionLock(next);
+      return { optionLock: next };
+    }),
 
   setAudioReady: (ready) => set({ audioReady: ready }),
 

@@ -21,14 +21,23 @@ export interface ADSR {
   /** seconds */ release: number;
 }
 
+/** Sound source for an oscillator slot. 'noise' spawns a looped white-noise
+ *  buffer instead of a tone — useful for drums, breath, wind, hi-hats. */
+export type Wave = 'sine' | 'triangle' | 'square' | 'sawtooth' | 'noise';
+
 export interface OscSpec {
-  wave: OscillatorType;
+  wave: Wave;
   /** freq multiplier — 1 = fundamental, 2 = octave up, 1.5 = perfect 5th, 0.5 = octave down */
   ratio?: number;
   /** detune in cents (±) for unison thickening */
   detune?: number;
   /** per-oscillator gain inside the voice mix, 0..1 */
   gain?: number;
+}
+
+export interface DistortionSpec {
+  /** 0..1 — drive amount through a tanh waveshaper. 0 = clean. */
+  amount: number;
 }
 
 export interface FilterSpec {
@@ -54,6 +63,7 @@ export interface VoiceProfile {
   oscillators: OscSpec[];
   amp: ADSR;
   filter?: FilterSpec;
+  distortion?: DistortionSpec;
   lfo?: LFOSpec;
   /** master scale 0..1 — keeps loud waveforms (saw, square) at parity with sines */
   masterGain: number;
@@ -80,10 +90,15 @@ export function blankVoice(): VoiceSpec {
   };
 }
 
-/** kebab-case, alphanumeric + hyphens only, max 40 chars. */
+/**
+ * Slug for use as object key + share-URL fragment. Preserves Unicode letters
+ * (Hindi, Sanskrit, Japanese, etc.) via \p{L}\p{N}, so a label like "Tanpura"
+ * or "विशेष" produces a meaningful, unique id rather than the literal
+ * fallback `voice`.
+ */
 export function slugifyLabel(label: string): string {
   return label.trim().toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 40)
     || 'voice';
@@ -91,6 +106,38 @@ export function slugifyLabel(label: string): string {
 
 export interface VoiceNote {
   release(immediate: boolean): void;
+}
+
+// ===========================================================================
+// Noise + distortion helpers.
+// ===========================================================================
+
+// White-noise buffer — 2 seconds at the AudioContext's sample rate, cached
+// per-context so noise oscillators don't regenerate the buffer per note.
+const noiseBufferCache = new WeakMap<AudioContext, AudioBuffer>();
+function getNoiseBuffer(ctx: AudioContext): AudioBuffer {
+  let buf = noiseBufferCache.get(ctx);
+  if (buf) return buf;
+  const seconds = 2;
+  buf = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  noiseBufferCache.set(ctx, buf);
+  return buf;
+}
+
+// tanh-shaped waveshaper curve. amount=0 is near-identity, amount=1 hard.
+function makeDistortionCurve(amount: number): Float32Array {
+  const drive = 1 + Math.max(0, Math.min(1, amount)) * 19;
+  const n = 256;
+  // Allocate on an explicit ArrayBuffer so the resulting Float32Array satisfies
+  // WaveShaperNode.curve's narrower TypeScript signature.
+  const curve = new Float32Array(new ArrayBuffer(n * 4));
+  for (let i = 0; i < n; i++) {
+    const x = (i / (n - 1)) * 2 - 1;
+    curve[i] = Math.tanh(x * drive);
+  }
+  return curve;
 }
 
 // ===========================================================================
@@ -145,36 +192,76 @@ export function spawnFromProfile(
     ampGain.connect(filterNode);
     tail = filterNode;
   }
+
+  // Optional distortion — tanh waveshaper, post-filter so the filter
+  // colours the signal pre-saturation (classic order; lowpass → drive
+  // sounds warm, drive → lowpass sounds buzzy).
+  if (profile.distortion && profile.distortion.amount > 0) {
+    const shaper = ctx.createWaveShaper();
+    // Narrowed Float32Array typing — runtime is identical.
+    shaper.curve = makeDistortionCurve(profile.distortion.amount) as Float32Array<ArrayBuffer>;
+    shaper.oversample = '2x';
+    tail.connect(shaper);
+    tail = shaper;
+  }
+
+  // Tremolo gain — only created if an amp-target LFO is present. Sandwiched
+  // between the filter (or amp) tail and the destination so the LFO can
+  // modulate its gain around 1.0 (centred so average loudness is preserved).
+  let tremGain: GainNode | null = null;
+  if (profile.lfo && profile.lfo.target === 'amp') {
+    tremGain = ctx.createGain();
+    tremGain.gain.value = 1;
+    tail.connect(tremGain);
+    tail = tremGain;
+  }
   tail.connect(dest);
 
-  // Oscillators feed into ampGain through per-osc gain.
-  const oscs: OscillatorNode[] = [];
+  // Oscillators feed into ampGain through per-osc gain. Each is either an
+  // OscillatorNode (tone) or an AudioBufferSourceNode looping white noise.
+  // Both share start/stop + a detune AudioParam, so the LFO can wobble either.
+  type Source = OscillatorNode | AudioBufferSourceNode;
+  const oscs: Source[] = [];
   for (const o of profile.oscillators) {
-    const osc = ctx.createOscillator();
-    osc.type = o.wave;
-    osc.frequency.value = freq * (o.ratio ?? 1);
-    osc.detune.value = o.detune ?? 0;
+    let src: Source;
+    if (o.wave === 'noise') {
+      const noise = ctx.createBufferSource();
+      noise.buffer = getNoiseBuffer(ctx);
+      noise.loop = true;
+      src = noise;
+    } else {
+      const osc = ctx.createOscillator();
+      osc.type = o.wave;
+      osc.frequency.value = freq * (o.ratio ?? 1);
+      src = osc;
+    }
+    src.detune.value = o.detune ?? 0;
     if ((o.gain ?? 1) !== 1) {
       const sg = ctx.createGain();
       sg.gain.value = o.gain ?? 1;
-      osc.connect(sg).connect(ampGain);
+      src.connect(sg).connect(ampGain);
     } else {
-      osc.connect(ampGain);
+      src.connect(ampGain);
     }
-    osc.start(t0);
-    oscs.push(osc);
+    src.start(t0);
+    oscs.push(src);
   }
 
-  // Optional LFO (pitch-target only for Phase 1 — amp tremolo isn't used by any voice yet).
+  // Optional LFO. Pitch target → modulate every source's detune (cents). Amp
+  // target → modulate tremGain.gain around its 1.0 base (0..1 depth).
   let lfo: OscillatorNode | null = null;
-  if (profile.lfo && profile.lfo.target === 'pitch') {
+  if (profile.lfo) {
     lfo = ctx.createOscillator();
     lfo.type = profile.lfo.wave;
     lfo.frequency.value = profile.lfo.rate;
     const lfoGain = ctx.createGain();
-    lfoGain.gain.value = profile.lfo.depth; // cents
+    lfoGain.gain.value = profile.lfo.depth;
     lfo.connect(lfoGain);
-    for (const osc of oscs) lfoGain.connect(osc.detune);
+    if (profile.lfo.target === 'pitch') {
+      for (const osc of oscs) lfoGain.connect(osc.detune);
+    } else if (tremGain) {
+      lfoGain.connect(tremGain.gain);
+    }
     lfo.start(t0);
   }
 
@@ -378,4 +465,110 @@ export function lookupVoice(
   if (id in VOICES) return VOICES[id as VoiceId];
   if (id in userVoices) return userVoices[id];
   return VOICES.sine;
+}
+
+// ===========================================================================
+// Validation — used when ingesting voices from untrusted sources (URL hash
+// shares + localStorage). Clamps numbers, fills defaults, drops anything
+// catastrophic. The synth assumes well-formed input; this is the perimeter.
+// ===========================================================================
+
+const WAVE_TYPES: ReadonlySet<Wave> = new Set<Wave>(['sine', 'triangle', 'square', 'sawtooth', 'noise']);
+const LFO_WAVE_TYPES: ReadonlySet<OscillatorType> = new Set<OscillatorType>(['sine', 'triangle', 'square', 'sawtooth']);
+const FILTER_TYPES = new Set<BiquadFilterType>(['lowpass', 'highpass', 'bandpass', 'notch']);
+const clamp = (v: number, lo: number, hi: number) =>
+  Number.isFinite(v) ? Math.min(Math.max(v, lo), hi) : lo;
+
+function validateADSR(maybe: unknown): ADSR {
+  const m = (maybe ?? {}) as Partial<ADSR>;
+  return {
+    attack:  clamp(Number(m.attack  ?? 0.02), 0, 4),
+    decay:   clamp(Number(m.decay   ?? 0.30), 0, 4),
+    sustain: clamp(Number(m.sustain ?? 0.60), 0, 1),
+    release: clamp(Number(m.release ?? 0.40), 0, 8),
+  };
+}
+
+function validateOsc(maybe: unknown): OscSpec {
+  const m = (maybe ?? {}) as Partial<OscSpec>;
+  return {
+    wave:   WAVE_TYPES.has(m.wave as Wave) ? (m.wave as Wave) : 'sine',
+    ratio:  clamp(Number(m.ratio  ?? 1), 0.01, 16),
+    detune: clamp(Number(m.detune ?? 0), -200, 200),
+    gain:   clamp(Number(m.gain   ?? 1), 0, 1),
+  };
+}
+
+function validateDistortion(maybe: unknown): DistortionSpec | undefined {
+  if (!maybe || typeof maybe !== 'object') return undefined;
+  const m = maybe as Partial<DistortionSpec>;
+  const amount = clamp(Number(m.amount ?? 0), 0, 1);
+  if (amount <= 0) return undefined;
+  return { amount };
+}
+
+function validateFilter(maybe: unknown): FilterSpec | undefined {
+  if (!maybe || typeof maybe !== 'object') return undefined;
+  const m = maybe as Partial<FilterSpec>;
+  const f: FilterSpec = {
+    type:     FILTER_TYPES.has(m.type as BiquadFilterType) ? (m.type as BiquadFilterType) : 'lowpass',
+    baseFreq: clamp(Number(m.baseFreq ?? 1200), 20, 20000),
+    q:        clamp(Number(m.q ?? 0.7), 0.05, 30),
+  };
+  if (m.env) f.env = validateADSR(m.env);
+  if (m.peakFreq != null) f.peakFreq = clamp(Number(m.peakFreq), 20, 20000);
+  return f;
+}
+
+function validateLFO(maybe: unknown): LFOSpec | undefined {
+  if (!maybe || typeof maybe !== 'object') return undefined;
+  const m = maybe as Partial<LFOSpec>;
+  const target = m.target === 'amp' ? 'amp' : 'pitch';
+  return {
+    wave:   LFO_WAVE_TYPES.has(m.wave as OscillatorType) ? (m.wave as OscillatorType) : 'sine',
+    rate:   clamp(Number(m.rate  ?? 5), 0.05, 40),
+    depth:  clamp(Number(m.depth ?? (target === 'pitch' ? 10 : 0.3)), 0, target === 'pitch' ? 200 : 1),
+    target,
+  };
+}
+
+/**
+ * Returns a fully-validated VoiceSpec, or null if the input is so malformed
+ * it can't represent a voice (e.g. not an object at all).
+ */
+export function validateVoiceSpec(maybe: unknown): VoiceSpec | null {
+  if (!maybe || typeof maybe !== 'object') return null;
+  const m = maybe as Partial<VoiceSpec> & { profile?: Partial<VoiceProfile> };
+
+  const rawOsc = Array.isArray(m.profile?.oscillators) ? m.profile.oscillators : [];
+  const oscillators = rawOsc.slice(0, 8).map(validateOsc);
+  if (oscillators.length === 0) oscillators.push({ wave: 'sine' });
+
+  const profile: VoiceProfile = {
+    oscillators,
+    amp:        validateADSR(m.profile?.amp),
+    filter:     validateFilter(m.profile?.filter),
+    distortion: validateDistortion(m.profile?.distortion),
+    lfo:        validateLFO(m.profile?.lfo),
+    masterGain: clamp(Number(m.profile?.masterGain ?? 0.22), 0, 1),
+  };
+
+  return {
+    id:    typeof m.id    === 'string' ? m.id.slice(0, 80)    : '',
+    label: typeof m.label === 'string' ? m.label.slice(0, 80) : '',
+    blurb: typeof m.blurb === 'string' ? m.blurb.slice(0, 80) : '',
+    profile,
+  };
+}
+
+/** Validate a whole userVoices record; drop entries that fail. */
+export function validateUserVoicesRecord(maybe: unknown): Record<string, VoiceSpec> {
+  if (!maybe || typeof maybe !== 'object') return {};
+  const result: Record<string, VoiceSpec> = {};
+  for (const [k, v] of Object.entries(maybe as Record<string, unknown>)) {
+    if (typeof k !== 'string' || !k) continue;
+    const spec = validateVoiceSpec(v);
+    if (spec) result[k] = { ...spec, id: k };
+  }
+  return result;
 }

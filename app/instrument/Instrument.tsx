@@ -18,7 +18,7 @@ import { OptionToggle } from './components/OptionToggle';
 import { VoicePicker } from './components/VoicePicker';
 import { VoiceEditor } from './components/VoiceEditor';
 import { CustomIO } from './components/CustomIO';
-import type { VoiceSpec } from './lib/audio/voices';
+import { validateVoiceSpec } from './lib/audio/voices';
 import { PITCH_CLASS_NAMES } from './lib/util';
 import { PC_TO_SRUTI, SRUTI_LABELS } from './lib/tuning/sruti';
 import { extractAccent, applyAccent } from './lib/accent';
@@ -79,8 +79,8 @@ export function Instrument() {
     try {
       const b64 = hash.slice('#voice='.length);
       const json = atob(decodeURIComponent(b64));
-      const decoded = JSON.parse(json) as VoiceSpec;
-      if (decoded && typeof decoded === 'object' && decoded.profile) {
+      const decoded = validateVoiceSpec(JSON.parse(json));
+      if (decoded) {
         useStore.getState().openVoiceEditor({ ...decoded, id: '' }, null);
       }
     } catch {

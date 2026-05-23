@@ -5,13 +5,13 @@ import { useStore } from '../store/store';
 import { dispatch } from '../lib/dispatch';
 import { slugifyLabel } from '../lib/audio/voices';
 import type {
-  ADSR, FilterSpec, LFOSpec, OscSpec, VoiceProfile, VoiceSpec,
+  ADSR, DistortionSpec, FilterSpec, LFOSpec, OscSpec, VoiceProfile, VoiceSpec,
 } from '../lib/audio/voices';
 import { cn } from '../lib/utils';
 
 const TEST_FREQ_HZ  = 261.63; // C4
 const TEST_HOLD_MS  = 600;
-const MAX_OSC       = 4;
+const MAX_OSC       = 8;
 const COMMON_RATIOS: readonly { value: number; label: string }[] = [
   { value: 0.5,  label: '½'   },
   { value: 1,    label: '1'   },
@@ -48,9 +48,9 @@ function Chip({
         'inst-glass-chip inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[11px]',
         'transition-colors duration-[220ms] ease-inst-out-expo focus:outline-none',
         'disabled:opacity-30 disabled:cursor-not-allowed',
-        variant === 'default'     && 'text-inst-muted-foreground hover:text-inst-foreground hover:bg-white/[0.08]',
-        variant === 'primary'     && 'bg-white/[0.10] text-inst-foreground hover:bg-white/[0.16]',
-        variant === 'destructive' && 'text-inst-destructive/80 hover:text-inst-destructive hover:bg-inst-destructive/[0.08]',
+        variant === 'default'     && 'text-inst-muted-foreground hover:text-inst-foreground hover:bg-white/[0.10]',
+        variant === 'primary'     && 'bg-white/[0.14] text-inst-foreground hover:bg-white/[0.20]',
+        variant === 'destructive' && 'text-inst-destructive/80 hover:text-inst-destructive hover:bg-inst-destructive/[0.10]',
         className,
       )}
     >
@@ -138,11 +138,15 @@ function ADSRControls({
 }
 
 const WAVE_OPTIONS = [
-  { value: 'sine',     label: 'Sine' },
-  { value: 'triangle', label: 'Tri'  },
-  { value: 'square',   label: 'Sq'   },
-  { value: 'sawtooth', label: 'Saw'  },
+  { value: 'sine',     label: 'Sine'  },
+  { value: 'triangle', label: 'Tri'   },
+  { value: 'square',   label: 'Sq'    },
+  { value: 'sawtooth', label: 'Saw'   },
+  { value: 'noise',    label: 'Noise' },
 ] as const;
+
+// LFO can't use noise (no rate-modulated noise concept here).
+const LFO_WAVE_OPTIONS = WAVE_OPTIONS.filter((o) => o.value !== 'noise') as ReadonlyArray<{ value: Exclude<(typeof WAVE_OPTIONS)[number]['value'], 'noise'>; label: string }>;
 
 const FILTER_TYPE_OPTIONS = [
   { value: 'lowpass',  label: 'Low'   },
@@ -166,9 +170,11 @@ export function VoiceEditor() {
   const userVoices      = useStore((s) => s.userVoices);
   const updateDraft     = useStore((s) => s.updateVoiceEditor);
   const closeEditor     = useStore((s) => s.closeVoiceEditor);
+  const discardDraft    = useStore((s) => s.discardVoiceDraft);
   const deleteUserVoice = useStore((s) => s.deleteUserVoice);
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]       = useState<string | null>(null);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
   const initialIdRef = useRef<string>('');
 
   useEffect(() => {
@@ -233,6 +239,19 @@ export function VoiceEditor() {
     }
   };
 
+  const toggleDistortion = () => {
+    if (draft.profile.distortion) {
+      patchProfile({ distortion: undefined });
+    } else {
+      const d: DistortionSpec = { amount: 0.4 };
+      patchProfile({ distortion: d });
+    }
+  };
+  const patchDistortion = (p: Partial<DistortionSpec>) => {
+    if (!draft.profile.distortion) return;
+    patchProfile({ distortion: { ...draft.profile.distortion, ...p } });
+  };
+
   const toggleLFO = () => {
     if (draft.profile.lfo) {
       patchProfile({ lfo: undefined });
@@ -265,24 +284,57 @@ export function VoiceEditor() {
     deleteUserVoice(editingId);
   };
 
+  // Build a #voice=... share URL containing the JSON of the current draft.
+  // Tries clipboard API; falls back to a manual textarea-copy if blocked.
+  const onShare = async () => {
+    if (!draft) return;
+    setError(null);
+    try {
+      const payload = JSON.stringify({
+        label: draft.label,
+        blurb: draft.blurb,
+        profile: draft.profile,
+      });
+      const b64 = btoa(payload);
+      const url = `${window.location.origin}${window.location.pathname}#voice=${encodeURIComponent(b64)}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        setShareNotice('Link copied');
+      } catch {
+        // clipboard blocked → write to URL bar so user can copy manually
+        window.history.replaceState(null, '', `#voice=${encodeURIComponent(b64)}`);
+        setShareNotice('Link in URL bar');
+      }
+      setTimeout(() => setShareNotice(null), 1800);
+    } catch {
+      setError('Could not build share link.');
+    }
+  };
+
+  const onDiscard = () => {
+    setError(null);
+    discardDraft();
+  };
+
   const isEditing = !!editingId;
-  const oscList = draft.profile.oscillators;
-  const filter = draft.profile.filter;
-  const lfo    = draft.profile.lfo;
+  const oscList   = draft.profile.oscillators;
+  const filter    = draft.profile.filter;
+  const distortion = draft.profile.distortion;
+  const lfo       = draft.profile.lfo;
 
   return (
-    // Gradient-border wrapper — matches VoicePicker / KeyPicker / CanvasEditPanel exactly.
+    // Panel surface — same vocabulary as the header chips (white-tint glass),
+    // just at panel scale. Distinct from the picker/tooltip family which is
+    // dark-on-dark because those need to occlude the keys below.
     <div
       role="dialog"
       aria-label="voice editor"
-      className="fixed left-1/2 top-[78px] z-40 w-[calc(100vw-24px)] max-w-[640px] -translate-x-1/2 rounded-2xl p-[1px]
-                 shadow-[0_22px_70px_rgba(0,0,0,0.55)]"
-      style={{
-        background:
-          'linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03), rgba(255,255,255,0.10))',
-      }}
+      className="fixed left-1/2 top-[78px] z-40 w-[calc(100vw-24px)] max-w-[640px] -translate-x-1/2
+                 flex max-h-[calc(100vh-160px)] flex-col overflow-hidden
+                 rounded-2xl border border-white/[0.10] bg-white/[0.06] backdrop-blur-2xl
+                 shadow-[0_22px_70px_rgba(0,0,0,0.45)]"
     >
-      <div className="flex max-h-[calc(100vh-160px)] flex-col overflow-hidden rounded-2xl bg-black/65 backdrop-blur-xl">
+      <div className="flex max-h-full flex-col overflow-hidden">
 
         {/* Header strip — name + close. No buttons crammed in here. */}
         <div className="flex items-center gap-3 px-5 py-3.5">
@@ -311,18 +363,7 @@ export function VoiceEditor() {
         </div>
 
         {/* Body strip — scrollable form. Section rhythm by space, not lines. */}
-        <div className="flex-1 overflow-y-auto px-5 pb-5">
-          <input
-            type="text"
-            placeholder="one-line description (shown in picker)"
-            value={draft.blurb}
-            onChange={(e) => patch({ blurb: e.target.value })}
-            maxLength={48}
-            className="block w-full bg-transparent font-mono text-[12px]
-                       text-inst-muted-foreground placeholder:text-inst-muted-foreground/40
-                       focus:outline-none focus:text-inst-foreground mb-6"
-          />
-
+        <div className="flex-1 overflow-y-auto px-5 pb-5 pt-2">
           {error && (
             <div className="mb-5 rounded-md border border-inst-destructive/40 bg-inst-destructive/10
                             px-3 py-2 font-mono text-[11px] text-inst-destructive">
@@ -340,9 +381,11 @@ export function VoiceEditor() {
           >
             Oscillators
           </SectionLabel>
-          <div className="space-y-3">
-            {oscList.map((osc, i) => (
-              <div key={i} className="inst-glass-chip rounded-xl p-3">
+          <div className="divide-y divide-white/[0.06]">
+            {oscList.map((osc, i) => {
+              const isNoise = osc.wave === 'noise';
+              return (
+              <div key={i} className={cn('py-3', i === 0 && 'pt-0')}>
                 <div className="mb-3 flex items-center justify-between">
                   <Segmented
                     options={WAVE_OPTIONS}
@@ -353,49 +396,62 @@ export function VoiceEditor() {
                     <Chip variant="destructive" onClick={() => removeOsc(i)}>remove</Chip>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3">
-                  <div>
+                {isNoise ? (
+                  // Noise sources have no pitch — only the gain slider applies.
+                  <div className="max-w-[260px]">
                     <Slider
-                      label="ratio"
-                      min={0.25} max={8} step={0.01}
-                      value={osc.ratio ?? 1}
-                      onChange={(ratio) => updateOsc(i, { ratio })}
-                      format={(v) => `×${v.toFixed(2)}`}
+                      label="gain"
+                      min={0} max={1} step={0.01}
+                      value={osc.gain ?? 1}
+                      onChange={(gain) => updateOsc(i, { gain })}
                     />
-                    <div className="mt-1 flex gap-1">
-                      {COMMON_RATIOS.map((r) => (
-                        <button
-                          key={r.value}
-                          type="button"
-                          onClick={() => updateOsc(i, { ratio: r.value })}
-                          className={cn(
-                            'rounded px-1.5 py-0.5 font-mono text-[10px] transition-colors',
-                            (osc.ratio ?? 1) === r.value
-                              ? 'bg-white/[0.14] text-inst-foreground'
-                              : 'text-inst-muted-foreground hover:text-inst-foreground',
-                          )}
-                        >
-                          {r.label}
-                        </button>
-                      ))}
-                    </div>
                   </div>
-                  <Slider
-                    label="detune ¢"
-                    min={-100} max={100} step={1}
-                    value={osc.detune ?? 0}
-                    onChange={(detune) => updateOsc(i, { detune })}
-                    format={(v) => v === 0 ? '0' : v > 0 ? `+${v}` : `${v}`}
-                  />
-                  <Slider
-                    label="gain"
-                    min={0} max={1} step={0.01}
-                    value={osc.gain ?? 1}
-                    onChange={(gain) => updateOsc(i, { gain })}
-                  />
-                </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3">
+                    <div>
+                      <Slider
+                        label="ratio"
+                        min={0.25} max={8} step={0.01}
+                        value={osc.ratio ?? 1}
+                        onChange={(ratio) => updateOsc(i, { ratio })}
+                        format={(v) => `×${v.toFixed(2)}`}
+                      />
+                      <div className="mt-1 flex gap-1">
+                        {COMMON_RATIOS.map((r) => (
+                          <button
+                            key={r.value}
+                            type="button"
+                            onClick={() => updateOsc(i, { ratio: r.value })}
+                            className={cn(
+                              'rounded px-1.5 py-0.5 font-mono text-[10px] transition-colors',
+                              (osc.ratio ?? 1) === r.value
+                                ? 'bg-white/[0.14] text-inst-foreground'
+                                : 'text-inst-muted-foreground hover:text-inst-foreground',
+                            )}
+                          >
+                            {r.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <Slider
+                      label="detune ¢"
+                      min={-100} max={100} step={1}
+                      value={osc.detune ?? 0}
+                      onChange={(detune) => updateOsc(i, { detune })}
+                      format={(v) => v === 0 ? '0' : v > 0 ? `+${v}` : `${v}`}
+                    />
+                    <Slider
+                      label="gain"
+                      min={0} max={1} step={0.01}
+                      value={osc.gain ?? 1}
+                      onChange={(gain) => updateOsc(i, { gain })}
+                    />
+                  </div>
+                )}
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Amplitude envelope */}
@@ -481,6 +537,36 @@ export function VoiceEditor() {
             )}
           </div>
 
+          {/* Distortion */}
+          <div className="mt-7">
+            <SectionLabel
+              action={
+                <Chip
+                  variant={distortion ? 'primary' : 'default'}
+                  onClick={toggleDistortion}
+                >
+                  {distortion ? 'on' : 'off'}
+                </Chip>
+              }
+            >
+              Distortion
+            </SectionLabel>
+            {distortion ? (
+              <div className="max-w-[260px]">
+                <Slider
+                  label="drive"
+                  min={0} max={1} step={0.01}
+                  value={distortion.amount}
+                  onChange={(amount) => patchDistortion({ amount })}
+                />
+              </div>
+            ) : (
+              <p className="font-mono text-[11px] text-inst-muted-foreground/60">
+                Tanh waveshaper — adds warmth at low drive, grit at high.
+              </p>
+            )}
+          </div>
+
           {/* LFO */}
           <div className="mt-7">
             <SectionLabel
@@ -496,7 +582,7 @@ export function VoiceEditor() {
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <Segmented
-                    options={WAVE_OPTIONS}
+                    options={LFO_WAVE_OPTIONS}
                     value={lfo.wave}
                     onChange={(wave) => patchLFO({ wave })}
                   />
@@ -543,10 +629,15 @@ export function VoiceEditor() {
           </div>
         </div>
 
-        {/* Footer strip — action bar. Test left, save / delete right. */}
-        <div className="flex items-center gap-2 border-t border-white/[0.05] bg-black/30 px-5 py-3">
+        {/* Footer strip — action bar. */}
+        <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.06] px-5 py-3">
           <Chip onClick={playTestNote}>Test ♪</Chip>
+          <Chip onClick={onShare}>Share</Chip>
+          {shareNotice && (
+            <span className="font-mono text-[11px] text-inst-foreground/80">{shareNotice}</span>
+          )}
           <span className="flex-1" />
+          <Chip variant="destructive" onClick={onDiscard}>Discard</Chip>
           {isEditing && <Chip variant="destructive" onClick={onDelete}>Delete</Chip>}
           <Chip variant="primary" onClick={onSave}>{isEditing ? 'Save' : 'Save as new'}</Chip>
         </div>
