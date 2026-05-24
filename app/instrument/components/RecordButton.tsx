@@ -55,20 +55,20 @@ export function RecordButton() {
       type="button"
       onClick={onClick}
       title={recording ? 'stop and download' : 'start recording'}
-      className="inst-glass-chip inline-flex items-center gap-2 rounded-full px-3 py-1 transition-colors duration-[220ms] ease-inst-out-expo hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring"
+      className="inst-glass-chip inline-flex items-center gap-2 rounded-full px-3 py-1 w-[120px] transition-colors duration-[220ms] ease-inst-out-expo hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring"
     >
       <span
         className={cn(
-          'h-2 w-2 rounded-full transition-colors duration-[220ms] ease-inst-out-expo',
+          'h-2 w-2 rounded-full shrink-0 transition-colors duration-[220ms] ease-inst-out-expo',
           recording
             ? 'bg-inst-destructive shadow-[0_0_10px_hsl(var(--inst-destructive))] animate-pulse'
             : 'bg-inst-muted-foreground'
         )}
       />
-      <span className="font-mono text-[10px] uppercase tracking-widest text-inst-muted-foreground">
+      <span className="font-mono text-[10px] uppercase tracking-widest text-inst-muted-foreground shrink-0">
         rec
       </span>
-      <span className="font-mono text-sm text-inst-foreground">{label}</span>
+      <span className="font-mono text-sm text-inst-foreground truncate min-w-0 flex-1">{label}</span>
     </button>
   );
 }

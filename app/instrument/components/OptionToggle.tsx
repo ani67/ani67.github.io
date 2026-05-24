@@ -34,16 +34,16 @@ export function OptionToggle() {
         onClick={toggle}
         aria-pressed={optionLock}
         className={[
-          'inst-glass-chip inline-flex items-center gap-2 rounded-full px-3 py-1',
+          'inst-glass-chip inline-flex items-center gap-2 rounded-full px-3 py-1 w-[120px]',
           'transition-colors duration-[220ms] ease-inst-out-expo',
           'hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring',
           optionLock ? 'bg-white/[0.12] text-inst-foreground' : '',
         ].join(' ')}
       >
-        <span className="font-mono text-[10px] uppercase tracking-widest text-inst-muted-foreground">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-inst-muted-foreground shrink-0">
           chord
         </span>
-        <span className="font-mono text-sm text-inst-foreground">
+        <span className="font-mono text-sm text-inst-foreground truncate min-w-0 flex-1 text-left">
           {optionLock ? 'on' : 'off'}
         </span>
       </button>

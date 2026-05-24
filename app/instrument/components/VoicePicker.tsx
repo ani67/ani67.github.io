@@ -144,16 +144,16 @@ export function VoicePicker() {
           onClick={togglePicker}
           aria-haspopup="listbox"
           aria-expanded={open}
-          className="inst-glass-chip inline-flex items-center gap-2 rounded-full px-3 py-1 transition-colors duration-[220ms] ease-inst-out-expo hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring"
+          className="inst-glass-chip inline-flex items-center gap-2 rounded-full px-3 py-1 w-[160px] transition-colors duration-[220ms] ease-inst-out-expo hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring"
         >
           <span className="font-mono text-[10px] uppercase tracking-widest text-inst-muted-foreground shrink-0">
             voice
           </span>
-          <span className="font-mono text-sm text-inst-foreground truncate max-w-[140px]">{currentVoice.label || 'Sine'}</span>
+          <span className="font-mono text-sm text-inst-foreground truncate min-w-0 flex-1 text-left">{currentVoice.label || 'Sine'}</span>
           <svg
             width="10" height="10" viewBox="0 0 10 10" fill="none"
             stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"
-            className={cn('text-inst-muted-foreground transition-transform', open && 'rotate-180')}
+            className={cn('text-inst-muted-foreground shrink-0 transition-transform', open && 'rotate-180')}
           >
             <path d="M2.5 4l2.5 2.5L7.5 4" />
           </svg>

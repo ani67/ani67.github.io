@@ -165,47 +165,54 @@ export function Instrument() {
             <RecordButton />
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Pill
-              label={systemRootLabel ? 'tonic' : 'root'}
-              value={tonicValue}
-              tooltip={
-                systemRootLabel
-                  ? <>Tonic — the pitch the keyboard is anchored to, shown as its system label plus the Western pitch class. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
-                  : <>Root note — the tonic the active scale and Option-chords are built from. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
-              }
-            />
-            <span className="inline-flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => void dispatch({ type: 'ShiftPeriod', delta: -1 })}
-                aria-label={`${periodLabel} down`}
-                className="inst-glass-chip inline-flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm text-inst-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-inst-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring md:hidden"
-              >
-                −
-              </button>
-              <Pill
-                label={periodLabel === 'octave' ? 'oct' : periodLabel}
-                value={octLabel}
-                tooltip={<>{periodLabel[0].toUpperCase() + periodLabel.slice(1)} shift relative to the default range. Use <Kbd>[</Kbd> and <Kbd>]</Kbd> to nudge down/up.</>}
-              />
-              <button
-                type="button"
-                onClick={() => void dispatch({ type: 'ShiftPeriod', delta: +1 })}
-                aria-label={`${periodLabel} up`}
-                className="inst-glass-chip inline-flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm text-inst-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-inst-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring md:hidden"
-              >
-                +
-              </button>
-            </span>
             <ChordContext />
             <SystemPicker />
-            <ModeToggle />
-            <OptionToggle />
             <VoicePicker />
           </div>
         </header>
 
         <Keyboard />
+
+        {/* Playing controls — root, octave shift, mode, chord. Below the keyboard
+            because these are the things adjusted *while playing*; the chips
+            above are configuration. */}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Pill
+            label={systemRootLabel ? 'tonic' : 'root'}
+            value={tonicValue}
+            tooltip={
+              systemRootLabel
+                ? <>Tonic — the pitch the keyboard is anchored to, shown as its system label plus the Western pitch class. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
+                : <>Root note — the tonic the active scale and Option-chords are built from. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
+            }
+          />
+          <span className="inline-flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => void dispatch({ type: 'ShiftPeriod', delta: -1 })}
+              aria-label={`${periodLabel} down`}
+              className="inst-glass-chip inline-flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm text-inst-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-inst-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring md:hidden"
+            >
+              −
+            </button>
+            <Pill
+              label={periodLabel === 'octave' ? 'oct' : periodLabel}
+              value={octLabel}
+              tooltip={<>{periodLabel[0].toUpperCase() + periodLabel.slice(1)} shift relative to the default range. Use <Kbd>[</Kbd> and <Kbd>]</Kbd> to nudge down/up.</>}
+              className="w-[90px]"
+            />
+            <button
+              type="button"
+              onClick={() => void dispatch({ type: 'ShiftPeriod', delta: +1 })}
+              aria-label={`${periodLabel} up`}
+              className="inst-glass-chip inline-flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm text-inst-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-inst-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring md:hidden"
+            >
+              +
+            </button>
+          </span>
+          <ModeToggle />
+          <OptionToggle />
+        </div>
       </main>
 
       <VoiceEditor />
