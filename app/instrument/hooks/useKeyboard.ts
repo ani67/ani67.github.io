@@ -78,13 +78,11 @@ export function useKeyboard(): void {
       const a = resolveKeyDown(evt, {
         root: s.root,
         baseOctave: s.baseOctave,
-        octaveShift: s.octaveShift,
-        tuning: s.tuning,
+        periodShift: s.periodShift,
+        systemId: s.systemId,
         mode: s.mode,
-        chordScaleTET:   s.chordScaleTET,
-        chordScaleSruti: s.chordScaleSruti,
-        customMapTET:    s.customMapTET,
-        customMapSruti:  s.customMapSruti,
+        activeScales: s.activeScales,
+        customMaps:   s.customMaps,
       });
       if (a) void dispatch(a);
     };

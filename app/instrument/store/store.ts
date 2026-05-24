@@ -1,15 +1,18 @@
 import { create } from 'zustand';
-import type { Mode, RagaName, ScaleName, Tuning } from '../lib/types';
-import { nextScale } from '../lib/keymap/scales';
-import { nextRaga } from '../lib/tuning/sruti';
+import type { Mode } from '../lib/types';
 import type { VoiceSpec } from '../lib/audio/voices';
 import { validateUserVoicesRecord, validateVoiceSpec } from '../lib/audio/voices';
+import { SYSTEMS, lookupSystem } from '../lib/tuning';
+
+export type CentsOverride = number | { deleted: true };
 
 const USER_VOICES_KEY  = 'instrument:userVoices:v1';
 const VOICE_PICK_KEY   = 'instrument:voice:v1';
 const VOICE_DRAFT_KEY  = 'instrument:voiceDraft:v1';
-const TUNING_KEY       = 'instrument:tuning:v1';
+const SYSTEM_KEY       = 'instrument:systemId:v2';   // v2: was 'tuning:v1' before the refactor
 const OPTION_LOCK_KEY  = 'instrument:optionLock:v1';
+const ACTIVE_SCALES_KEY = 'instrument:activeScales:v1';
+const CUSTOM_MAPS_KEY  = 'instrument:customMaps:v1';
 
 function readJSON<T>(key: string): T | null {
   if (typeof window === 'undefined') return null;
@@ -43,23 +46,32 @@ function readDraft(): VoiceSpec | null {
   const raw = readJSON<unknown>(VOICE_DRAFT_KEY);
   return raw ? validateVoiceSpec(raw) : null;
 }
-// Public export so the picker can seed a new editor session from any draft
-// the user previously had in flight (commit/discard clears it).
 export function loadPersistedDraft(): VoiceSpec | null { return readDraft(); }
 function writeDraft(spec: VoiceSpec | null): void {
   if (spec) writeJSON(VOICE_DRAFT_KEY, spec); else clearKey(VOICE_DRAFT_KEY);
 }
-function readTuning(): Tuning | null {
+function readSystemId(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    const v = window.localStorage.getItem(TUNING_KEY);
-    return v === '12tet' || v === 'sruti' ? v : null;
+    const v = window.localStorage.getItem(SYSTEM_KEY);
+    return v && v in SYSTEMS ? v : null;
   } catch { return null; }
 }
-function writeTuning(t: Tuning): void {
+function writeSystemId(id: string): void {
   if (typeof window === 'undefined') return;
-  try { window.localStorage.setItem(TUNING_KEY, t); } catch { /* quota */ }
+  try { window.localStorage.setItem(SYSTEM_KEY, id); } catch { /* quota */ }
 }
+function readActiveScales(): Record<string, string> {
+  const raw = readJSON<Record<string, string>>(ACTIVE_SCALES_KEY);
+  if (!raw || typeof raw !== 'object') return {};
+  return raw;
+}
+function writeActiveScales(m: Record<string, string>): void { writeJSON(ACTIVE_SCALES_KEY, m); }
+function readCustomMaps(): Record<string, Record<string, CentsOverride>> {
+  const raw = readJSON<Record<string, Record<string, CentsOverride>>>(CUSTOM_MAPS_KEY);
+  return raw && typeof raw === 'object' ? raw : {};
+}
+function writeCustomMaps(m: Record<string, Record<string, CentsOverride>>): void { writeJSON(CUSTOM_MAPS_KEY, m); }
 function readOptionLock(): boolean | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -74,60 +86,65 @@ function writeOptionLock(v: boolean): void {
   try { window.localStorage.setItem(OPTION_LOCK_KEY, String(v)); } catch { /* quota */ }
 }
 
-export type TETOverride   = { kind: 'tet';   semitone: number } | { kind: 'tet';   deleted: true };
-export type SrutiOverride = { kind: 'sruti'; sruti: number; octaves: number } | { kind: 'sruti'; deleted: true };
-
+/** CustomMapExport — JSON shape for save/load (CustomIO).
+ *  Cents-from-root values per (systemId, keyCode), or the deleted sentinel. */
 export interface CustomMapExport {
-  version: 1;
-  tet:   Record<string, TETOverride>;
-  sruti: Record<string, SrutiOverride>;
+  version: 2;
+  customMaps: Record<string, Record<string, CentsOverride>>;
 }
 
 interface Store {
-  // State
-  root: number;                                   // 0..11
-  baseOctave: number;                             // MIDI octave of row-4 key 0 (the lowest key)
-  octaveShift: number;                            // -3..3
-  tuning: Tuning;
-  mode: Mode;                                     // 'simple' | 'chromatic'
-  chordScaleTET:   ScaleName;                     // context for chord + highlight in 12-TET
-  chordScaleSruti: RagaName;                      // context for chord + highlight in Śruti
-  voice: string;                                   // active voice id — built-in or user-created
-  userVoices: Record<string, VoiceSpec>;           // user-created voices, keyed by id
-  voiceEditor: VoiceSpec | null;                   // live draft — when non-null, overrides voice
-  voiceEditorEditingId: string | null;             // id being edited (null = creating new)
-  optionLock: boolean;                             // sticky ⌥ — chord modifier without holding Alt
+  // ---- musical state -----------------------------------------------------
+  root: number;                                           // 0..11 pitch class (Western input)
+  baseOctave: number;                                     // base octave register
+  periodShift: number;                                    // -3..3, in periods (octave or tritave)
+  systemId: string;                                       // active tuning system id
+  mode: Mode;                                             // 'simple' | 'chromatic'
+  activeScales: Record<string, string>;                   // per-system selected scale id
+  optionLock: boolean;
+
+  // ---- audio / playback state -------------------------------------------
   activeCodes: Set<string>;
   audioReady: boolean;
-  // Per-key overrides — separate per tuning so each system has its own custom layout.
-  customMapTET:   Record<string, TETOverride>;
-  customMapSruti: Record<string, SrutiOverride>;
-  // Picker — pickerArmed: next instrument key opens picker. pickerCode: which key's picker is open.
+
+  // ---- per-key custom maps ----------------------------------------------
+  // Outer key = systemId; inner key = keyboard event.code; value = cents from root,
+  // or a "deleted" sentinel (silent in simple mode).
+  customMaps: Record<string, Record<string, CentsOverride>>;
+
+  // ---- voice editor / catalog -------------------------------------------
+  voice: string;
+  userVoices: Record<string, VoiceSpec>;
+  voiceEditor: VoiceSpec | null;
+  voiceEditorEditingId: string | null;
+
+  // ---- per-key picker ----------------------------------------------------
   pickerArmed: boolean;
   pickerCode:  string | null;
 
-  // Mutators
-  setRoot:                 (pitchClass: number) => void;
-  shiftOctave:             (delta: number) => void;
-  setTuning:               (t: Tuning) => void;
-  setMode:                 (m: Mode) => void;
-  noteOn:                  (code: string) => void;
-  noteOff:                 (code: string) => void;
-  allNotesOff:             () => void;
-  cycleChordScaleTET:      () => void;
-  cycleChordScaleSruti:    () => void;
-  hydrateVoicesFromStorage:() => void;
-  setVoice:                (id: string) => void;
-  openVoiceEditor:         (seed: VoiceSpec, editingId: string | null) => void;
-  updateVoiceEditor:       (spec: VoiceSpec) => void;
-  commitVoiceEditor:       () => string | null;     // returns new id on success, null if invalid
-  closeVoiceEditor:        () => void;              // keeps the persisted draft for restore
-  discardVoiceDraft:       () => void;              // explicit discard — clears persistence
-  deleteUserVoice:         (id: string) => void;
-  toggleOptionLock:        () => void;
-  setAudioReady:           (ready: boolean) => void;
+  // ---- mutators ----------------------------------------------------------
+  setRoot:        (pitchClass: number) => void;
+  shiftPeriod:    (delta: number) => void;
+  setSystem:      (id: string) => void;
+  setMode:        (m: Mode) => void;
+  cycleScale:     () => void;
+  noteOn:         (code: string) => void;
+  noteOff:        (code: string) => void;
+  allNotesOff:    () => void;
+  toggleOptionLock: () => void;
+  setAudioReady:    (ready: boolean) => void;
 
-  setOverride:    (code: string, override: TETOverride | SrutiOverride) => void;
+  hydrateFromStorage: () => void;
+
+  setVoice:           (id: string) => void;
+  openVoiceEditor:    (seed: VoiceSpec, editingId: string | null) => void;
+  updateVoiceEditor:  (spec: VoiceSpec) => void;
+  commitVoiceEditor:  () => string | null;
+  closeVoiceEditor:   () => void;
+  discardVoiceDraft:  () => void;
+  deleteUserVoice:    (id: string) => void;
+
+  setOverride:    (code: string, ov: CentsOverride) => void;
   clearOverride:  (code: string) => void;
   resetCustom:    () => void;
   loadCustom:     (data: CustomMapExport) => void;
@@ -140,39 +157,50 @@ interface Store {
 
 export const useStore = create<Store>((set) => ({
   root: 0,
-  baseOctave: 3,       // row 4 key 0 = C3 by default → range C3..C6 across 37 steps
-  octaveShift: 0,
-  tuning: 'sruti',
+  baseOctave: 3,
+  periodShift: 0,
+  systemId: 'hindustani',         // default — same family as the previous 'sruti'
   mode: 'simple',
-  chordScaleTET:   'major',
-  chordScaleSruti: 'yaman',
-  // Defaults at module-init. localStorage hydration runs on mount —
-  // see hydrateVoicesFromStorage() and its caller in Instrument.tsx — to
-  // avoid hydration mismatches between SSR (window-undefined) and client.
+  activeScales: {},               // populated from system defaults on hydration
+  optionLock: true,
+  activeCodes: new Set<string>(),
+  audioReady: false,
+  customMaps: {},
   voice: 'drone',
   userVoices: {},
   voiceEditor: null,
   voiceEditorEditingId: null,
-  optionLock: true,
-  activeCodes: new Set<string>(),
-  audioReady: false,
-  customMapTET:   {},
-  customMapSruti: {},
   pickerArmed: false,
   pickerCode:  null,
 
   setRoot: (pitchClass) =>
     set({ root: ((pitchClass % 12) + 12) % 12 }),
 
-  shiftOctave: (delta) =>
+  shiftPeriod: (delta) =>
     set((s) => {
-      const n = s.octaveShift + delta;
+      const n = s.periodShift + delta;
       if (n < -3 || n > 3) return {};
-      return { octaveShift: n };
+      return { periodShift: n };
     }),
 
-  setTuning: (tuning) => { writeTuning(tuning); set({ tuning }); },
-  setMode:   (mode)   => set({ mode }),
+  setSystem: (id) => {
+    if (!(id in SYSTEMS)) return;
+    writeSystemId(id);
+    set({ systemId: id });
+  },
+
+  setMode: (mode) => set({ mode }),
+
+  cycleScale: () =>
+    set((s) => {
+      const sys = lookupSystem(s.systemId);
+      const cur = s.activeScales[s.systemId] ?? sys.defaultScale;
+      const idx = sys.scales.findIndex((sc) => sc.id === cur);
+      const next = sys.scales[(idx + 1) % sys.scales.length];
+      const activeScales = { ...s.activeScales, [s.systemId]: next.id };
+      writeActiveScales(activeScales);
+      return { activeScales };
+    }),
 
   noteOn: (code) =>
     set((s) => {
@@ -196,27 +224,30 @@ export const useStore = create<Store>((set) => ({
       return { activeCodes: new Set<string>() };
     }),
 
-  cycleChordScaleTET: () =>
-    set((s) => ({ chordScaleTET: nextScale(s.chordScaleTET) })),
+  toggleOptionLock: () =>
+    set((s) => {
+      const next = !s.optionLock;
+      writeOptionLock(next);
+      return { optionLock: next };
+    }),
 
-  cycleChordScaleSruti: () =>
-    set((s) => ({ chordScaleSruti: nextRaga(s.chordScaleSruti) })),
+  setAudioReady: (ready) => set({ audioReady: ready }),
 
-  hydrateVoicesFromStorage: () => {
-    const userVoices = readUserVoices();
-    const pick       = readVoicePick();
-    const tuning     = readTuning();
-    const optionLock = readOptionLock();
+  hydrateFromStorage: () => {
+    const userVoices   = readUserVoices();
+    const pick         = readVoicePick();
+    const systemId     = readSystemId();
+    const optionLock   = readOptionLock();
+    const activeScales = readActiveScales();
+    const customMaps   = readCustomMaps();
     set((s) => ({
       userVoices,
       voice:        pick ?? s.voice,
-      tuning:       tuning ?? s.tuning,
+      systemId:     systemId ?? s.systemId,
       optionLock:   optionLock ?? s.optionLock,
+      activeScales: Object.keys(activeScales).length ? activeScales : s.activeScales,
+      customMaps,
     }));
-    // Draft is NOT restored into voiceEditor on hydration — that would
-    // auto-open the modal on every reload, which is wrong. It stays in
-    // storage and gets used as the seed when the user clicks "Make your
-    // own" via consumePersistedDraft().
   },
 
   setVoice: (id) => { writeVoicePick(id); set({ voice: id }); },
@@ -236,25 +267,23 @@ export const useStore = create<Store>((set) => ({
     set((s) => {
       const draft = s.voiceEditor;
       if (!draft) return {};
-      if (!draft.label.trim()) return {};   // require a name
-      if (!draft.id.trim()) return {};      // require a slug
+      if (!draft.label.trim()) return {};
+      if (!draft.id.trim()) return {};
       const id = draft.id;
       const next: VoiceSpec = { ...draft, id };
       const userVoices = { ...s.userVoices, [id]: next };
       writeUserVoices(userVoices);
       writeVoicePick(id);
-      writeDraft(null);                     // saved → draft cleared
+      writeDraft(null);
       outId = id;
       return { userVoices, voice: id, voiceEditor: null, voiceEditorEditingId: null };
     });
     return outId;
   },
 
-  // Close keeps the draft in storage so it auto-restores next session.
   closeVoiceEditor: () =>
     set({ voiceEditor: null, voiceEditorEditingId: null }),
 
-  // Explicit user intent to throw the draft away — also closes the editor.
   discardVoiceDraft: () => {
     writeDraft(null);
     set({ voiceEditor: null, voiceEditorEditingId: null });
@@ -266,47 +295,44 @@ export const useStore = create<Store>((set) => ({
       const userVoices = { ...s.userVoices };
       delete userVoices[id];
       writeUserVoices(userVoices);
-      // If the deleted voice was active, fall back to the default.
       const voice = s.voice === id ? 'drone' : s.voice;
       if (voice !== s.voice) writeVoicePick(voice);
       writeDraft(null);
       return { userVoices, voice, voiceEditor: null, voiceEditorEditingId: null };
     }),
 
-  toggleOptionLock: () =>
+  setOverride: (code, ov) =>
     set((s) => {
-      const next = !s.optionLock;
-      writeOptionLock(next);
-      return { optionLock: next };
+      const cur = s.customMaps[s.systemId] ?? {};
+      const nextSys = { ...cur, [code]: ov };
+      const customMaps = { ...s.customMaps, [s.systemId]: nextSys };
+      writeCustomMaps(customMaps);
+      return { customMaps };
     }),
-
-  setAudioReady: (ready) => set({ audioReady: ready }),
-
-  setOverride: (code, override) =>
-    set((s) =>
-      override.kind === 'tet'
-        ? { customMapTET:   { ...s.customMapTET,   [code]: override } }
-        : { customMapSruti: { ...s.customMapSruti, [code]: override } }
-    ),
 
   clearOverride: (code) =>
     set((s) => {
-      if (s.tuning === '12tet') {
-        if (!(code in s.customMapTET)) return {};
-        const next = { ...s.customMapTET };
-        delete next[code];
-        return { customMapTET: next };
-      }
-      if (!(code in s.customMapSruti)) return {};
-      const next = { ...s.customMapSruti };
-      delete next[code];
-      return { customMapSruti: next };
+      const cur = s.customMaps[s.systemId];
+      if (!cur || !(code in cur)) return {};
+      const nextSys = { ...cur };
+      delete nextSys[code];
+      const customMaps = { ...s.customMaps, [s.systemId]: nextSys };
+      writeCustomMaps(customMaps);
+      return { customMaps };
     }),
 
-  resetCustom: () => set({ customMapTET: {}, customMapSruti: {} }),
+  resetCustom: () =>
+    set((s) => {
+      const customMaps = { ...s.customMaps, [s.systemId]: {} };
+      writeCustomMaps(customMaps);
+      return { customMaps };
+    }),
 
-  loadCustom: (data) =>
-    set({ customMapTET: { ...data.tet }, customMapSruti: { ...data.sruti } }),
+  loadCustom: (data) => {
+    if (!data || data.version !== 2 || typeof data.customMaps !== 'object') return;
+    writeCustomMaps(data.customMaps);
+    set({ customMaps: data.customMaps });
+  },
 
   armPicker:    () => set({ pickerArmed: true }),
   disarmPicker: () => set({ pickerArmed: false }),

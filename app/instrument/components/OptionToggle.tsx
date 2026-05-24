@@ -1,15 +1,31 @@
 import { useStore } from '../store/store';
+import { lookupSystem } from '../lib/tuning';
 import { Tooltip } from './ui/tooltip';
 import { Kbd } from './ui/kbd';
 
 export function OptionToggle() {
-  const tuning     = useStore((s) => s.tuning);
   const optionLock = useStore((s) => s.optionLock);
+  const systemId   = useStore((s) => s.systemId);
   const toggle     = useStore((s) => s.toggleOptionLock);
 
-  const tip = tuning === 'sruti'
-    ? <>Auto-chord. When on, every key plays a rāga-stack chord (or a ±1 cluster if the note is out of the rāga) instead of a single svara. Hold <Kbd>⌥ Option</Kbd> for the same effect momentarily.</>
-    : <>Auto-chord. When on, every key plays a scale-diatonic chord (or a fallback major triad if out of scale) instead of a single note. Hold <Kbd>⌥ Option</Kbd> for the same effect momentarily.</>;
+  const sys = lookupSystem(systemId);
+  const explanation =
+    sys.chord.kind === 'triad'
+      ? 'plays a stack-of-thirds chord through the active scale'
+      : sys.chord.kind === 'drone'
+      ? `plays a drone (tonic + 5th) underneath each pressed note — like a transient tanpura`
+      : sys.chord.kind === 'octaves'
+      ? 'plays the pressed note + the same note one octave below (heterophonic doubling)'
+      : 'is a no-op in this tuning system';
+
+  const tip = (
+    <>
+      Auto-chord — when on, every key {explanation}. Behaviour adapts to the
+      active tuning: Western systems get tertian harmony, Indian/Arab get
+      drone-under-melody, Thai gets octave doubling. Hold <Kbd>⌥ Option</Kbd>
+      for the same effect momentarily.
+    </>
+  );
 
   return (
     <Tooltip content={tip}>

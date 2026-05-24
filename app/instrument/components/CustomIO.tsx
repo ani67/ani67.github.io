@@ -5,13 +5,12 @@ import type { CustomMapExport } from '../store/store';
 import { Tooltip } from './ui/tooltip';
 
 export function CustomIO() {
-  const tetMap   = useStore((s) => s.customMapTET);
-  const srutiMap = useStore((s) => s.customMapSruti);
+  const customMaps = useStore((s) => s.customMaps);
   const loadCustom = useStore((s) => s.loadCustom);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const onSave = () => {
-    const data: CustomMapExport = { version: 1, tet: tetMap, sruti: srutiMap };
+    const data: CustomMapExport = { version: 2, customMaps };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -32,7 +31,7 @@ export function CustomIO() {
     try {
       const text = await file.text();
       const parsed = JSON.parse(text) as CustomMapExport;
-      if (!parsed || parsed.version !== 1 || typeof parsed.tet !== 'object' || typeof parsed.sruti !== 'object') {
+      if (!parsed || parsed.version !== 2 || typeof parsed.customMaps !== 'object') {
         alert('Invalid custom-layout file.');
         return;
       }

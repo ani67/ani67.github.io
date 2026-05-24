@@ -1,16 +1,33 @@
 import { useStore } from '../store/store';
 import { cn } from '../lib/utils';
 import type { RowId } from '../lib/types';
-import { classifyTriad, isInScale, simpleStepToSemitone, triadInScale } from '../lib/keymap/scales';
-import {
-  isInRaga, PC_TO_SRUTI, simpleStepInRaga,
-  SRUTI_LABELS, SRUTI_RATIOS, SRUTI_TO_NEAREST_SEMITONE,
-} from '../lib/tuning/sruti';
-import { midiToName } from '../lib/util';
 import { resolveKeyDown } from '../lib/keymap/resolver';
 import { dispatch } from '../lib/dispatch';
 import { ensureRunning } from '../lib/audio/context';
+import {
+  lookupSystem, scaleStepFromGridStep, stepToCents,
+  westernReferenceFromCents,
+} from '../lib/tuning';
 import { KeyPicker } from './KeyPicker';
+
+/**
+ * Classify a triad's [third-semitone, fifth-semitone] shape into a Western
+ * chord-quality suffix. Returns undefined for shapes without a clean name
+ * (e.g. the [0, 5, 9] you get stacking thirds through a 5-note pentatonic).
+ * Inputs are rounded to the nearest 12-TET semitone so non-12-TET grids
+ * (Pythagorean, just intonation) still classify cleanly.
+ */
+function classifyTriadSuffix(thirdSemi: number, fifthSemi: number): string | undefined {
+  const t = ((thirdSemi % 12) + 12) % 12;
+  const f = ((fifthSemi % 12) + 12) % 12;
+  if (t === 4 && f === 7) return '';      // major
+  if (t === 3 && f === 7) return 'm';     // minor
+  if (t === 3 && f === 6) return '°';     // diminished
+  if (t === 4 && f === 8) return '+';     // augmented
+  if (t === 5 && f === 7) return 'sus4';
+  if (t === 2 && f === 7) return 'sus2';
+  return undefined;
+}
 
 const LETTER: Record<string, string> = {
   Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4', Digit5: '5',
@@ -23,105 +40,88 @@ const LETTER: Record<string, string> = {
   KeyN: 'N', KeyM: 'M', Comma: ',', Period: '.', Slash: '/',
 };
 
-function svaraLabel(sruti: number, octaves: number): string {
-  const name = SRUTI_LABELS[sruti];
-  return octaves > 0 ? `${name}′${octaves > 1 ? octaves : ''}`
-       : octaves < 0 ? `${name},${-octaves > 1 ? -octaves : ''}`
-       : name;
-}
-
 export function Key({ code, row, step, className }: { code: string; row: RowId; step: number; className?: string }) {
-  const active          = useStore((s) => s.activeCodes.has(code));
-  const tuning          = useStore((s) => s.tuning);
-  const mode            = useStore((s) => s.mode);
-  const root            = useStore((s) => s.root);
-  const baseOctave      = useStore((s) => s.baseOctave);
-  const octaveShift     = useStore((s) => s.octaveShift);
-  const chordScaleTET   = useStore((s) => s.chordScaleTET);
-  const chordScaleSruti = useStore((s) => s.chordScaleSruti);
-  const optionLock      = useStore((s) => s.optionLock);
-  const tetOv           = useStore((s) => s.customMapTET[code]);
-  const srutiOv         = useStore((s) => s.customMapSruti[code]);
-  const pickerCode      = useStore((s) => s.pickerCode);
-  const pickerArmed     = useStore((s) => s.pickerArmed);
-  const openPicker      = useStore((s) => s.openPicker);
+  const active        = useStore((s) => s.activeCodes.has(code));
+  const systemId      = useStore((s) => s.systemId);
+  const mode          = useStore((s) => s.mode);
+  const root          = useStore((s) => s.root);
+  const baseOctave    = useStore((s) => s.baseOctave);
+  const periodShift   = useStore((s) => s.periodShift);
+  const activeScales  = useStore((s) => s.activeScales);
+  const overrides     = useStore((s) => s.customMaps[s.systemId]);
+  const ov            = overrides?.[code];
+  const pickerCode    = useStore((s) => s.pickerCode);
+  const pickerArmed   = useStore((s) => s.pickerArmed);
+  const openPicker    = useStore((s) => s.openPicker);
 
-  const ov         = tuning === '12tet' ? tetOv : srutiOv;
-  const isDeleted  = mode === 'simple' && !!ov && 'deleted' in ov;
-  const isOverride = mode === 'simple' && !!ov && !('deleted' in ov);
+  const sys = lookupSystem(systemId);
+  const scaleId = activeScales[systemId] ?? sys.defaultScale;
+  const scale = sys.scales.find((s) => s.id === scaleId) ?? sys.scales[0];
+
+  const isDeleted  = mode === 'simple' && !!ov && typeof ov === 'object' && ov.deleted === true;
+  const isOverride = mode === 'simple' && typeof ov === 'number';
   const pickerOpen = pickerCode === code;
 
-  let pitchLabel: string;
-  let subLabel: string | null = null;   // greyed second line — Western reference in Śruti mode
-  let inContext: boolean;
-  if (tuning === 'sruti') {
-    // Fixed-Sa labelling: shift the svara labels by where root sits in the 22-śruti grid,
-    // so the label on each key matches the absolute pitch it plays.
-    const N      = SRUTI_RATIOS.length;
-    const offset = PC_TO_SRUTI[root];
+  // Compute which grid step this key produces, and whether it sits inside the
+  // active scale. All systems handled uniformly via grid math.
+  const rootStep = sys.pcToStep[root] ?? 0;
+  const gridSize = sys.grid.stepsCents.length;
+  const scaleLen = scale.steps.length;
 
-    let absSruti: number;
-    let totalOct: number;
-    if (mode === 'simple') {
-      let sruti: number, octaves: number;
-      if (srutiOv && !('deleted' in srutiOv)) {
-        sruti   = srutiOv.sruti;
-        octaves = srutiOv.octaves;
-      } else {
-        const r = simpleStepInRaga(chordScaleSruti, step);
-        sruti   = r.sruti;
-        octaves = r.octaves;
-      }
-      const total    = sruti + offset;
-      absSruti       = ((total % N) + N) % N;
-      const extraOct = Math.floor(total / N);
-      totalOct       = octaves + extraOct;
-      pitchLabel     = svaraLabel(absSruti, totalOct);
-      inContext      = true;
-    } else {
-      const relSruti = ((step % N) + N) % N;
-      const total    = step + offset;
-      absSruti       = ((total % N) + N) % N;
-      totalOct       = Math.floor(total / N);
-      pitchLabel     = svaraLabel(absSruti, totalOct);
-      inContext      = isInRaga(chordScaleSruti, relSruti);
-    }
-    // Western reference: nearest 12-TET semitone above absolute C-as-Sa, plus
-    // octave register. Greyed below to read as "approximately."
-    const nearestPc = SRUTI_TO_NEAREST_SEMITONE[absSruti];
-    const refMidi   = 12 * (baseOctave + octaveShift + 1) + nearestPc + totalOct * 12;
-    subLabel = midiToName(refMidi, root);
+  // The "logical" grid step (relative to root) — same as what the resolver
+  // produces from this physical key.
+  let logicalGridStep: number;       // grid steps from root (can span periods)
+  let totalPeriods: number;          // for label display
+  let inContext: boolean;
+  if (mode === 'simple') {
+    const wraps  = Math.floor(step / scaleLen);
+    const inScalePos = ((step % scaleLen) + scaleLen) % scaleLen;
+    logicalGridStep = scale.steps[inScalePos] + wraps * gridSize;
+    totalPeriods    = wraps + periodShift;
+    inContext       = true;
   } else {
-    let midi: number;
-    let semitoneFromRoot: number;
-    let isInScalePress: boolean;
-    if (mode === 'simple') {
-      semitoneFromRoot =
-        tetOv && !('deleted' in tetOv) ? tetOv.semitone : simpleStepToSemitone(chordScaleTET, step);
-      midi             = 12 * (baseOctave + octaveShift + 1) + root + semitoneFromRoot;
-      isInScalePress   = true;   // simple mode always walks the scale
-      inContext        = true;
-    } else {
-      semitoneFromRoot = step;
-      midi             = 12 * (baseOctave + octaveShift + 1) + root + step;
-      isInScalePress   = isInScale(chordScaleTET, step);
-      inContext        = isInScalePress;
-    }
-    pitchLabel = midiToName(midi, root);
-    // Chord-quality suffix — when chord toggle is on AND we're pressing a key
-    // whose triad lives in the current scale, classify the [0, +3rd, +5th]
-    // shape into a Western chord suffix (m, °, +, sus2, sus4). Out-of-scale
-    // chromatic keys with chord-on get no suffix — the resolver builds a
-    // snap-in colour-tone chord which doesn't have a clean Western name.
-    if (optionLock && isInScalePress) {
-      const offsets = triadInScale(chordScaleTET, semitoneFromRoot);
-      if (offsets) {
-        const suffix = classifyTriad(offsets);
-        if (suffix !== undefined) {
-          // Insert the suffix between pitch and octave: "D4" → "Dm4".
-          const m = /^([A-G][b#]?)(-?\d+)$/.exec(pitchLabel);
-          if (m) pitchLabel = `${m[1]}${suffix}${m[2]}`;
-        }
+    logicalGridStep = step;
+    totalPeriods    = Math.floor(step / gridSize) + periodShift;
+    inContext = scaleStepFromGridStep(scale, sys.grid, step) !== null;
+  }
+
+  // Primary label — system labeler decides what to call it.
+  const stepInPeriod = ((logicalGridStep % gridSize) + gridSize) % gridSize;
+  const baseLabel = sys.labeler.labelStep(stepInPeriod, rootStep, sys.grid);
+  let pitchLabel = sys.labeler.withPeriodMark(baseLabel, totalPeriods);
+
+  // Greyed Western reference — shown only when the system's labeler is NOT
+  // already Western (so we don't duplicate "C4" under "C4").
+  let subLabel: string | null = null;
+  if (sys.labeler.id !== 'western') {
+    const centsFromRoot =
+      stepToCents(sys.grid, logicalGridStep + rootStep) +
+      periodShift * sys.grid.periodCents -
+      stepToCents(sys.grid, rootStep);
+    subLabel = westernReferenceFromCents(centsFromRoot, root, baseOctave);
+  }
+
+  // Chord-quality suffix (Dm, B°, F+, Csus4) — only meaningful for systems
+  // whose chord rule is tertian (Western family). Drone / octaves / none
+  // produce non-tertian vertical structures, so no suffix.
+  const optionLock = useStore((s) => s.optionLock);
+  if (optionLock && sys.chord.kind === 'triad' && inContext && sys.labeler.id === 'western') {
+    const pressScalePos = mode === 'simple'
+      ? ((step % scaleLen) + scaleLen) % scaleLen
+      : scaleStepFromGridStep(scale, sys.grid, step);
+    if (pressScalePos !== null) {
+      const baseGridPos = Math.floor(logicalGridStep / gridSize) * gridSize;
+      const pressCents = stepToCents(sys.grid, logicalGridStep + rootStep);
+      const thirdGridStep = scale.steps[(pressScalePos + 2) % scaleLen]
+                         + (Math.floor((pressScalePos + 2) / scaleLen)) * gridSize + baseGridPos;
+      const fifthGridStep = scale.steps[(pressScalePos + 4) % scaleLen]
+                         + (Math.floor((pressScalePos + 4) / scaleLen)) * gridSize + baseGridPos;
+      const thirdSemi = Math.round((stepToCents(sys.grid, thirdGridStep + rootStep) - pressCents) / 100);
+      const fifthSemi = Math.round((stepToCents(sys.grid, fifthGridStep + rootStep) - pressCents) / 100);
+      const suffix = classifyTriadSuffix(thirdSemi, fifthSemi);
+      if (suffix !== undefined) {
+        const m = /^([A-G][b#]?)(-?\d+)$/.exec(pitchLabel);
+        if (m) pitchLabel = `${m[1]}${suffix}${m[2]}`;
       }
     }
   }
@@ -141,13 +141,11 @@ export function Key({ code, row, step, className }: { code: string; row: RowId; 
       {
         root: s.root,
         baseOctave: s.baseOctave,
-        octaveShift: s.octaveShift,
-        tuning: s.tuning,
+        periodShift: s.periodShift,
+        systemId: s.systemId,
         mode: s.mode,
-        chordScaleTET:   s.chordScaleTET,
-        chordScaleSruti: s.chordScaleSruti,
-        customMapTET:    s.customMapTET,
-        customMapSruti:  s.customMapSruti,
+        activeScales: s.activeScales,
+        customMaps: s.customMaps,
       },
       step,
     );

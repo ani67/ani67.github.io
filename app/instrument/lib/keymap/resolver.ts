@@ -1,9 +1,11 @@
-import type { Action, Mode, RagaName, ScaleName, Tuning } from '../types';
-import { CONTROLS, KEY_SELECTOR, CODE_TO_ROW, positionToStep, stepToCode } from './grid';
-import { nearestScaleStep, simpleStepToSemitone, triadInScale } from './scales';
-import { nearestRagaStep, simpleStepInRaga, srutiToHz, SRUTI_RATIOS, triadInRaga } from '../tuning/sruti';
+import type { Action, Mode } from '../types';
+import { CONTROLS, KEY_SELECTOR, CODE_TO_ROW, positionToStep } from './grid';
 import { midiToHz } from '../util';
-import type { SrutiOverride, TETOverride } from '../../store/store';
+import {
+  centsToHzFromRoot, lookupSystem, nearestScaleStep, scaleStepFromGridStep, stepToCents,
+} from '../tuning';
+import type { TuningSystem } from '../tuning';
+import type { CentsOverride } from '../../store/store';
 
 export interface KeyEventLike {
   code: string;
@@ -13,20 +15,60 @@ export interface KeyEventLike {
 }
 
 export interface ResolverState {
-  root: number;
+  root: number;          // 0..11 Western pitch class
   baseOctave: number;
-  octaveShift: number;
-  tuning: Tuning;
+  periodShift: number;
+  systemId: string;
   mode: Mode;
-  chordScaleTET:   ScaleName;
-  chordScaleSruti: RagaName;
-  customMapTET:    Record<string, TETOverride>;
-  customMapSruti:  Record<string, SrutiOverride>;
+  /** Per-system selected scale. */
+  activeScales: Record<string, string>;
+  /** Per-system per-key cents overrides (or 'deleted' sentinel). */
+  customMaps: Record<string, Record<string, CentsOverride>>;
 }
 
-/** Pure. No side effects, no audio, no DOM. explicitStep overrides the desktop
- *  position-to-step formula — used by mobile-touch cells whose visual layout
- *  maps to a different step than the same code on a physical keyboard. */
+/** Convenience — look up the active scale for a system, falling back to default. */
+function getActiveScale(sys: TuningSystem, activeScales: Record<string, string>) {
+  const id = activeScales[sys.id] ?? sys.defaultScale;
+  return sys.scales.find((s) => s.id === id) ?? sys.scales[0];
+}
+
+/** Convert a scale-step index → Hz, given the system, scale, and root/period context. */
+function scaleStepToHz(
+  sys: TuningSystem,
+  scaleSteps: readonly number[],
+  scaleStep: number,
+  baseRootHz: number,
+  periodShift: number,
+  rootStep: number,
+): number {
+  const L = scaleSteps.length;
+  const wraps = Math.floor(scaleStep / L);
+  const inScale = ((scaleStep % L) + L) % L;
+  const gridStep = scaleSteps[inScale];
+  // We label/sound relative to the root, so shift the grid step by rootStep
+  // (where the root sits in the grid). For the 22-śruti grid this is the
+  // PC_TO_SRUTI offset; for 12-TET it's the pitch class itself.
+  const cents = stepToCents(sys.grid, gridStep + rootStep) +
+                (wraps + periodShift) * sys.grid.periodCents -
+                stepToCents(sys.grid, rootStep);
+  return centsToHzFromRoot(baseRootHz, cents);
+}
+
+/** Convert a chromatic grid-step index → Hz. */
+function gridStepToHz(
+  sys: TuningSystem,
+  step: number,
+  baseRootHz: number,
+  periodShift: number,
+  rootStep: number,
+): number {
+  const cents = stepToCents(sys.grid, step + rootStep) +
+                periodShift * sys.grid.periodCents -
+                stepToCents(sys.grid, rootStep);
+  return centsToHzFromRoot(baseRootHz, cents);
+}
+
+/** Pure. No side effects, no audio, no DOM. */
 export function resolveKeyDown(event: KeyEventLike, st: ResolverState, explicitStep?: number): Action | null {
   if (event.repeat) return null;
   const { code, shiftKey, altKey } = event;
@@ -34,119 +76,106 @@ export function resolveKeyDown(event: KeyEventLike, st: ResolverState, explicitS
   if (shiftKey && code in KEY_SELECTOR) {
     return { type: 'SetRoot', pitchClass: KEY_SELECTOR[code] };
   }
-
-  if (code === CONTROLS.octaveDown) return { type: 'ShiftOctave', delta: -1 };
-  if (code === CONTROLS.octaveUp)   return { type: 'ShiftOctave', delta: +1 };
+  if (code === CONTROLS.octaveDown) return { type: 'ShiftPeriod', delta: -1 };
+  if (code === CONTROLS.octaveUp)   return { type: 'ShiftPeriod', delta: +1 };
 
   const rowInfo = CODE_TO_ROW.get(code);
-  if (rowInfo) {
-    // Deleted-in-simple-mode → silent. Chromatic mode ignores overrides.
-    if (st.mode === 'simple') {
-      const ov = st.tuning === '12tet' ? st.customMapTET[code] : st.customMapSruti[code];
-      if (ov && 'deleted' in ov) return null;
-    }
-    const step = explicitStep ?? positionToStep(rowInfo.row, rowInfo.degree);
-    const freqs = st.tuning === 'sruti'
-      ? computeSrutiFreqs(step, altKey, st)
-      : compute12TETFreqs(step, altKey, st);
-    return { type: 'NoteOn', freqs, row: rowInfo.row, code };
+  if (!rowInfo) return null;
+
+  const sys     = lookupSystem(st.systemId);
+  const scale   = getActiveScale(sys, st.activeScales);
+  const overrides = st.customMaps[st.systemId];
+  const ov      = overrides?.[code];
+
+  // Deleted-in-simple-mode → silent. Chromatic mode ignores overrides.
+  if (st.mode === 'simple' && ov && typeof ov === 'object' && ov.deleted) {
+    return null;
   }
 
-  return null;
+  const step = explicitStep ?? positionToStep(rowInfo.row, rowInfo.degree);
+
+  // Base root Hz — the frequency of the root pitch class in the standard
+  // 12-TET grid. Per-system grids are interpreted relative to this base
+  // through the rootStep offset.
+  const baseRootMidi = 12 * (st.baseOctave + 1) + st.root;
+  const baseRootHz   = midiToHz(baseRootMidi);
+  const rootStep     = sys.pcToStep[st.root] ?? 0;
+
+  // Per-key override (cents from root) takes priority in simple mode.
+  // Overrides don't currently stack into chords — single-pitch only.
+  if (st.mode === 'simple' && typeof ov === 'number') {
+    const f = centsToHzFromRoot(baseRootHz, ov + st.periodShift * sys.grid.periodCents);
+    return { type: 'NoteOn', freqs: [f], row: rowInfo.row, code };
+  }
+
+  // Compute the pressed note's Hz once. Used as the "melody note" for all
+  // chord-rule kinds — drone, octaves, and the in-scale triad case.
+  const pressedHz = st.mode === 'simple'
+    ? scaleStepToHz(sys, scale.steps, step, baseRootHz, st.periodShift, rootStep)
+    : gridStepToHz(sys, step, baseRootHz, st.periodShift, rootStep);
+
+  // Chord-off → just the pressed note.
+  if (!altKey) {
+    return { type: 'NoteOn', freqs: [pressedHz], row: rowInfo.row, code };
+  }
+
+  // Chord-on — branch on the system's native chord rule.
+  switch (sys.chord.kind) {
+    case 'none':
+      return { type: 'NoteOn', freqs: [pressedHz], row: rowInfo.row, code };
+
+    case 'octaves': {
+      // Pressed note repeated at each period offset. offsets = [0, -1] → note
+      // + same note one period below. Period = octave for octave-based grids.
+      const freqs = sys.chord.offsets.map((o) =>
+        pressedHz * Math.pow(2, o * sys.grid.periodCents / 1200),
+      );
+      return { type: 'NoteOn', freqs, row: rowInfo.row, code };
+    }
+
+    case 'drone': {
+      // Pressed melody note + fixed grid-step pitches relative to root, at
+      // the BASE register (not following periodShift) — so [ and ] move the
+      // keyboard but the drone stays anchored, like a real tanpura.
+      const droneFreqs = sys.chord.steps.map((s) =>
+        gridStepToHz(sys, s, baseRootHz, 0, rootStep),
+      );
+      return { type: 'NoteOn', freqs: [pressedHz, ...droneFreqs], row: rowInfo.row, code };
+    }
+
+    case 'triad': {
+      // Western tertian harmony — stack +2 and +4 through the active scale.
+      if (st.mode === 'simple') {
+        const third = scaleStepToHz(sys, scale.steps, step + 2, baseRootHz, st.periodShift, rootStep);
+        const fifth = scaleStepToHz(sys, scale.steps, step + 4, baseRootHz, st.periodShift, rootStep);
+        return { type: 'NoteOn', freqs: [pressedHz, third, fifth], row: rowInfo.row, code };
+      }
+      // Chromatic in-scale: stack thirds from the press's scale position.
+      const inScalePos = scaleStepFromGridStep(scale, sys.grid, step);
+      if (inScalePos !== null) {
+        const wraps = Math.floor(step / sys.grid.stepsCents.length);
+        const third = scaleStepToHz(sys, scale.steps, inScalePos + 2, baseRootHz, st.periodShift + wraps, rootStep);
+        const fifth = scaleStepToHz(sys, scale.steps, inScalePos + 4, baseRootHz, st.periodShift + wraps, rootStep);
+        return { type: 'NoteOn', freqs: [pressedHz, third, fifth], row: rowInfo.row, code };
+      }
+      // Out-of-scale chromatic: snap to nearest in-scale, voice triad there,
+      // keep the pressed pitch as a top colour-tone voice.
+      const snapped = nearestScaleStep(scale, sys.grid, step);
+      const snappedInScale = scaleStepFromGridStep(scale, sys.grid, snapped);
+      if (snappedInScale === null) {
+        return { type: 'NoteOn', freqs: [pressedHz], row: rowInfo.row, code };
+      }
+      const snappedWraps = Math.floor(snapped / sys.grid.stepsCents.length);
+      const snapPress = gridStepToHz(sys, snapped, baseRootHz, st.periodShift, rootStep);
+      const third = scaleStepToHz(sys, scale.steps, snappedInScale + 2, baseRootHz, st.periodShift + snappedWraps, rootStep);
+      const fifth = scaleStepToHz(sys, scale.steps, snappedInScale + 4, baseRootHz, st.periodShift + snappedWraps, rootStep);
+      return { type: 'NoteOn', freqs: [snapPress, third, fifth, pressedHz], row: rowInfo.row, code };
+    }
+  }
 }
 
 export function resolveKeyUp(event: { code: string }): Action | null {
   return CODE_TO_ROW.has(event.code)
     ? { type: 'NoteOff', code: event.code }
     : null;
-}
-
-// ----- tuning × mode pitch computation -----
-
-function compute12TETFreqs(step: number, alt: boolean, st: ResolverState): number[] {
-  const baseMidi = 12 * (st.baseOctave + st.octaveShift + 1) + st.root;
-
-  if (st.mode === 'simple') {
-    // Walk the scale — each step = next scale note. Per-key overrides win.
-    const stepToMidi = (s: number): number | null => {
-      const c = stepToCode(s);
-      if (c) {
-        const ov = st.customMapTET[c];
-        if (ov && 'deleted' in ov) return null;
-        if (ov) return baseMidi + ov.semitone;
-      }
-      return baseMidi + simpleStepToSemitone(st.chordScaleTET, s);
-    };
-    const pressed = stepToMidi(step);
-    if (pressed === null) return [];
-    if (alt) {
-      return [pressed, stepToMidi(step + 2), stepToMidi(step + 4)]
-        .filter((m): m is number => m !== null)
-        .map(midiToHz);
-    }
-    return [midiToHz(pressed)];
-  }
-
-  // Chromatic — every semitone is a key.
-  const midi = baseMidi + step;
-  if (!alt) return [midiToHz(midi)];
-
-  // Scale-context chord: stack thirds through the chosen scale from this semitone.
-  const offsets = triadInScale(st.chordScaleTET, step);
-  if (offsets) return offsets.map((off) => midiToHz(midi + off));
-  // Out of scale → harmonise as a chromatic passing tone: snap to the nearest
-  // in-scale degree, voice the scale-diatonic triad there, keep the pressed
-  // pitch as a top voice. Every chord tone stays in-scale except the press.
-  const snapped     = nearestScaleStep(st.chordScaleTET, step);
-  const snappedMidi = baseMidi + snapped;
-  const snapOffsets = triadInScale(st.chordScaleTET, snapped)!;
-  return [...snapOffsets.map((o) => snappedMidi + o), midi].map(midiToHz);
-}
-
-function computeSrutiFreqs(step: number, alt: boolean, st: ResolverState): number[] {
-  const rootMidi = 12 * (st.baseOctave + st.octaveShift + 1) + st.root;
-  const rootHz   = midiToHz(rootMidi);
-
-  if (st.mode === 'simple') {
-    // Walk the rāga — each step = next svara. Per-key overrides win.
-    const stepToHz = (s: number): number | null => {
-      const c = stepToCode(s);
-      if (c) {
-        const ov = st.customMapSruti[c];
-        if (ov && 'deleted' in ov) return null;
-        if (ov) return srutiToHz(rootHz, ov.sruti, ov.octaves);
-      }
-      const { sruti, octaves } = simpleStepInRaga(st.chordScaleSruti, s);
-      return srutiToHz(rootHz, sruti, octaves);
-    };
-    const pressed = stepToHz(step);
-    if (pressed === null) return [];
-    if (alt) {
-      return [pressed, stepToHz(step + 2), stepToHz(step + 4)]
-        .filter((h): h is number => h !== null);
-    }
-    return [pressed];
-  }
-
-  // Chromatic — every śruti is a key, wrapped into 22-śruti octaves.
-  const n = SRUTI_RATIOS.length; // 22
-  const stepToFreq = (s: number): number => {
-    const sruti   = ((s % n) + n) % n;
-    const octaves = Math.floor(s / n);
-    return srutiToHz(rootHz, sruti, octaves);
-  };
-
-  const melody = stepToFreq(step);
-  if (!alt) return [melody];
-
-  const absSruti = ((step % n) + n) % n;
-  const offsets  = triadInRaga(st.chordScaleSruti, absSruti);
-  if (offsets) return offsets.map((off) => stepToFreq(step + off));
-  // Out of rāga → harmonise as a chromatic passing svara: snap to the nearest
-  // in-rāga step, voice the rāga triad there, keep the pressed śruti on top.
-  // Replaces the old ±1 adjacent-śruti cluster, which beat instead of voicing.
-  const snappedStep  = nearestRagaStep(st.chordScaleSruti, step);
-  const snappedSruti = ((snappedStep % n) + n) % n;
-  const snapOffsets  = triadInRaga(st.chordScaleSruti, snappedSruti)!;
-  return [...snapOffsets.map((o) => stepToFreq(snappedStep + o)), melody];
 }

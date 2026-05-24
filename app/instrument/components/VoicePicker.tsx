@@ -146,10 +146,10 @@ export function VoicePicker() {
           aria-expanded={open}
           className="inst-glass-chip inline-flex items-center gap-2 rounded-full px-3 py-1 transition-colors duration-[220ms] ease-inst-out-expo hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring"
         >
-          <span className="font-mono text-[10px] uppercase tracking-widest text-inst-muted-foreground">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-inst-muted-foreground shrink-0">
             voice
           </span>
-          <span className="font-mono text-sm text-inst-foreground">{currentVoice.label || 'Sine'}</span>
+          <span className="font-mono text-sm text-inst-foreground truncate max-w-[140px]">{currentVoice.label || 'Sine'}</span>
           <svg
             width="10" height="10" viewBox="0 0 10 10" fill="none"
             stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"
@@ -164,7 +164,7 @@ export function VoicePicker() {
         <div
           role="listbox"
           aria-label="voice"
-          className="absolute right-0 top-[calc(100%+8px)] z-50 min-w-[180px] max-h-[60vh] overflow-y-auto rounded-2xl p-[1px]"
+          className="absolute right-0 top-[calc(100%+8px)] z-50 min-w-[180px] max-w-[calc(100vw-24px)] max-h-[60vh] overflow-y-auto rounded-2xl p-[1px]"
           style={{
             background:
               'linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03), rgba(255,255,255,0.08))',
@@ -181,7 +181,8 @@ export function VoicePicker() {
                       onPointerEnter={() => setHighlightIdx(i)}
                       onClick={() => commitRow(r)}
                       className={cn(
-                        'flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-left transition-colors focus:outline-none',
+                        // taller on mobile for touch, collapses to compact on md+
+                        'flex w-full items-center gap-2 rounded-xl px-3 py-2.5 md:py-1.5 text-left transition-colors focus:outline-none',
                         isHighlighted ? 'bg-white/[0.10]' : 'hover:bg-white/[0.06]',
                       )}
                     >
@@ -211,18 +212,19 @@ export function VoicePicker() {
                     }}
                     onClick={() => commitRow(r)}
                     className={cn(
-                      'flex flex-1 items-center gap-2 rounded-xl px-3 py-1.5 text-left transition-colors focus:outline-none',
+                      // taller on mobile for touch; min-w-0 so truncate inside flex works.
+                      'flex flex-1 min-w-0 items-center gap-2 rounded-xl px-3 py-2.5 md:py-1.5 text-left transition-colors focus:outline-none',
                       isHighlighted ? 'bg-white/[0.10]' : 'hover:bg-white/[0.06]',
                     )}
                   >
                     <span
                       aria-hidden
                       className={cn(
-                        'h-1.5 w-1.5 rounded-full',
+                        'h-1.5 w-1.5 rounded-full shrink-0',
                         isCurrent ? 'bg-inst-highlight' : 'bg-transparent',
                       )}
                     />
-                    <span className="font-mono text-sm text-inst-foreground">{v.label}</span>
+                    <span className="font-mono text-sm text-inst-foreground truncate">{v.label}</span>
                   </button>
                   {/* Duplicate — built-ins and user voices both. Hover-revealed. */}
                   <button
@@ -230,7 +232,7 @@ export function VoicePicker() {
                     onClick={(e) => { e.stopPropagation(); startDuplicateVoice(v); }}
                     aria-label={`duplicate ${v.label}`}
                     title="duplicate"
-                    className="px-1.5 py-1 rounded-md text-inst-muted-foreground hover:text-inst-foreground hover:bg-white/[0.06] transition-colors opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100"
+                    className="px-2 py-2 md:px-1.5 md:py-1 rounded-md text-inst-muted-foreground hover:text-inst-foreground hover:bg-white/[0.06] transition-colors opacity-100 md:opacity-0 md:group-hover/row:opacity-100 focus-visible:opacity-100"
                   >
                     <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2.5" y="2.5" width="7" height="7" rx="1" />
@@ -243,7 +245,7 @@ export function VoicePicker() {
                       onClick={(e) => { e.stopPropagation(); startEditUserVoice(v); }}
                       aria-label={`edit ${v.label}`}
                       title="edit"
-                      className="px-1.5 py-1 rounded-md text-inst-muted-foreground hover:text-inst-foreground hover:bg-white/[0.06] transition-colors opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100"
+                      className="px-2 py-2 md:px-1.5 md:py-1 rounded-md text-inst-muted-foreground hover:text-inst-foreground hover:bg-white/[0.06] transition-colors opacity-100 md:opacity-0 md:group-hover/row:opacity-100 focus-visible:opacity-100"
                     >
                       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M10.5 1.5l2 2-7.5 7.5H3v-2L10.5 1.5z" />

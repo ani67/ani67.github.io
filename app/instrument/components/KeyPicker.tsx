@@ -1,22 +1,15 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../store/store';
-import type { SrutiOverride, TETOverride } from '../store/store';
+import type { CentsOverride } from '../store/store';
 import { cn } from '../lib/utils';
-import { simpleStepToSemitone } from '../lib/keymap/scales';
-import { simpleStepInRaga, srutiToHz, SRUTI_LABELS, SRUTI_RATIOS, PC_TO_SRUTI } from '../lib/tuning/sruti';
-import { midiToHz, midiToName } from '../lib/util';
+import { midiToHz } from '../lib/util';
 import { dispatch } from '../lib/dispatch';
+import {
+  lookupSystem, scaleStepFromGridStep, stepToCents,
+} from '../lib/tuning';
 
 const NEIGHBORS = 5;
-const N_SRUTI = SRUTI_RATIOS.length; // 22
-
-function svaraLabel(sruti: number, octaves: number): string {
-  const name = SRUTI_LABELS[sruti];
-  return octaves > 0 ? `${name}′${octaves > 1 ? octaves : ''}`
-       : octaves < 0 ? `${name},${-octaves > 1 ? -octaves : ''}`
-       : name;
-}
 
 interface Item {
   id: string;
@@ -24,78 +17,80 @@ interface Item {
   kind: 'pitch' | 'delete' | 'reset';
   isCurrent: boolean;
   apply: () => void;
-  preview?: () => number[]; // freqs
+  preview?: () => number[];
 }
 
 export function KeyPicker({ code, step }: { code: string; step: number }) {
-  const tuning          = useStore((s) => s.tuning);
-  const root            = useStore((s) => s.root);
-  const baseOctave      = useStore((s) => s.baseOctave);
-  const octaveShift     = useStore((s) => s.octaveShift);
-  const chordScaleTET   = useStore((s) => s.chordScaleTET);
-  const chordScaleSruti = useStore((s) => s.chordScaleSruti);
-  const tetOv           = useStore((s) => s.customMapTET[code]);
-  const srutiOv         = useStore((s) => s.customMapSruti[code]);
-  const setOverride     = useStore((s) => s.setOverride);
-  const clearOverride   = useStore((s) => s.clearOverride);
-  const closePicker     = useStore((s) => s.closePicker);
+  const systemId      = useStore((s) => s.systemId);
+  const root          = useStore((s) => s.root);
+  const baseOctave    = useStore((s) => s.baseOctave);
+  const periodShift   = useStore((s) => s.periodShift);
+  const activeScales  = useStore((s) => s.activeScales);
+  const overrides     = useStore((s) => s.customMaps[s.systemId]);
+  const ov            = overrides?.[code];
+  const setOverride   = useStore((s) => s.setOverride);
+  const clearOverride = useStore((s) => s.clearOverride);
+  const closePicker   = useStore((s) => s.closePicker);
 
   const items: Item[] = useMemo(() => {
-    const baseMidi = 12 * (baseOctave + octaveShift + 1) + root;
-    const rootHz   = midiToHz(baseMidi);
+    const sys      = lookupSystem(systemId);
+    const scaleId  = activeScales[systemId] ?? sys.defaultScale;
+    const scale    = sys.scales.find((s) => s.id === scaleId) ?? sys.scales[0];
+    const rootStep = sys.pcToStep[root] ?? 0;
+    const gridSize = sys.grid.stepsCents.length;
+    const baseMidi = 12 * (baseOctave + 1) + root;
+    const baseRootHz = midiToHz(baseMidi);
+
+    // The "current" cents value — what the key would play right now.
+    let currentCents: number;
+    if (typeof ov === 'number') {
+      currentCents = ov;
+    } else {
+      // Walk the scale to find the natural step.
+      const L = scale.steps.length;
+      const wraps = Math.floor(step / L);
+      const inScalePos = ((step % L) + L) % L;
+      const gridStep = scale.steps[inScalePos] + wraps * gridSize;
+      currentCents = stepToCents(sys.grid, gridStep + rootStep) -
+                     stepToCents(sys.grid, rootStep);
+    }
+
     const list: Item[] = [];
 
-    if (tuning === '12tet') {
-      const currentSemi =
-        tetOv && !('deleted' in tetOv) ? tetOv.semitone : simpleStepToSemitone(chordScaleTET, step);
-      for (let off = NEIGHBORS; off >= -NEIGHBORS; off--) {
-        const semi = currentSemi + off;
-        const midi = baseMidi + semi;
-        list.push({
-          id: `tet:${semi}`,
-          label: midiToName(midi, root),
-          kind: 'pitch',
-          isCurrent: off === 0,
-          apply: () => {
-            const next: TETOverride = { kind: 'tet', semitone: semi };
-            setOverride(code, next);
-            closePicker();
-          },
-          preview: () => [midiToHz(midi)],
-        });
-      }
-    } else {
-      let curSruti: number, curOct: number;
-      if (srutiOv && !('deleted' in srutiOv)) {
-        curSruti = srutiOv.sruti;
-        curOct   = srutiOv.octaves;
-      } else {
-        const r = simpleStepInRaga(chordScaleSruti, step);
-        curSruti = r.sruti;
-        curOct   = r.octaves;
-      }
-      const offset = PC_TO_SRUTI[root];
-      const total0 = curSruti + curOct * N_SRUTI;
-      for (let off = NEIGHBORS; off >= -NEIGHBORS; off--) {
-        const total    = total0 + off;
-        const sruti    = ((total % N_SRUTI) + N_SRUTI) % N_SRUTI;
-        const octaves  = Math.floor(total / N_SRUTI);
-        const labelTot = sruti + offset;
-        const labelSru = ((labelTot % N_SRUTI) + N_SRUTI) % N_SRUTI;
-        const labelOct = octaves + Math.floor(labelTot / N_SRUTI);
-        list.push({
-          id: `sruti:${total}`,
-          label: svaraLabel(labelSru, labelOct),
-          kind: 'pitch',
-          isCurrent: off === 0,
-          apply: () => {
-            const next: SrutiOverride = { kind: 'sruti', sruti, octaves };
-            setOverride(code, next);
-            closePicker();
-          },
-          preview: () => [srutiToHz(rootHz, sruti, octaves)],
-        });
-      }
+    // Show NEIGHBORS grid steps above and below the current pitch.
+    const currentCentsForLabel = currentCents;
+    // Find the grid step nearest to currentCents (in absolute cents from root).
+    let nearestStep = 0;
+    let nearestDiff = Infinity;
+    const allSteps = sys.grid.stepsCents;
+    for (let s = -2 * gridSize; s < 2 * gridSize; s++) {
+      const c = stepToCents(sys.grid, s + rootStep) - stepToCents(sys.grid, rootStep);
+      const d = Math.abs(c - currentCentsForLabel);
+      if (d < nearestDiff) { nearestDiff = d; nearestStep = s; }
+    }
+    void allSteps;
+
+    for (let off = NEIGHBORS; off >= -NEIGHBORS; off--) {
+      const gridStep = nearestStep + off;
+      const cents = stepToCents(sys.grid, gridStep + rootStep) -
+                    stepToCents(sys.grid, rootStep);
+      const stepInPeriod = ((gridStep % gridSize) + gridSize) % gridSize;
+      const totalPeriods = Math.floor(gridStep / gridSize);
+      const base = sys.labeler.labelStep(stepInPeriod, rootStep, sys.grid);
+      const label = sys.labeler.withPeriodMark(base, totalPeriods);
+      const inScale = scaleStepFromGridStep(scale, sys.grid, gridStep) !== null;
+      void inScale;
+      list.push({
+        id: `step:${gridStep}`,
+        label,
+        kind: 'pitch',
+        isCurrent: off === 0,
+        apply: () => {
+          setOverride(code, cents);
+          closePicker();
+        },
+        preview: () => [baseRootHz * Math.pow(2, (cents + periodShift * sys.grid.periodCents) / 1200)],
+      });
     }
 
     list.push({
@@ -104,30 +99,23 @@ export function KeyPicker({ code, step }: { code: string; step: number }) {
       kind: 'delete',
       isCurrent: false,
       apply: () => {
-        const next: TETOverride | SrutiOverride =
-          tuning === '12tet'
-            ? { kind: 'tet',   deleted: true }
-            : { kind: 'sruti', deleted: true };
+        const next: CentsOverride = { deleted: true };
         setOverride(code, next);
         closePicker();
       },
     });
 
-    const overridden = tuning === '12tet' ? !!tetOv : !!srutiOv;
-    if (overridden) {
+    if (ov !== undefined) {
       list.push({
         id: 'reset',
         label: '↺  reset',
         kind: 'reset',
         isCurrent: false,
-        apply: () => {
-          clearOverride(code);
-          closePicker();
-        },
+        apply: () => { clearOverride(code); closePicker(); },
       });
     }
     return list;
-  }, [tuning, root, baseOctave, octaveShift, chordScaleTET, chordScaleSruti, tetOv, srutiOv, code, step, setOverride, clearOverride, closePicker]);
+  }, [systemId, root, baseOctave, periodShift, activeScales, ov, code, step, setOverride, clearOverride, closePicker]);
 
   const currentIdx = useMemo(
     () => Math.max(0, items.findIndex((i) => i.isCurrent)),
@@ -135,8 +123,8 @@ export function KeyPicker({ code, step }: { code: string; step: number }) {
   );
   const [highlightedIdx, setHighlightedIdx] = useState(currentIdx);
 
-  // Reset highlight if items change shape (e.g. reset removed).
-  useEffect(() => { setHighlightedIdx(currentIdx); }, [currentIdx]);
+  const lastPreviewedIdx = useRef(currentIdx);
+  useEffect(() => { setHighlightedIdx(currentIdx); lastPreviewedIdx.current = currentIdx; }, [currentIdx]);
 
   const previewNote = (freqs: number[] | undefined) => {
     if (!freqs || freqs.length === 0) return;
@@ -145,8 +133,6 @@ export function KeyPicker({ code, step }: { code: string; step: number }) {
     setTimeout(() => void dispatch({ type: 'NoteOff', code: previewCode }), 220);
   };
 
-  // Preview when keyboard arrow moves the highlight.
-  const lastPreviewedIdx = useRef(currentIdx);
   useEffect(() => {
     if (highlightedIdx !== lastPreviewedIdx.current) {
       lastPreviewedIdx.current = highlightedIdx;
@@ -155,7 +141,6 @@ export function KeyPicker({ code, step }: { code: string; step: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightedIdx]);
 
-  // Keyboard nav: arrow up/down, enter, backspace = delete.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === 'ArrowUp') {
@@ -169,27 +154,20 @@ export function KeyPicker({ code, step }: { code: string; step: number }) {
         items[highlightedIdx]?.apply();
       } else if (e.code === 'Backspace' || e.code === 'Delete') {
         e.preventDefault();
-        const del = items.find((i) => i.kind === 'delete');
-        del?.apply();
+        items.find((i) => i.kind === 'delete')?.apply();
       }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [items, highlightedIdx]);
 
-  // Click outside backdrop also closes.
-  const onBackdropClick = () => closePicker();
-
   return (
     <>
-      {/* Blur backdrop — covers everything behind the picker */}
       <div
         data-key-picker
-        onClick={onBackdropClick}
+        onClick={() => closePicker()}
         className="fixed inset-0 z-40 bg-black/40 backdrop-blur-md transition-opacity"
       />
-
-      {/* Picker centered on the key */}
       <div
         data-key-picker
         onPointerDown={(e) => e.stopPropagation()}

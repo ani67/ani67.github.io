@@ -40,8 +40,8 @@ export async function dispatch(action: Action): Promise<void> {
       st.setRoot(action.pitchClass);
       return;
 
-    case 'ShiftOctave':
-      st.shiftOctave(action.delta);
+    case 'ShiftPeriod':
+      st.shiftPeriod(action.delta);
       return;
 
     case 'AllNotesOff':

@@ -11,17 +11,15 @@ import { RecordButton } from './components/RecordButton';
 import { Keyboard } from './components/Keyboard';
 import { Pill } from './components/ui/pill';
 import { Kbd } from './components/ui/kbd';
-import { TuningToggle } from './components/TuningToggle';
+import { SystemPicker } from './components/SystemPicker';
 import { ModeToggle } from './components/ModeToggle';
 import { ChordContext } from './components/ChordContext';
 import { OptionToggle } from './components/OptionToggle';
 import { VoicePicker } from './components/VoicePicker';
 import { VoiceEditor } from './components/VoiceEditor';
-// CustomIO (key-binding save/load chips) — hidden for now; kept around in case
-// we want it back. Import retained at the bottom of the file as a no-op marker.
 import { validateVoiceSpec } from './lib/audio/voices';
+import { lookupSystem } from './lib/tuning';
 import { PITCH_CLASS_NAMES } from './lib/util';
-import { PC_TO_SRUTI, SRUTI_LABELS } from './lib/tuning/sruti';
 import { extractAccent, applyAccent } from './lib/accent';
 
 // Module-scoped so the +1 default is applied once per page load — surviving
@@ -31,12 +29,21 @@ let mobileDefaultsApplied = false;
 export function Instrument() {
   useKeyboard();
 
-  const tuning = useStore((s) => s.tuning);
-  const root   = useStore((s) => s.root);
-  const oct    = useStore((s) => s.octaveShift);
+  const systemId = useStore((s) => s.systemId);
+  const root     = useStore((s) => s.root);
+  const oct      = useStore((s) => s.periodShift);
 
-  const rootName    = PITCH_CLASS_NAMES[root];
-  const tonicSvara  = SRUTI_LABELS[PC_TO_SRUTI[root]];
+  const sys = lookupSystem(systemId);
+  const rootName = PITCH_CLASS_NAMES[root];
+  // The labeler's name for the root step — different per system (svara name for
+  // Hindustani, scale degree for Thai, etc.). Shown alongside the Western pc
+  // when the system isn't already Western.
+  const rootStep = sys.pcToStep[root] ?? 0;
+  const systemRootLabel = sys.labeler.id !== 'western'
+    ? sys.labeler.labelStep(0, rootStep, sys.grid)
+    : null;
+  const tonicValue = systemRootLabel ? `${systemRootLabel} · ${rootName}` : rootName;
+  const periodLabel = sys.labeler.periodName;
   const octLabel    = oct === 0 ? '±0' : oct > 0 ? `+${oct}` : `${oct}`;
 
   // First click anywhere unlocks audio.
@@ -58,15 +65,15 @@ export function Instrument() {
   // Hydrate persisted voice + user voices from localStorage on mount.
   // Done here (not in store init) so SSR and first client render match.
   useEffect(() => {
-    useStore.getState().hydrateVoicesFromStorage();
+    useStore.getState().hydrateFromStorage();
   }, []);
 
   // Mobile (< md): default octave shift to +1 on first mount.
   useEffect(() => {
     if (mobileDefaultsApplied) return;
     if (!window.matchMedia('(max-width: 767px)').matches) return;
-    if (useStore.getState().octaveShift !== 0) return;
-    useStore.getState().shiftOctave(+1);
+    if (useStore.getState().periodShift !== 0) return;
+    useStore.getState().shiftPeriod(+1);
     mobileDefaultsApplied = true;
   }, []);
 
@@ -159,39 +166,39 @@ export function Instrument() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Pill
-              label={tuning === 'sruti' ? 'tonic' : 'root'}
-              value={tuning === 'sruti' ? `${tonicSvara} · ${rootName}` : rootName}
+              label={systemRootLabel ? 'tonic' : 'root'}
+              value={tonicValue}
               tooltip={
-                tuning === 'sruti'
-                  ? <>Tonic — the absolute pitch the keyboard is anchored to, shown as its svara name (fixed-Sa convention) plus the Western pitch class. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
+                systemRootLabel
+                  ? <>Tonic — the pitch the keyboard is anchored to, shown as its system label plus the Western pitch class. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
                   : <>Root note — the tonic the active scale and Option-chords are built from. Use <Kbd>Shift</Kbd> + <Kbd>1</Kbd>…<Kbd>=</Kbd> to transpose.</>
               }
             />
             <span className="inline-flex items-center gap-1">
               <button
                 type="button"
-                onClick={() => void dispatch({ type: 'ShiftOctave', delta: -1 })}
-                aria-label="octave down"
+                onClick={() => void dispatch({ type: 'ShiftPeriod', delta: -1 })}
+                aria-label={`${periodLabel} down`}
                 className="inst-glass-chip inline-flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm text-inst-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-inst-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring md:hidden"
               >
                 −
               </button>
               <Pill
-                label="oct"
+                label={periodLabel === 'octave' ? 'oct' : periodLabel}
                 value={octLabel}
-                tooltip={<>Octave shift relative to the default range. Use <Kbd>[</Kbd> and <Kbd>]</Kbd> to nudge down/up.</>}
+                tooltip={<>{periodLabel[0].toUpperCase() + periodLabel.slice(1)} shift relative to the default range. Use <Kbd>[</Kbd> and <Kbd>]</Kbd> to nudge down/up.</>}
               />
               <button
                 type="button"
-                onClick={() => void dispatch({ type: 'ShiftOctave', delta: +1 })}
-                aria-label="octave up"
+                onClick={() => void dispatch({ type: 'ShiftPeriod', delta: +1 })}
+                aria-label={`${periodLabel} up`}
                 className="inst-glass-chip inline-flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm text-inst-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-inst-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-ring md:hidden"
               >
                 +
               </button>
             </span>
             <ChordContext />
-            <TuningToggle />
+            <SystemPicker />
             <ModeToggle />
             <OptionToggle />
             <VoicePicker />
