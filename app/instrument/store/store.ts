@@ -3,6 +3,8 @@ import type { Mode } from '../lib/types';
 import type { VoiceSpec } from '../lib/audio/voices';
 import { validateUserVoicesRecord, validateVoiceSpec } from '../lib/audio/voices';
 import { SYSTEMS, lookupSystem } from '../lib/tuning';
+import * as transport from '../lib/transport/transport';
+import { LAYER_COUNT, type LayerState } from '../lib/transport/transport';
 
 export type CentsOverride = number | { deleted: true };
 
@@ -13,6 +15,9 @@ const SYSTEM_KEY       = 'instrument:systemId:v2';   // v2: was 'tuning:v1' befo
 const OPTION_LOCK_KEY  = 'instrument:optionLock:v1';
 const ACTIVE_SCALES_KEY = 'instrument:activeScales:v1';
 const CUSTOM_MAPS_KEY  = 'instrument:customMaps:v1';
+const LOOPER_ENABLED_KEY = 'instrument:looperEnabled:v1';
+const BPM_KEY          = 'instrument:bpm:v1';
+const METRONOME_KEY    = 'instrument:metronome:v1';
 
 function readJSON<T>(key: string): T | null {
   if (typeof window === 'undefined') return null;
@@ -72,6 +77,33 @@ function readCustomMaps(): Record<string, Record<string, CentsOverride>> {
   return raw && typeof raw === 'object' ? raw : {};
 }
 function writeCustomMaps(m: Record<string, Record<string, CentsOverride>>): void { writeJSON(CUSTOM_MAPS_KEY, m); }
+function readBool(key: string): boolean | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const v = window.localStorage.getItem(key);
+    if (v === 'true') return true;
+    if (v === 'false') return false;
+    return null;
+  } catch { return null; }
+}
+function writeBool(key: string, v: boolean): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.setItem(key, String(v)); } catch { /* quota */ }
+}
+function readNum(key: string): number | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const v = window.localStorage.getItem(key);
+    if (v === null) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  } catch { return null; }
+}
+function writeNum(key: string, v: number): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.setItem(key, String(v)); } catch { /* quota */ }
+}
+
 function readOptionLock(): boolean | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -91,6 +123,26 @@ function writeOptionLock(v: boolean): void {
 export interface CustomMapExport {
   version: 2;
   customMaps: Record<string, Record<string, CentsOverride>>;
+}
+
+/** UI-facing slice of a layer. The audio data (notes + voice snapshots)
+ *  lives in the transport module — this is just what the panel renders. */
+export interface LayerUI {
+  id: number;
+  enabled: boolean;
+  volume: number;
+  state: LayerState;
+  hasContent: boolean;
+}
+
+function buildInitialLayers(): LayerUI[] {
+  return Array.from({ length: LAYER_COUNT }, (_, i) => ({
+    id: i,
+    enabled: true,
+    volume: 0.8,
+    state: 'empty' as LayerState,
+    hasContent: false,
+  }));
 }
 
 interface Store {
@@ -121,6 +173,18 @@ interface Store {
   // ---- per-key picker ----------------------------------------------------
   pickerArmed: boolean;
   pickerCode:  string | null;
+
+  // ---- looper ------------------------------------------------------------
+  looperEnabled:    boolean;   // whether the looper panel is shown at all
+  looperOpen:       boolean;   // collapsible state of the panel
+  bpm:              number;
+  beatsPerBar:      number;
+  barsPerLoop:      number;
+  metronomeOn:      boolean;
+  transportRunning: boolean;
+  countInRemaining: number | null;  // 4..1 during count-in, null otherwise
+  layers:           LayerUI[];
+  recordingLayerId: number | null;
 
   // ---- mutators ----------------------------------------------------------
   setRoot:        (pitchClass: number) => void;
@@ -153,6 +217,19 @@ interface Store {
   disarmPicker:   () => void;
   openPicker:     (code: string) => void;
   closePicker:    () => void;
+
+  // looper
+  setLooperEnabled:   (on: boolean) => void;
+  setLooperOpen:      (on: boolean) => void;
+  setBpm:             (bpm: number) => void;
+  setMetronomeOn:     (on: boolean) => void;
+  startTransport:     () => void;
+  stopTransport:      () => void;
+  armRecordLayer:     (layerId: number) => void;
+  setLayerVolume:     (layerId: number, v: number) => void;
+  setLayerEnabled:    (layerId: number, on: boolean) => void;
+  clearLayer:         (layerId: number) => void;
+  clearAllLayers:     () => void;
 }
 
 export const useStore = create<Store>((set) => ({
@@ -172,6 +249,17 @@ export const useStore = create<Store>((set) => ({
   voiceEditorEditingId: null,
   pickerArmed: false,
   pickerCode:  null,
+
+  looperEnabled:    false,
+  looperOpen:       true,
+  bpm:              transport.TRANSPORT_DEFAULTS.bpm,
+  beatsPerBar:      transport.TRANSPORT_DEFAULTS.beatsPerBar,
+  barsPerLoop:      transport.TRANSPORT_DEFAULTS.barsPerLoop,
+  metronomeOn:      true,
+  transportRunning: false,
+  countInRemaining: null,
+  layers:           buildInitialLayers(),
+  recordingLayerId: null,
 
   setRoot: (pitchClass) =>
     set({ root: ((pitchClass % 12) + 12) % 12 }),
@@ -240,6 +328,12 @@ export const useStore = create<Store>((set) => ({
     const optionLock   = readOptionLock();
     const activeScales = readActiveScales();
     const customMaps   = readCustomMaps();
+    const looperEnabled = readBool(LOOPER_ENABLED_KEY);
+    const bpm           = readNum(BPM_KEY);
+    const metronomeOn   = readBool(METRONOME_KEY);
+    // Mirror persisted BPM + metronome state into the transport engine.
+    if (bpm !== null) transport.setConfig({ bpm });
+    if (metronomeOn !== null) transport.setMetronomeEnabled(metronomeOn);
     set((s) => ({
       userVoices,
       voice:        pick ?? s.voice,
@@ -247,6 +341,9 @@ export const useStore = create<Store>((set) => ({
       optionLock:   optionLock ?? s.optionLock,
       activeScales: Object.keys(activeScales).length ? activeScales : s.activeScales,
       customMaps,
+      looperEnabled: looperEnabled ?? s.looperEnabled,
+      bpm:           bpm ?? s.bpm,
+      metronomeOn:   metronomeOn ?? s.metronomeOn,
     }));
   },
 
@@ -338,4 +435,119 @@ export const useStore = create<Store>((set) => ({
   disarmPicker: () => set({ pickerArmed: false }),
   openPicker:   (code) => set({ pickerCode: code, pickerArmed: false }),
   closePicker:  () => set({ pickerCode: null }),
+
+  setLooperEnabled: (on) => {
+    writeBool(LOOPER_ENABLED_KEY, on);
+    // Turning off the looper stops the transport and clears everything.
+    if (!on) {
+      transport.stopTransport();
+      transport.clearAllLayers();
+      set({
+        looperEnabled: false,
+        transportRunning: false,
+        countInRemaining: null,
+        recordingLayerId: null,
+        layers: buildInitialLayers(),
+      });
+    } else {
+      set({ looperEnabled: true });
+    }
+  },
+
+  setLooperOpen: (on) => set({ looperOpen: on }),
+
+  setBpm: (bpm) => {
+    const v = Math.max(30, Math.min(240, Math.round(bpm)));
+    writeNum(BPM_KEY, v);
+    transport.setConfig({ bpm: v });
+    set({ bpm: v });
+  },
+
+  setMetronomeOn: (on) => {
+    writeBool(METRONOME_KEY, on);
+    transport.setMetronomeEnabled(on);
+    set({ metronomeOn: on });
+  },
+
+  startTransport: () => transport.startTransport({ countIn: true }),
+  stopTransport:  () => transport.stopTransport(),
+
+  armRecordLayer: (layerId) => transport.armRecord(layerId),
+
+  setLayerVolume: (layerId, v) => {
+    transport.setLayerVolume(layerId, v);
+    set((s) => ({
+      layers: s.layers.map((L) => (L.id === layerId ? { ...L, volume: v } : L)),
+    }));
+  },
+
+  setLayerEnabled: (layerId, on) => {
+    transport.setLayerEnabled(layerId, on);
+    set((s) => ({
+      layers: s.layers.map((L) => (L.id === layerId ? { ...L, enabled: on } : L)),
+    }));
+  },
+
+  clearLayer: (layerId) => {
+    transport.clearLayer(layerId);
+    set((s) => ({
+      layers: s.layers.map((L) =>
+        L.id === layerId ? { ...L, state: 'empty', hasContent: false } : L,
+      ),
+    }));
+  },
+
+  clearAllLayers: () => {
+    transport.clearAllLayers();
+    set({ layers: buildInitialLayers() });
+  },
 }));
+
+// Bridge transport-engine events into the store so React renders update when
+// recording transitions or the transport state changes. Set up once at module
+// load — the store's a singleton, so this listener leaks for the page lifetime,
+// which is correct.
+if (typeof window !== 'undefined') {
+  transport.subscribe((e) => {
+    if (e.kind === 'transport-state') {
+      useStore.setState({
+        transportRunning: e.running,
+        countInRemaining: e.running ? useStore.getState().countInRemaining : null,
+      });
+    } else if (e.kind === 'recording-armed') {
+      useStore.setState((s) => ({
+        recordingLayerId: e.layerId,
+        layers: s.layers.map((L) =>
+          L.id === e.layerId ? { ...L, state: 'armed', hasContent: false } : L,
+        ),
+      }));
+    } else if (e.kind === 'recording-started') {
+      useStore.setState((s) => ({
+        recordingLayerId: e.layerId,
+        countInRemaining: null,
+        layers: s.layers.map((L) =>
+          L.id === e.layerId ? { ...L, state: 'recording' } : L,
+        ),
+      }));
+    } else if (e.kind === 'recording-finished') {
+      useStore.setState((s) => ({
+        recordingLayerId: null,
+        layers: s.layers.map((L) =>
+          L.id === e.layerId
+            ? { ...L, state: e.hasContent ? 'looping' : 'empty', hasContent: e.hasContent }
+            : L,
+        ),
+      }));
+    } else if (e.kind === 'layer-cleared') {
+      useStore.setState((s) => ({
+        layers: s.layers.map((L) =>
+          L.id === e.layerId ? { ...L, state: 'empty', hasContent: false } : L,
+        ),
+      }));
+    } else if (e.kind === 'count-in-tick') {
+      useStore.setState({ countInRemaining: e.remaining });
+    }
+    // beat-tick: components subscribe directly via transport.subscribe to
+    // avoid Zustand re-renders at beat rate.
+  });
+}

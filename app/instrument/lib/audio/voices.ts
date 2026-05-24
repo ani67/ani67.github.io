@@ -113,7 +113,8 @@ export function slugifyLabel(label: string): string {
 }
 
 export interface VoiceNote {
-  release(immediate: boolean): void;
+  /** `at` is an AudioContext time; if omitted, releases now. */
+  release(immediate: boolean, at?: number): void;
 }
 
 // ===========================================================================
@@ -179,8 +180,14 @@ export function spawnFromProfile(
   dest: AudioNode,
   freq: number,
   gainScale: number,
+  /**
+   * Optional sample-accurate start time. Used by the looper's look-ahead
+   * scheduler to spawn notes in the future against the AudioContext clock.
+   * Defaults to ctx.currentTime when omitted.
+   */
+  startAt?: number,
 ): VoiceNote {
-  const t0 = ctx.currentTime;
+  const t0 = startAt ?? ctx.currentTime;
 
   // Amplitude envelope — the gain node that the envelope runs against.
   const ampGain = ctx.createGain();
@@ -324,11 +331,17 @@ export function spawnFromProfile(
   }
 
   return {
-    release(immediate: boolean) {
-      const tNow = ctx.currentTime;
+    release(immediate: boolean, at?: number) {
+      // When `at` is provided (looper playback), use it as the precise audio
+      // time the release begins from. Otherwise release now.
+      const tNow = at ?? ctx.currentTime;
       const releaseTime = immediate ? 0.01 : profile.amp.release;
 
       ampGain.gain.cancelScheduledValues(tNow);
+      // setValueAtTime needs the *value at time tNow*, not the live param value,
+      // which for a future tNow we can only infer from the schedule. Using
+      // .value here is fine for the live-release case; for scheduled releases
+      // the envelope ramps already have us at sustain-or-attack by tNow.
       ampGain.gain.setValueAtTime(ampGain.gain.value, tNow);
       ampGain.gain.linearRampToValueAtTime(0, tNow + releaseTime);
 

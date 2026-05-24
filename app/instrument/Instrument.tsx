@@ -17,6 +17,8 @@ import { ChordContext } from './components/ChordContext';
 import { OptionToggle } from './components/OptionToggle';
 import { VoicePicker } from './components/VoicePicker';
 import { VoiceEditor } from './components/VoiceEditor';
+import { LooperToggle } from './components/looper/LooperToggle';
+import { LooperPanel } from './components/looper/LooperPanel';
 import { validateVoiceSpec } from './lib/audio/voices';
 import { lookupSystem } from './lib/tuning';
 import { PITCH_CLASS_NAMES } from './lib/util';
@@ -29,9 +31,10 @@ let mobileDefaultsApplied = false;
 export function Instrument() {
   useKeyboard();
 
-  const systemId = useStore((s) => s.systemId);
-  const root     = useStore((s) => s.root);
-  const oct      = useStore((s) => s.periodShift);
+  const systemId      = useStore((s) => s.systemId);
+  const root          = useStore((s) => s.root);
+  const oct           = useStore((s) => s.periodShift);
+  const looperEnabled = useStore((s) => s.looperEnabled);
 
   const sys = lookupSystem(systemId);
   const rootName = PITCH_CLASS_NAMES[root];
@@ -166,6 +169,7 @@ export function Instrument() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <ChordContext />
+            <LooperToggle />
             <SystemPicker />
             <VoicePicker />
           </div>
@@ -213,6 +217,8 @@ export function Instrument() {
           <ModeToggle />
           <OptionToggle />
         </div>
+
+        {looperEnabled && <LooperPanel />}
       </main>
 
       <VoiceEditor />
