@@ -21,9 +21,13 @@ export interface ADSR {
   /** seconds */ release: number;
 }
 
-/** Sound source for an oscillator slot. 'noise' spawns a looped white-noise
- *  buffer instead of a tone — useful for drums, breath, wind, hi-hats. */
-export type Wave = 'sine' | 'triangle' | 'square' | 'sawtooth' | 'noise';
+/**
+ * Sound source for an oscillator slot.
+ *   - tone waveforms (sine/triangle/square/sawtooth) — `OscillatorNode`
+ *   - 'noise'  — looped white-noise `AudioBufferSourceNode`
+ *   - 'sample' — pitched-shifted audio file `AudioBufferSourceNode`
+ */
+export type Wave = 'sine' | 'triangle' | 'square' | 'sawtooth' | 'noise' | 'sample';
 
 export interface OscSpec {
   wave: Wave;
@@ -33,6 +37,10 @@ export interface OscSpec {
   detune?: number;
   /** per-oscillator gain inside the voice mix, 0..1 */
   gain?: number;
+  /** sample only — URL of the audio file to play */
+  sampleUrl?: string;
+  /** sample only — Hz that the file was originally recorded at (C4=261.63, C5=523.25) */
+  sampleRootHz?: number;
 }
 
 export interface DistortionSpec {
@@ -126,6 +134,27 @@ function getNoiseBuffer(ctx: AudioContext): AudioBuffer {
   return buf;
 }
 
+// ---------------------------------------------------------------------------
+// Sample cache — fetch + decode each unique sampleUrl once, hand out the same
+// AudioBuffer to every note that uses it.
+// ---------------------------------------------------------------------------
+const sampleBufferCache = new Map<string, Promise<AudioBuffer | null>>();
+export function preloadSample(ctx: AudioContext, url: string): Promise<AudioBuffer | null> {
+  if (sampleBufferCache.has(url)) return sampleBufferCache.get(url)!;
+  const p = fetch(url)
+    .then((r) => { if (!r.ok) throw new Error(`sample fetch ${r.status}`); return r.arrayBuffer(); })
+    .then((b) => ctx.decodeAudioData(b))
+    .then((buf) => { resolvedSamples.set(url, buf); return buf; })
+    .catch(() => null);
+  sampleBufferCache.set(url, p);
+  return p;
+}
+/** Synchronous lookup — null while loading or if load failed. */
+function getCachedSample(url: string): AudioBuffer | null {
+  return resolvedSamples.get(url) ?? null;
+}
+const resolvedSamples = new Map<string, AudioBuffer>();
+
 // tanh-shaped waveshaper curve. amount=0 is near-identity, amount=1 hard.
 function makeDistortionCurve(amount: number): Float32Array {
   const drive = 1 + Math.max(0, Math.min(1, amount)) * 19;
@@ -217,25 +246,54 @@ export function spawnFromProfile(
   }
   tail.connect(dest);
 
-  // Oscillators feed into ampGain through per-osc gain. Each is either an
-  // OscillatorNode (tone) or an AudioBufferSourceNode looping white noise.
-  // Both share start/stop + a detune AudioParam, so the LFO can wobble either.
+  // Oscillators feed into ampGain through per-osc gain. Two source types:
+  //   - OscillatorNode (tone waveforms)
+  //   - AudioBufferSourceNode (looping white noise, or pitched sample playback)
+  // Both share start/stop + a detune AudioParam, so the LFO routes uniformly.
   type Source = OscillatorNode | AudioBufferSourceNode;
   const oscs: Source[] = [];
   for (const o of profile.oscillators) {
+    const wantFreq = freq * (o.ratio ?? 1);
     let src: Source;
-    if (o.wave === 'noise') {
+
+    if (o.wave === 'sample') {
+      // Pitched sample playback. If the buffer isn't decoded yet (first
+      // press while loading), fall back to a sine so something plays. Kick
+      // off the load so the *next* press gets the sample.
+      const url = o.sampleUrl;
+      const rootHz = o.sampleRootHz ?? 261.63;
+      const buf = url ? getCachedSample(url) : null;
+      if (url && !buf) void preloadSample(ctx, url);
+      if (buf) {
+        const sn = ctx.createBufferSource();
+        sn.buffer = buf;
+        sn.playbackRate.value = wantFreq / rootHz;
+        sn.detune.value = o.detune ?? 0;
+        // Plucked-string samples have natural decay built in — don't loop.
+        // (For sustained instruments like flute we'd loop; future option.)
+        sn.loop = false;
+        src = sn;
+      } else {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = wantFreq;
+        osc.detune.value = o.detune ?? 0;
+        src = osc;
+      }
+    } else if (o.wave === 'noise') {
       const noise = ctx.createBufferSource();
       noise.buffer = getNoiseBuffer(ctx);
       noise.loop = true;
+      noise.detune.value = o.detune ?? 0;
       src = noise;
     } else {
       const osc = ctx.createOscillator();
       osc.type = o.wave;
-      osc.frequency.value = freq * (o.ratio ?? 1);
+      osc.frequency.value = wantFreq;
+      osc.detune.value = o.detune ?? 0;
       src = osc;
     }
-    src.detune.value = o.detune ?? 0;
+
     if ((o.gain ?? 1) !== 1) {
       const sg = ctx.createGain();
       sg.gain.value = o.gain ?? 1;
@@ -296,9 +354,9 @@ export function spawnFromProfile(
 // ===========================================================================
 
 export type VoiceId =
-  | 'sine' | 'glass' | 'reed' | 'brass' | 'felt'
-  | 'pluck' | 'mallet' | 'pad' | 'drone' | 'hollow'
-  | 'kick' | 'fuzz';
+  | 'sine' | 'glass' | 'reed' | 'flute' | 'brass' | 'felt'
+  | 'pluck' | 'mallet' | 'pad' | 'drone'
+  | 'kick' | 'hihat';
 
 export const VOICES: Record<VoiceId, VoiceSpec> = {
   sine: {
@@ -334,6 +392,25 @@ export const VOICES: Record<VoiceId, VoiceSpec> = {
       oscillators: [{ wave: 'triangle' }],
       amp: { attack: 0.030, decay: 0.20, sustain: 0.78, release: 0.22 },
       lfo: { wave: 'sine', rate: 5.5, depth: 8, target: 'pitch' },
+      masterGain: 0.22,
+    },
+  },
+
+  flute: {
+    id: 'flute',
+    label: 'Flute',
+    blurb: 'airy, with vibrato',
+    profile: {
+      // Triangle is close to sine but with a touch of upper harmonic content —
+      // reads more "wind" than pure sine. A thin layer of noise adds the
+      // breath sound that's a flute's most identifiable trait.
+      oscillators: [
+        { wave: 'triangle', gain: 1.0  },
+        { wave: 'noise',    gain: 0.05 },
+      ],
+      amp: { attack: 0.040, decay: 0.12, sustain: 0.85, release: 0.20 },
+      // Natural human-vibrato rate (~5–6 Hz) at a gentle depth.
+      lfo: { wave: 'sine', rate: 5.5, depth: 7, target: 'pitch' },
       masterGain: 0.22,
     },
   },
@@ -436,18 +513,6 @@ export const VOICES: Record<VoiceId, VoiceSpec> = {
     },
   },
 
-  hollow: {
-    id: 'hollow',
-    label: 'Hollow',
-    blurb: 'clarinet-flavoured',
-    profile: {
-      oscillators: [{ wave: 'square' }],
-      amp: { attack: 0.008, decay: 0.25, sustain: 0.65, release: 0.25 },
-      filter: { type: 'lowpass', baseFreq: 1600, q: 0.8 },
-      masterGain: 0.16,
-    },
-  },
-
   kick: {
     id: 'kick',
     label: 'Kick',
@@ -466,27 +531,25 @@ export const VOICES: Record<VoiceId, VoiceSpec> = {
     },
   },
 
-  fuzz: {
-    id: 'fuzz',
-    label: 'Fuzz Bass',
-    blurb: 'gritty, saturated',
+  hihat: {
+    id: 'hihat',
+    label: 'Hi-hat',
+    blurb: 'metallic shimmer',
     profile: {
-      oscillators: [
-        { wave: 'sawtooth', detune: -7 },
-        { wave: 'sawtooth', detune:  7 },
-      ],
-      amp: { attack: 0.005, decay: 0.20, sustain: 0.65, release: 0.22 },
-      filter: { type: 'lowpass', baseFreq: 1300, q: 1.0 },
-      distortion: { amount: 0.62 },
-      masterGain: 0.16,
+      // Noise → high-pass = the canonical "tss" recipe. The high-pass kills
+      // the low/mid hash so what's left is pure top-end sizzle.
+      oscillators: [{ wave: 'noise' }],
+      amp: { attack: 0.001, decay: 0.09, sustain: 0.0, release: 0.06 },
+      filter: { type: 'highpass', baseFreq: 7000, q: 1.0 },
+      masterGain: 0.15,
     },
   },
 };
 
 export const VOICE_ORDER: readonly VoiceId[] = [
-  'sine', 'glass', 'reed', 'brass', 'felt',
-  'pluck', 'mallet', 'pad', 'drone', 'hollow',
-  'kick', 'fuzz',
+  'sine', 'glass', 'reed', 'flute', 'brass', 'felt',
+  'pluck', 'mallet', 'pad', 'drone',
+  'kick', 'hihat',
 ];
 
 /**
@@ -509,7 +572,7 @@ export function lookupVoice(
 // catastrophic. The synth assumes well-formed input; this is the perimeter.
 // ===========================================================================
 
-const WAVE_TYPES: ReadonlySet<Wave> = new Set<Wave>(['sine', 'triangle', 'square', 'sawtooth', 'noise']);
+const WAVE_TYPES: ReadonlySet<Wave> = new Set<Wave>(['sine', 'triangle', 'square', 'sawtooth', 'noise', 'sample']);
 const LFO_WAVE_TYPES: ReadonlySet<OscillatorType> = new Set<OscillatorType>(['sine', 'triangle', 'square', 'sawtooth']);
 const FILTER_TYPES = new Set<BiquadFilterType>(['lowpass', 'highpass', 'bandpass', 'notch']);
 const clamp = (v: number, lo: number, hi: number) =>
@@ -527,12 +590,18 @@ function validateADSR(maybe: unknown): ADSR {
 
 function validateOsc(maybe: unknown): OscSpec {
   const m = (maybe ?? {}) as Partial<OscSpec>;
-  return {
-    wave:   WAVE_TYPES.has(m.wave as Wave) ? (m.wave as Wave) : 'sine',
+  const wave: Wave = WAVE_TYPES.has(m.wave as Wave) ? (m.wave as Wave) : 'sine';
+  const out: OscSpec = {
+    wave,
     ratio:  clamp(Number(m.ratio  ?? 1), 0.01, 16),
     detune: clamp(Number(m.detune ?? 0), -200, 200),
     gain:   clamp(Number(m.gain   ?? 1), 0, 1),
   };
+  if (wave === 'sample') {
+    if (typeof m.sampleUrl === 'string') out.sampleUrl = m.sampleUrl.slice(0, 500);
+    out.sampleRootHz = clamp(Number(m.sampleRootHz ?? 261.63), 20, 20000);
+  }
+  return out;
 }
 
 function validateDistortion(maybe: unknown): DistortionSpec | undefined {

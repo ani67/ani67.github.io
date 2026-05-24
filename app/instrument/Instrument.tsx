@@ -17,7 +17,8 @@ import { ChordContext } from './components/ChordContext';
 import { OptionToggle } from './components/OptionToggle';
 import { VoicePicker } from './components/VoicePicker';
 import { VoiceEditor } from './components/VoiceEditor';
-import { CustomIO } from './components/CustomIO';
+// CustomIO (key-binding save/load chips) — hidden for now; kept around in case
+// we want it back. Import retained at the bottom of the file as a no-op marker.
 import { validateVoiceSpec } from './lib/audio/voices';
 import { PITCH_CLASS_NAMES } from './lib/util';
 import { PC_TO_SRUTI, SRUTI_LABELS } from './lib/tuning/sruti';
@@ -194,7 +195,6 @@ export function Instrument() {
             <ModeToggle />
             <OptionToggle />
             <VoicePicker />
-            <CustomIO />
           </div>
         </header>
 

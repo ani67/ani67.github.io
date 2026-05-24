@@ -164,36 +164,29 @@ export function VoicePicker() {
         <div
           role="listbox"
           aria-label="voice"
-          className="absolute right-0 top-[calc(100%+8px)] z-50 min-w-[260px] max-h-[60vh] overflow-y-auto rounded-2xl p-[1px]"
+          className="absolute right-0 top-[calc(100%+8px)] z-50 min-w-[180px] max-h-[60vh] overflow-y-auto rounded-2xl p-[1px]"
           style={{
             background:
               'linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03), rgba(255,255,255,0.08))',
           }}
         >
           <div className="rounded-2xl bg-black/65 backdrop-blur-xl p-1.5">
-            {/* Built-ins section label */}
-            <div className="px-3 pt-1 pb-1 font-mono text-[9px] uppercase tracking-widest text-inst-muted-foreground/60">
-              Built-in
-            </div>
             {rows.map((r, i) => {
               const isHighlighted = i === highlightIdx;
               if (r.kind === 'make') {
                 return (
-                  <div key="__make_section" className="mt-1.5 border-t border-white/[0.06] pt-1.5">
+                  <div key="__make_section" className="mt-1 border-t border-white/[0.06] pt-1">
                     <button
                       type="button"
                       onPointerEnter={() => setHighlightIdx(i)}
                       onClick={() => commitRow(r)}
                       className={cn(
-                        'flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition-colors focus:outline-none',
+                        'flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-left transition-colors focus:outline-none',
                         isHighlighted ? 'bg-white/[0.10]' : 'hover:bg-white/[0.06]',
                       )}
                     >
                       <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-transparent" />
                       <span className="font-mono text-sm text-inst-foreground">+ Make your own</span>
-                      <span className="ml-auto font-mono text-[10px] text-inst-muted-foreground">
-                        →
-                      </span>
                     </button>
                   </div>
                 );
@@ -201,11 +194,9 @@ export function VoicePicker() {
 
               const v = r.voice;
               const isCurrent = v.id === voice;
-              const sectionHeader = r.isUser && i === userSectionStart ? (
-                <div key={`__user_header_${i}`}
-                     className="mt-1.5 border-t border-white/[0.06] px-3 pt-2 pb-1 font-mono text-[9px] uppercase tracking-widest text-inst-muted-foreground/60">
-                  Yours
-                </div>
+              // Separator before the first user voice — visual only, no label.
+              const divider = r.isUser && i === userSectionStart ? (
+                <div key={`__user_div_${i}`} className="my-1 border-t border-white/[0.06]" />
               ) : null;
 
               const row = (
@@ -220,7 +211,7 @@ export function VoicePicker() {
                     }}
                     onClick={() => commitRow(r)}
                     className={cn(
-                      'flex flex-1 items-center gap-2 rounded-xl px-3 py-2 text-left transition-colors focus:outline-none',
+                      'flex flex-1 items-center gap-2 rounded-xl px-3 py-1.5 text-left transition-colors focus:outline-none',
                       isHighlighted ? 'bg-white/[0.10]' : 'hover:bg-white/[0.06]',
                     )}
                   >
@@ -232,12 +223,8 @@ export function VoicePicker() {
                       )}
                     />
                     <span className="font-mono text-sm text-inst-foreground">{v.label}</span>
-                    <span className="ml-auto font-mono text-[10px] text-inst-muted-foreground truncate max-w-[150px]">
-                      {v.blurb}
-                    </span>
                   </button>
-                  {/* Duplicate — works for both built-ins and user voices.
-                      Hover-revealed so the row stays calm at rest. */}
+                  {/* Duplicate — built-ins and user voices both. Hover-revealed. */}
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); startDuplicateVoice(v); }}
@@ -266,7 +253,7 @@ export function VoicePicker() {
                 </div>
               );
 
-              return sectionHeader ? <div key={`__user_wrap_${v.id}`}>{sectionHeader}{row}</div> : row;
+              return divider ? <div key={`__user_wrap_${v.id}`}>{divider}{row}</div> : row;
             })}
           </div>
         </div>

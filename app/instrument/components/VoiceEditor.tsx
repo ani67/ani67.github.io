@@ -145,7 +145,8 @@ const WAVE_OPTIONS = [
   { value: 'noise',    label: 'Noise' },
 ] as const;
 
-// LFO can't use noise (no rate-modulated noise concept here).
+// LFO can't use noise (no rate-modulated noise concept here). 'sample' isn't
+// in the editor's wave selector — sample voices are only built-ins.
 const LFO_WAVE_OPTIONS = WAVE_OPTIONS.filter((o) => o.value !== 'noise') as ReadonlyArray<{ value: Exclude<(typeof WAVE_OPTIONS)[number]['value'], 'noise'>; label: string }>;
 
 const FILTER_TYPE_OPTIONS = [
@@ -389,7 +390,7 @@ export function VoiceEditor() {
                 <div className="mb-3 flex items-center justify-between">
                   <Segmented
                     options={WAVE_OPTIONS}
-                    value={osc.wave}
+                    value={osc.wave === 'sample' ? 'sine' : osc.wave}
                     onChange={(wave) => updateOsc(i, { wave })}
                   />
                   {oscList.length > 1 && (
