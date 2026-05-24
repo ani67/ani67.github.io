@@ -450,7 +450,9 @@ export const useStore = create<Store>((set) => ({
         layers: buildInitialLayers(),
       });
     } else {
-      set({ looperEnabled: true });
+      // Enabling re-opens the sheet so a first-time user discovers the full
+      // UI rather than just the strip. Subsequent collapses are session-local.
+      set({ looperEnabled: true, looperOpen: true });
     }
   },
 

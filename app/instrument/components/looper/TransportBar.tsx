@@ -25,7 +25,7 @@ export function TransportBar() {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <Tooltip content={running ? <>Stop the transport. Clears the count-in and silences all looping layers.</> : <>Start the transport with a 1-bar count-in. Layers begin playing back from the loop boundary.</>}>
+      <Tooltip placement="top" content={running ? <>Stop the transport. Clears the count-in and silences all looping layers.</> : <>Start the transport with a 1-bar count-in. Layers begin playing back from the loop boundary.</>}>
         <button
           type="button"
           onClick={() => (running ? stop() : start())}
@@ -50,7 +50,7 @@ export function TransportBar() {
 
       <BpmStepper bpm={bpm} setBpm={setBpm} disabled={running} />
 
-      <Tooltip content={<>Metronome — audible click each beat, accented on the downbeat. The 1-bar count-in always plays regardless of this toggle.</>}>
+      <Tooltip placement="top" content={<>Metronome — audible click each beat, accented on the downbeat. The 1-bar count-in always plays regardless of this toggle.</>}>
         <button
           type="button"
           onClick={() => setMet(!metronomeOn)}
@@ -88,7 +88,7 @@ export function TransportBar() {
 
 function BpmStepper({ bpm, setBpm, disabled }: { bpm: number; setBpm: (n: number) => void; disabled: boolean }) {
   return (
-    <Tooltip content={<>Beats per minute. Disabled while the transport is running — stop to change.</>}>
+    <Tooltip placement="top" content={<>Beats per minute. Disabled while the transport is running — stop to change.</>}>
       <span
         className={cn(
           'inst-glass-chip inline-flex items-center gap-1 rounded-full pl-1 pr-1 py-0.5',

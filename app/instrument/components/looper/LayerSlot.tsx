@@ -32,6 +32,7 @@ export function LayerSlot({ layer }: { layer: LayerUI }) {
       </span>
 
       <Tooltip
+        placement="top"
         content={
           isEmpty   ? <>Arm to record. Recording begins at the next loop boundary; you get 1 bar of count-in if nothing is playing yet.</>
         : isArmed   ? <>Armed — waiting for the next loop boundary. Click to cancel.</>
@@ -61,7 +62,7 @@ export function LayerSlot({ layer }: { layer: LayerUI }) {
         </button>
       </Tooltip>
 
-      <Tooltip content={layer.enabled ? <>Mute this layer. Audio data is preserved.</> : <>Unmute this layer.</>}>
+      <Tooltip placement="top" content={layer.enabled ? <>Mute this layer. Audio data is preserved.</> : <>Unmute this layer.</>}>
         <button
           type="button"
           onClick={() => setEn(layer.id, !layer.enabled)}
@@ -97,7 +98,7 @@ export function LayerSlot({ layer }: { layer: LayerUI }) {
         {isEmpty ? '—' : isArmed ? 'armed' : isRecording ? 'rec' : 'loop'}
       </span>
 
-      <Tooltip content={<>Clear this layer.</>}>
+      <Tooltip placement="top" content={<>Clear this layer.</>}>
         <button
           type="button"
           onClick={() => clear(layer.id)}

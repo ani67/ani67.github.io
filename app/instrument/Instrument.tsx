@@ -18,7 +18,7 @@ import { OptionToggle } from './components/OptionToggle';
 import { VoicePicker } from './components/VoicePicker';
 import { VoiceEditor } from './components/VoiceEditor';
 import { LooperToggle } from './components/looper/LooperToggle';
-import { LooperPanel } from './components/looper/LooperPanel';
+import { LooperDock } from './components/looper/LooperDock';
 import { validateVoiceSpec } from './lib/audio/voices';
 import { lookupSystem } from './lib/tuning';
 import { PITCH_CLASS_NAMES } from './lib/util';
@@ -154,10 +154,21 @@ export function Instrument() {
         </svg>
       </Link>
 
-      <div className="fixed bottom-6 left-6 z-50 select-none font-[family-name:var(--font-mori)] text-xs text-white/40">
+      <div
+        className={[
+          'fixed left-6 z-50 select-none font-[family-name:var(--font-mori)] text-xs text-white/40 transition-[bottom] duration-[220ms]',
+          // Tucks above the looper dock strip when the looper is enabled.
+          looperEnabled ? 'bottom-[52px] sm:bottom-[60px]' : 'bottom-6',
+        ].join(' ')}
+      >
         2026
       </div>
-      <div className="fixed bottom-6 right-6 z-50 select-none font-[family-name:var(--font-mori)] text-xs text-white/40">
+      <div
+        className={[
+          'fixed right-6 z-50 select-none font-[family-name:var(--font-mori)] text-xs text-white/40 transition-[bottom] duration-[220ms]',
+          looperEnabled ? 'bottom-[52px] sm:bottom-[60px]' : 'bottom-6',
+        ].join(' ')}
+      >
         Ani Dalal
       </div>
 
@@ -217,9 +228,9 @@ export function Instrument() {
           <ModeToggle />
           <OptionToggle />
         </div>
-
-        {looperEnabled && <LooperPanel />}
       </main>
+
+      {looperEnabled && <LooperDock />}
 
       <VoiceEditor />
     </>
