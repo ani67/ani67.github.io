@@ -1,8 +1,11 @@
 import { useStore } from '../store/store';
 import { cn } from '../lib/utils';
 import type { RowId } from '../lib/types';
-import { isInScale, simpleStepToSemitone } from '../lib/keymap/scales';
-import { isInRaga, PC_TO_SRUTI, simpleStepInRaga, SRUTI_LABELS, SRUTI_RATIOS } from '../lib/tuning/sruti';
+import { classifyTriad, isInScale, simpleStepToSemitone, triadInScale } from '../lib/keymap/scales';
+import {
+  isInRaga, PC_TO_SRUTI, simpleStepInRaga,
+  SRUTI_LABELS, SRUTI_RATIOS, SRUTI_TO_NEAREST_SEMITONE,
+} from '../lib/tuning/sruti';
 import { midiToName } from '../lib/util';
 import { resolveKeyDown } from '../lib/keymap/resolver';
 import { dispatch } from '../lib/dispatch';
@@ -36,6 +39,7 @@ export function Key({ code, row, step, className }: { code: string; row: RowId; 
   const octaveShift     = useStore((s) => s.octaveShift);
   const chordScaleTET   = useStore((s) => s.chordScaleTET);
   const chordScaleSruti = useStore((s) => s.chordScaleSruti);
+  const optionLock      = useStore((s) => s.optionLock);
   const tetOv           = useStore((s) => s.customMapTET[code]);
   const srutiOv         = useStore((s) => s.customMapSruti[code]);
   const pickerCode      = useStore((s) => s.pickerCode);
@@ -48,12 +52,16 @@ export function Key({ code, row, step, className }: { code: string; row: RowId; 
   const pickerOpen = pickerCode === code;
 
   let pitchLabel: string;
+  let subLabel: string | null = null;   // greyed second line — Western reference in Śruti mode
   let inContext: boolean;
   if (tuning === 'sruti') {
     // Fixed-Sa labelling: shift the svara labels by where root sits in the 22-śruti grid,
     // so the label on each key matches the absolute pitch it plays.
     const N      = SRUTI_RATIOS.length;
     const offset = PC_TO_SRUTI[root];
+
+    let absSruti: number;
+    let totalOct: number;
     if (mode === 'simple') {
       let sruti: number, octaves: number;
       if (srutiOv && !('deleted' in srutiOv)) {
@@ -65,29 +73,56 @@ export function Key({ code, row, step, className }: { code: string; row: RowId; 
         octaves = r.octaves;
       }
       const total    = sruti + offset;
-      const absSruti = ((total % N) + N) % N;
+      absSruti       = ((total % N) + N) % N;
       const extraOct = Math.floor(total / N);
-      pitchLabel = svaraLabel(absSruti, octaves + extraOct);
-      inContext  = true;
+      totalOct       = octaves + extraOct;
+      pitchLabel     = svaraLabel(absSruti, totalOct);
+      inContext      = true;
     } else {
       const relSruti = ((step % N) + N) % N;
       const total    = step + offset;
-      const absSruti = ((total % N) + N) % N;
-      const absOct   = Math.floor(total / N);
-      pitchLabel     = svaraLabel(absSruti, absOct);
+      absSruti       = ((total % N) + N) % N;
+      totalOct       = Math.floor(total / N);
+      pitchLabel     = svaraLabel(absSruti, totalOct);
       inContext      = isInRaga(chordScaleSruti, relSruti);
     }
+    // Western reference: nearest 12-TET semitone above absolute C-as-Sa, plus
+    // octave register. Greyed below to read as "approximately."
+    const nearestPc = SRUTI_TO_NEAREST_SEMITONE[absSruti];
+    const refMidi   = 12 * (baseOctave + octaveShift + 1) + nearestPc + totalOct * 12;
+    subLabel = midiToName(refMidi, root);
   } else {
+    let midi: number;
+    let semitoneFromRoot: number;
+    let isInScalePress: boolean;
     if (mode === 'simple') {
-      const semitone =
+      semitoneFromRoot =
         tetOv && !('deleted' in tetOv) ? tetOv.semitone : simpleStepToSemitone(chordScaleTET, step);
-      const midi = 12 * (baseOctave + octaveShift + 1) + root + semitone;
-      pitchLabel = midiToName(midi);
-      inContext  = true;
+      midi             = 12 * (baseOctave + octaveShift + 1) + root + semitoneFromRoot;
+      isInScalePress   = true;   // simple mode always walks the scale
+      inContext        = true;
     } else {
-      const midi = 12 * (baseOctave + octaveShift + 1) + root + step;
-      pitchLabel = midiToName(midi);
-      inContext  = isInScale(chordScaleTET, step);
+      semitoneFromRoot = step;
+      midi             = 12 * (baseOctave + octaveShift + 1) + root + step;
+      isInScalePress   = isInScale(chordScaleTET, step);
+      inContext        = isInScalePress;
+    }
+    pitchLabel = midiToName(midi, root);
+    // Chord-quality suffix — when chord toggle is on AND we're pressing a key
+    // whose triad lives in the current scale, classify the [0, +3rd, +5th]
+    // shape into a Western chord suffix (m, °, +, sus2, sus4). Out-of-scale
+    // chromatic keys with chord-on get no suffix — the resolver builds a
+    // snap-in colour-tone chord which doesn't have a clean Western name.
+    if (optionLock && isInScalePress) {
+      const offsets = triadInScale(chordScaleTET, semitoneFromRoot);
+      if (offsets) {
+        const suffix = classifyTriad(offsets);
+        if (suffix !== undefined) {
+          // Insert the suffix between pitch and octave: "D4" → "Dm4".
+          const m = /^([A-G][b#]?)(-?\d+)$/.exec(pitchLabel);
+          if (m) pitchLabel = `${m[1]}${suffix}${m[2]}`;
+        }
+      }
     }
   }
 
@@ -164,9 +199,14 @@ export function Key({ code, row, step, className }: { code: string; row: RowId; 
       >
         {LETTER[code]}
       </div>
-      <div className="font-mono text-[10px] text-inst-muted-foreground">
+      <div className="font-mono text-[10px] leading-tight text-inst-muted-foreground">
         {isDeleted ? '—' : pitchLabel}
       </div>
+      {!isDeleted && subLabel && (
+        <div className="font-mono text-[8.5px] leading-tight text-inst-muted-foreground/40">
+          {subLabel}
+        </div>
+      )}
       {pickerOpen && <KeyPicker code={code} step={step} />}
     </div>
   );

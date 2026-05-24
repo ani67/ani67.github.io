@@ -68,6 +68,23 @@ export function simpleStepToSemitone(scaleName: ScaleName, step: number): number
 }
 
 /**
+ * Classify a triad's semitone-offset shape into a Western chord suffix.
+ * Empty string for major (the default). Returns undefined for shapes we
+ * don't have a clean name for (e.g. the 5-note sus scale's [0,5,9] triad
+ * isn't a standard chord — we leave it un-suffixed rather than mislabel).
+ */
+export function classifyTriad(offsets: readonly [number, number, number]): string | undefined {
+  const [, third, fifth] = offsets;
+  if (third === 4 && fifth === 7)  return '';      // major
+  if (third === 3 && fifth === 7)  return 'm';     // minor
+  if (third === 3 && fifth === 6)  return '°';     // diminished
+  if (third === 4 && fifth === 8)  return '+';     // augmented
+  if (third === 5 && fifth === 7)  return 'sus4';  // sus4
+  if (third === 2 && fifth === 7)  return 'sus2';  // sus2
+  return undefined;
+}
+
+/**
  * Given the scale-degree index `i` where the pressed semitone lives,
  * returns semitone offsets [0, +3rd, +5th] (stack of thirds through the scale)
  * relative to the pressed pitch. Handles wrap past the scale length (→ next octave).

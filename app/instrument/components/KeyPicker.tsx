@@ -53,7 +53,7 @@ export function KeyPicker({ code, step }: { code: string; step: number }) {
         const midi = baseMidi + semi;
         list.push({
           id: `tet:${semi}`,
-          label: midiToName(midi),
+          label: midiToName(midi, root),
           kind: 'pitch',
           isCurrent: off === 0,
           apply: () => {

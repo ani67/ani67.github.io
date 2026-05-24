@@ -46,6 +46,40 @@ export const PC_TO_SRUTI: readonly number[] = [
 ];
 
 /**
+ * Inverse of PC_TO_SRUTI extended to all 22 śrutis — the *nearest* 12-TET
+ * semitone (0..11, relative to Sa) for each śruti. Used to show a greyed
+ * Western pitch reference under each key in Śruti mode.
+ *
+ * Two śrutis often round to the same semitone (e.g. Ga at 5/4 = 386¢ and
+ * Ga↑ at 81/64 = 408¢ both round to E = 400¢). That's the whole point —
+ * Western labels can't distinguish them; Hindustani notation can.
+ */
+export const SRUTI_TO_NEAREST_SEMITONE: readonly number[] = [
+  0,   // 0  Sa    1/1      0¢       → C
+  1,   // 1  re↓   256/243  90¢      → C#
+  1,   // 2  re    16/15    112¢     → C#
+  2,   // 3  Re↓   10/9     182¢     → D
+  2,   // 4  Re    9/8      204¢     → D
+  3,   // 5  ga↓   32/27    294¢     → D#/Eb
+  3,   // 6  ga    6/5      316¢     → D#/Eb
+  4,   // 7  Ga    5/4      386¢     → E
+  4,   // 8  Ga↑   81/64    408¢     → E
+  5,   // 9  Ma    4/3      498¢     → F
+  5,   // 10 Ma+   27/20    520¢     → F
+  6,   // 11 tMa   45/32    590¢     → F#
+  6,   // 12 tMa↑  729/512  612¢     → F#
+  7,   // 13 Pa    3/2      702¢     → G
+  8,   // 14 dha↓  128/81   792¢     → G#/Ab
+  8,   // 15 dha   8/5      814¢     → G#/Ab
+  9,   // 16 Dha   5/3      884¢     → A
+  9,   // 17 Dha↑  27/16    906¢     → A
+  10,  // 18 ni↓   16/9     996¢     → A#/Bb
+  10,  // 19 ni    9/5      1018¢    → A#/Bb
+  11,  // 20 Ni    15/8     1088¢    → B
+  11,  // 21 Ni↑   243/128  1110¢    → B
+];
+
+/**
  * Rāgas — ordered lists of śruti indices forming the ascending scale.
  * CONTEXT ONLY — used for chord-mode voicing and visual highlight.
  * The keyboard plays every śruti regardless of the current rāga.
