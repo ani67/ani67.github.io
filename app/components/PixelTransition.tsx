@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 const SQUARE_SIZE = 150;
 const STEPS = 10;
 const STEP_INTERVAL = 40;
+const INITIAL_HOLD_MS = 1000;   // hold the logo cover this long on first load
 
 /**
  * White pixelated overlay for initial page load and route changes.
@@ -30,61 +31,85 @@ export function PixelTransition() {
   };
 
   const startReveal = () => {
-    // Remove the static white cover from layout (first load only)
+    // Cover present → this is the initial page load. Hold the logo for a
+    // beat before transitioning so it actually registers visually.
     const cover = document.getElementById('initial-cover');
-    if (cover) cover.remove();
+    const isFirstLoad = cover !== null;
+    const holdMs = isFirstLoad ? INITIAL_HOLD_MS : 0;
 
+    // Mobile: no pixel dissolve. Just hold the cover, then remove it.
     if (window.innerWidth < 768) {
-      return;
-    }
-    clearAllTimeouts();
-
-    const { cols, rows } = gridRef.current;
-    setGridSize({ cols, rows });
-
-    const totalSquares = cols * rows;
-    const allIndices = Array.from({ length: totalSquares }, (_, i) => i);
-
-    // Cover the screen instantly (no CSS transition on appearance)
-    setIsVisible(true);
-    setVisibleSquares(new Set(allIndices));
-
-    // Shuffle the removal order for a random dissolve
-    const removal = [...allIndices];
-    for (let i = removal.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [removal[i], removal[j]] = [removal[j], removal[i]];
-    }
-
-    const squaresPerStep = Math.ceil(totalSquares / STEPS);
-    let step = 0;
-
-    const animate = () => {
-      step++;
-      const start = (step - 1) * squaresPerStep;
-      const end = Math.min(start + squaresPerStep, removal.length);
-
-      setVisibleSquares(prev => {
-        const next = new Set(prev);
-        for (let i = start; i < end; i++) next.delete(removal[i]);
-        return next;
-      });
-
-      if (step < STEPS) {
-        const t = setTimeout(animate, STEP_INTERVAL);
-        timeoutsRef.current.push(t);
-      } else {
-        const t = setTimeout(() => {
-          setIsVisible(false);
-          setVisibleSquares(new Set());
-        }, 100);
+      if (cover) {
+        const t = setTimeout(() => cover.remove(), holdMs);
         timeoutsRef.current.push(t);
       }
+      return;
+    }
+
+    const beginDissolve = () => {
+      clearAllTimeouts();
+
+      const { cols, rows } = gridRef.current;
+      setGridSize({ cols, rows });
+
+      const totalSquares = cols * rows;
+      const allIndices = Array.from({ length: totalSquares }, (_, i) => i);
+
+      // Cover the screen instantly (no CSS transition on appearance)
+      setIsVisible(true);
+      setVisibleSquares(new Set(allIndices));
+
+      // Remove the logo cover *after* the pixel grid has rendered so there's
+      // no frame where the underlying page peeks through.
+      if (cover) {
+        const removeT = setTimeout(() => cover.remove(), 50);
+        timeoutsRef.current.push(removeT);
+      }
+
+      // Shuffle the removal order for a random dissolve
+      const removal = [...allIndices];
+      for (let i = removal.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [removal[i], removal[j]] = [removal[j], removal[i]];
+      }
+
+      const squaresPerStep = Math.ceil(totalSquares / STEPS);
+      let step = 0;
+
+      const animate = () => {
+        step++;
+        const start = (step - 1) * squaresPerStep;
+        const end = Math.min(start + squaresPerStep, removal.length);
+
+        setVisibleSquares(prev => {
+          const next = new Set(prev);
+          for (let i = start; i < end; i++) next.delete(removal[i]);
+          return next;
+        });
+
+        if (step < STEPS) {
+          const t = setTimeout(animate, STEP_INTERVAL);
+          timeoutsRef.current.push(t);
+        } else {
+          const t = setTimeout(() => {
+            setIsVisible(false);
+            setVisibleSquares(new Set());
+          }, 100);
+          timeoutsRef.current.push(t);
+        }
+      };
+
+      // Brief pause before dissolving so the grid registers visually
+      const t = setTimeout(animate, 60);
+      timeoutsRef.current.push(t);
     };
 
-    // Brief pause before dissolving so the cover registers visually
-    const t = setTimeout(animate, 60);
-    timeoutsRef.current.push(t);
+    if (holdMs > 0) {
+      const t = setTimeout(beginDissolve, holdMs);
+      timeoutsRef.current.push(t);
+    } else {
+      beginDissolve();
+    }
   };
 
   // Grid size — use ref so setTimeout callbacks always read the latest value
