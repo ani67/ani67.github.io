@@ -12,12 +12,20 @@ interface NavigationLinksProps {
 }
 
 /**
- * Main navigation links
+ * Main navigation links — order is Tools → Filter → About/Theme. Tools at the
+ * top because they're the highest-signal entries on the rail; filter and
+ * about live below.
  */
-export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassName = 'space-y-2', itemClassName = 'text-xl', inactiveClassName = 'text-white/50 hover:text-white' }: NavigationLinksProps) {
-  const tagItems = [
-    { label: 'Work', tag: 'work' },
-    { label: 'Art', tag: 'art' },
+export function NavigationLinks({
+  selectedTag, onTagSelect, useLinks,
+  listClassName = 'space-y-2',
+  itemClassName = 'text-xl',
+  inactiveClassName = 'text-white/50 hover:text-white',
+}: NavigationLinksProps) {
+  const tagItems: { label: string; tag: string | null }[] = [
+    { label: 'All',   tag: null   },
+    { label: 'Work',  tag: 'work' },
+    { label: 'Art',   tag: 'art'  },
     { label: 'Vibes', tag: 'vibes' },
   ];
 
@@ -26,57 +34,7 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
 
   return (
     <nav>
-      <p className="text-[10px] text-white/30 mb-3 font-[family-name:var(--font-mori)]">Filter by</p>
-      <ul className={listClassName}>
-        {tagItems.map(({ label, tag }) => (
-          <li key={tag}>
-            {useLinks ? (
-              <Link
-                href={`/?tag=${tag}`}
-                className={`${itemClassName} transition-colors focus:outline-none block ${
-                  selectedTag === tag ? 'text-white' : inactiveClassName
-                }`}
-              >
-                <ScrambleText text={label} />
-              </Link>
-            ) : (
-              <button
-                onClick={() => onTagSelect?.(tag)}
-                className={`${itemClassName} transition-colors focus:outline-none block ${
-                  selectedTag === tag ? 'text-white' : inactiveClassName
-                }`}
-              >
-                <ScrambleText text={label} />
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-      <ul className={`${listClassName} mt-12`}>
-        <li>
-          <Link
-            href="/about"
-            className={`${itemClassName} transition-colors focus:outline-none block ${inactiveClassName}`}
-          >
-            <ScrambleText text="About" />
-          </Link>
-        </li>
-        <li>
-          <ThemeToggle inline />
-        </li>
-        {isDevMode && (
-          <li>
-            <a
-              href="/editor"
-              className={`${itemClassName} text-white/50 hover:text-white transition-colors focus:outline-none`}
-            >
-              <ScrambleText text="Editor" />
-            </a>
-          </li>
-        )}
-      </ul>
-
-      <div className="mt-12">
+      <div>
         <p className="text-[10px] text-white/30 mb-3 font-[family-name:var(--font-mori)]">Tools</p>
         <ul className={listClassName}>
           <li>
@@ -105,6 +63,59 @@ export function NavigationLinks({ selectedTag, onTagSelect, useLinks, listClassN
           </li>
         </ul>
       </div>
+
+      <div className="mt-12">
+        <p className="text-[10px] text-white/30 mb-3 font-[family-name:var(--font-mori)]">Filter by</p>
+        <ul className={listClassName}>
+          {tagItems.map(({ label, tag }) => {
+            const href = tag === null ? '/' : `/?tag=${tag}`;
+            const isActive = selectedTag === tag;
+            const className = `${itemClassName} transition-colors focus:outline-none block ${
+              isActive ? 'text-white' : inactiveClassName
+            }`;
+            return (
+              <li key={label}>
+                {useLinks ? (
+                  <Link href={href} className={className}>
+                    <ScrambleText text={label} />
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => onTagSelect?.(tag)}
+                    className={className}
+                  >
+                    <ScrambleText text={label} />
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <ul className={`${listClassName} mt-12`}>
+        <li>
+          <Link
+            href="/about"
+            className={`${itemClassName} transition-colors focus:outline-none block ${inactiveClassName}`}
+          >
+            <ScrambleText text="About" />
+          </Link>
+        </li>
+        <li>
+          <ThemeToggle inline />
+        </li>
+        {isDevMode && (
+          <li>
+            <a
+              href="/editor"
+              className={`${itemClassName} text-white/50 hover:text-white transition-colors focus:outline-none`}
+            >
+              <ScrambleText text="Editor" />
+            </a>
+          </li>
+        )}
+      </ul>
     </nav>
   );
 }
