@@ -368,7 +368,7 @@ export function spawnFromProfile(
 
 export type VoiceId =
   | 'sine' | 'glass' | 'reed' | 'flute' | 'brass' | 'felt'
-  | 'pluck' | 'mallet' | 'pad' | 'drone'
+  | 'pluck' | 'mallet' | 'drone'
   | 'kick' | 'hihat';
 
 export const VOICES: Record<VoiceId, VoiceSpec> = {
@@ -415,12 +415,10 @@ export const VOICES: Record<VoiceId, VoiceSpec> = {
     blurb: 'airy, with vibrato',
     profile: {
       // Triangle is close to sine but with a touch of upper harmonic content —
-      // reads more "wind" than pure sine. A thin layer of noise adds the
-      // breath sound that's a flute's most identifiable trait.
-      oscillators: [
-        { wave: 'triangle', gain: 1.0  },
-        { wave: 'noise',    gain: 0.05 },
-      ],
+      // reads more "wind" than pure sine. Used to mix in a noise layer for
+      // "breath," but white noise loops continuously and reads as an audible
+      // zzz undertone behind the pitch — removed.
+      oscillators: [{ wave: 'triangle' }],
       amp: { attack: 0.040, decay: 0.12, sustain: 0.85, release: 0.20 },
       // Natural human-vibrato rate (~5–6 Hz) at a gentle depth.
       lfo: { wave: 'sine', rate: 5.5, depth: 7, target: 'pitch' },
@@ -495,21 +493,6 @@ export const VOICES: Record<VoiceId, VoiceSpec> = {
     },
   },
 
-  pad: {
-    id: 'pad',
-    label: 'Pad',
-    blurb: 'detuned, airy',
-    profile: {
-      oscillators: [
-        { wave: 'sawtooth', detune: -7 },
-        { wave: 'sawtooth', detune:  7 },
-      ],
-      amp: { attack: 0.80, decay: 0.50, sustain: 0.82, release: 1.50 },
-      filter: { type: 'lowpass', baseFreq: 1200, q: 0.5 },
-      masterGain: 0.14,
-    },
-  },
-
   drone: {
     id: 'drone',
     label: 'Drone',
@@ -561,7 +544,7 @@ export const VOICES: Record<VoiceId, VoiceSpec> = {
 
 export const VOICE_ORDER: readonly VoiceId[] = [
   'sine', 'glass', 'reed', 'flute', 'brass', 'felt',
-  'pluck', 'mallet', 'pad', 'drone',
+  'pluck', 'mallet', 'drone',
   'kick', 'hihat',
 ];
 

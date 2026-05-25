@@ -243,7 +243,7 @@ export const useStore = create<Store>((set) => ({
   activeCodes: new Set<string>(),
   audioReady: false,
   customMaps: {},
-  voice: 'drone',
+  voice: 'glass',
   userVoices: {},
   voiceEditor: null,
   voiceEditorEditingId: null,
@@ -392,7 +392,7 @@ export const useStore = create<Store>((set) => ({
       const userVoices = { ...s.userVoices };
       delete userVoices[id];
       writeUserVoices(userVoices);
-      const voice = s.voice === id ? 'drone' : s.voice;
+      const voice = s.voice === id ? 'glass' : s.voice;
       if (voice !== s.voice) writeVoicePick(voice);
       writeDraft(null);
       return { userVoices, voice, voiceEditor: null, voiceEditorEditingId: null };
