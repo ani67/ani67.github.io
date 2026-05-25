@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { NavigationLinks } from './NavigationLinks';
-import { MobileThemeToggle } from './ThemeToggle';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -57,9 +56,10 @@ export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect, useLinks
       {/* Spacer — pushes nav to bottom */}
       <div className="flex-1" />
 
-      {/* Bottom: nav options */}
+      {/* Bottom: nav options — NavigationLinks already includes the theme
+          toggle inline (after About), so no separate block here. */}
       {(onTagSelect || useLinks) && (
-        <nav className="px-6 pb-4">
+        <nav className="px-6 pb-10">
           <NavigationLinks
             selectedTag={selectedTag ?? null}
             onTagSelect={onTagSelect ? (tag) => { onTagSelect(tag); onClose(); } : undefined}
@@ -70,11 +70,6 @@ export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect, useLinks
           />
         </nav>
       )}
-
-      {/* Theme toggle */}
-      <div className="px-6 pb-10">
-        <MobileThemeToggle />
-      </div>
     </div>
   );
 }
