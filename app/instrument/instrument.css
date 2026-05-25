@@ -15,6 +15,33 @@
   font-family: system-ui, -apple-system, Inter, sans-serif;
   overflow-y: auto;
   overscroll-behavior: contain;
+
+  /* iOS Chrome/Safari treat any unprotected text as a long-press selection
+     target. When a finger covers a key + a nearby chip, the key refuses the
+     gesture (it has touch-none + preventDefault) and iOS falls back to the
+     next selectable text in the touch region — usually the leftmost chip's
+     label. Suppress selection + the iOS callout bubble at the instrument
+     scope, then re-enable explicitly for real text inputs below. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Real text inputs (voice editor name, etc.) must remain selectable. */
+.instrument-root input,
+.instrument-root textarea,
+.instrument-root [contenteditable='true'] {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* Buttons + button-like elements: tell iOS the tap is a tap, not the start
+   of a gesture it should still be evaluating (double-tap zoom, drag-select). */
+.instrument-root button,
+.instrument-root [role='button'],
+.instrument-root [role='option'] {
+  touch-action: manipulation;
 }
 
 /* Watercolour bg — painted below instrument content, pinned to the viewport. */
