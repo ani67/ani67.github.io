@@ -8,6 +8,7 @@ import { ensureRunning } from './lib/audio/context';
 import { useKeyboard } from './hooks/useKeyboard';
 import { AudioStatus } from './components/AudioStatus';
 import { RecordButton } from './components/RecordButton';
+import { FormatToggle } from './components/FormatToggle';
 import { Keyboard } from './components/Keyboard';
 import { Pill } from './components/ui/pill';
 import { Kbd } from './components/ui/kbd';
@@ -177,6 +178,7 @@ export function Instrument() {
           <div className="flex items-center gap-3">
             <AudioStatus />
             <RecordButton />
+            <FormatToggle />
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <ChordContext />

@@ -5,6 +5,7 @@ import { validateUserVoicesRecord, validateVoiceSpec } from '../lib/audio/voices
 import { SYSTEMS, lookupSystem } from '../lib/tuning';
 import * as transport from '../lib/transport/transport';
 import { LAYER_COUNT, type LayerState } from '../lib/transport/transport';
+import type { RecordFormat } from '../lib/audio/recorder';
 
 export type CentsOverride = number | { deleted: true };
 
@@ -18,6 +19,7 @@ const CUSTOM_MAPS_KEY  = 'instrument:customMaps:v1';
 const LOOPER_ENABLED_KEY = 'instrument:looperEnabled:v1';
 const BPM_KEY          = 'instrument:bpm:v1';
 const METRONOME_KEY    = 'instrument:metronome:v1';
+const RECORD_FORMAT_KEY = 'instrument:recordFormat:v1';
 
 function readJSON<T>(key: string): T | null {
   if (typeof window === 'undefined') return null;
@@ -159,6 +161,9 @@ interface Store {
   activeCodes: Set<string>;
   audioReady: boolean;
 
+  // ---- recorder ----------------------------------------------------------
+  recordFormat: RecordFormat;
+
   // ---- per-key custom maps ----------------------------------------------
   // Outer key = systemId; inner key = keyboard event.code; value = cents from root,
   // or a "deleted" sentinel (silent in simple mode).
@@ -197,6 +202,7 @@ interface Store {
   allNotesOff:    () => void;
   toggleOptionLock: () => void;
   setAudioReady:    (ready: boolean) => void;
+  setRecordFormat:  (f: RecordFormat) => void;
 
   hydrateFromStorage: () => void;
 
@@ -242,6 +248,7 @@ export const useStore = create<Store>((set) => ({
   optionLock: true,
   activeCodes: new Set<string>(),
   audioReady: false,
+  recordFormat: 'webm',
   customMaps: {},
   voice: 'glass',
   userVoices: {},
@@ -321,6 +328,13 @@ export const useStore = create<Store>((set) => ({
 
   setAudioReady: (ready) => set({ audioReady: ready }),
 
+  setRecordFormat: (f) => {
+    if (typeof window !== 'undefined') {
+      try { window.localStorage.setItem(RECORD_FORMAT_KEY, f); } catch { /* quota */ }
+    }
+    set({ recordFormat: f });
+  },
+
   hydrateFromStorage: () => {
     const userVoices   = readUserVoices();
     const pick         = readVoicePick();
@@ -331,6 +345,13 @@ export const useStore = create<Store>((set) => ({
     const looperEnabled = readBool(LOOPER_ENABLED_KEY);
     const bpm           = readNum(BPM_KEY);
     const metronomeOn   = readBool(METRONOME_KEY);
+    let recordFormat: RecordFormat | null = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const v = window.localStorage.getItem(RECORD_FORMAT_KEY);
+        if (v === 'webm' || v === 'wav' || v === 'mp3') recordFormat = v;
+      } catch { /* */ }
+    }
     // Mirror persisted BPM + metronome state into the transport engine.
     if (bpm !== null) transport.setConfig({ bpm });
     if (metronomeOn !== null) transport.setMetronomeEnabled(metronomeOn);
@@ -344,6 +365,7 @@ export const useStore = create<Store>((set) => ({
       looperEnabled: looperEnabled ?? s.looperEnabled,
       bpm:           bpm ?? s.bpm,
       metronomeOn:   metronomeOn ?? s.metronomeOn,
+      recordFormat:  recordFormat ?? s.recordFormat,
     }));
   },
 

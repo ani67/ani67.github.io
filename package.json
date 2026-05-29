@@ -25,6 +25,7 @@
     "figma-squircle": "^1.1.0",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
+    "lamejs": "^1.2.1",
     "lucide-react": "^0.575.0",
     "next": "16.0.1",
     "next-mdx-remote": "^5.0.0",
