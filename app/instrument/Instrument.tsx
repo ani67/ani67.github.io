@@ -12,7 +12,6 @@ import { Keyboard } from './components/Keyboard';
 import { Pill } from './components/ui/pill';
 import { Kbd } from './components/ui/kbd';
 import { SystemPicker } from './components/SystemPicker';
-import { ModeToggle } from './components/ModeToggle';
 import { ChordContext } from './components/ChordContext';
 import { OptionToggle } from './components/OptionToggle';
 import { VoicePicker } from './components/VoicePicker';
@@ -225,7 +224,8 @@ export function Instrument() {
               +
             </button>
           </span>
-          <ModeToggle />
+          {/* Mode toggle (simple/chromatic) is hidden — keyboard still
+              honours store.mode; the chip is just removed from the UI. */}
           <OptionToggle />
         </div>
       </main>
