@@ -25,8 +25,7 @@ export default function AboutPage() {
             <h2 className="text-xl text-white/40">Experience</h2>
             <div className="space-y-6">
               {[
-                { company: 'Dashverse.AI', desc: '0 to 1 product design for Frameo', period: "Jan '25 - Present" },
-                { company: 'Dashverse.AI', desc: '0 to 1 product design for Dashtoon Studio', period: "Jun '23 - Dec '24" },
+                { company: 'Dashverse.AI', desc: '0 to 1 product design for Frameo & Dashtoon Studio', period: "Jun '23 - Present" },
                 { company: 'Univ.AI', desc: 'Product design for learning & recruitment platform', period: "Sep '20 - May '23" },
                 { company: 'Samsung R&D', desc: 'UX design for Bixby voice platform', period: "Jul '18 - Jan '20" },
                 { company: 'Freelance', desc: 'UX strategy, product design and web development', period: 'Various' },
@@ -55,6 +54,25 @@ export default function AboutPage() {
                   <div>
                     <div className="text-xl text-white">{school}</div>
                     <div className="text-xl text-white/50">{degree}</div>
+                  </div>
+                  <span className="text-xl text-white/40 shrink-0">{period}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Teaching & Juries */}
+          <section className="space-y-6">
+            <h2 className="text-xl text-white/40">Teaching & Juries</h2>
+            <div className="space-y-6">
+              {[
+                { org: 'IIT Guwahati', role: 'Led two 3-hour generative art workshops', period: "2024 - 25" },
+                { org: 'CEPT University', role: 'Jury member, Worldbuilding studio finals', period: "2025" },
+              ].map(({ org, role, period }) => (
+                <div key={org + role} className="flex items-start justify-between gap-6">
+                  <div>
+                    <div className="text-xl text-white">{org}</div>
+                    <div className="text-xl text-white/50">{role}</div>
                   </div>
                   <span className="text-xl text-white/40 shrink-0">{period}</span>
                 </div>
