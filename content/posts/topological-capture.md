@@ -1,7 +1,7 @@
 ---
 title: "Topological Capture"
 date: "2026-06-28T07:57"
-description: "The imagination crisis isn't about your creativity. It's about the size of the room."
+description: "The imagination crisis isn't about your creativity. It's about the shrinking size of the room you've been given to think in."
 tags: ["vibes"]
 image: null
 published: true
@@ -225,7 +225,10 @@ Whether the underuse is reversible is the bet the next decade asks us to make.
 
 
 
+
+
 - Viktor Shklovsky, "Art as Technique". The original defamiliarization argument.
+
 
 
 - Benjamin Bratton, *The Stack* (2015); *Agentworld* brief (Antikythera, 2026). On planetary computation and the parasociety of hybrid human-AI ensembles.
@@ -248,6 +251,10 @@ Whether the underuse is reversible is the bet the next decade asks us to make.
 
 
 
+
+
+
 ### Source notes
+
 
 COP30 outcome details verified against [Euronews (Nov 21, 2025)]([https://www.euronews.com/2025/11/21/outrageous-cop30-draft-deal-drops-mention-of-fossil-fuels-despite-calls-for-transition-roa](https://www.euronews.com/2025/11/21/outrageous-cop30-draft-deal-drops-mention-of-fossil-fuels-despite-calls-for-transition-roa)), [Climate Home News (Nov 22, 2025)]([https://www.climatechangenews.com/2025/11/22/cop30-brazil-deal-fossil-fuel-transition-fails-triples-finance-climate-adaptation-what-happened/](https://www.climatechangenews.com/2025/11/22/cop30-brazil-deal-fossil-fuel-transition-fails-triples-finance-climate-adaptation-what-happened/)), [Democracy Now interview with Carlos Nobre (Nov 20, 2025)]([https://www.democracynow.org/2025/11/20/carlos_nobre](https://www.democracynow.org/2025/11/20/carlos_nobre)), and [Health Policy Watch]([https://healthpolicy-watch.news/cop30-ends-with-plans-to-make-more-plans-no-mention-of-fossil-fuel-phase-out/](https://healthpolicy-watch.news/cop30-ends-with-plans-to-make-more-plans-no-mention-of-fossil-fuel-phase-out/)).
