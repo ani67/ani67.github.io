@@ -7,6 +7,7 @@ const THEME_COLORS = {
   dawn: '#BB3232',
   day: '#4269E8',
   night: '#14151A',
+  reader: '#E4E9EC',
 };
 
 /**

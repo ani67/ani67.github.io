@@ -37,6 +37,7 @@ export const THEME_COLORS: Record<string, { bg: string; stroke: string }> = {
   dawn: { bg: '#BB3232', stroke: '#ffffff' },
   day: { bg: '#4269E8', stroke: '#ffffff' },
   night: { bg: '#14151A', stroke: '#ffffff' },
+  reader: { bg: '#E4E9EC', stroke: '#2b2b2b' },
 };
 
 export const MIN_ZOOM = 0.1;

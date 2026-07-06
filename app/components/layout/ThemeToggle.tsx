@@ -2,7 +2,7 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import { Sunrise, Sun, Moon } from 'lucide-react';
+import { Sunrise, Sun, Moon, BookOpen } from 'lucide-react';
 import { ScrambleText } from '../ScrambleText';
 
 export function ThemeToggle({ inline }: { inline?: boolean } = {}) {
@@ -15,7 +15,7 @@ export function ThemeToggle({ inline }: { inline?: boolean } = {}) {
 
   if (!mounted) return null;
 
-  const themes = ['dawn', 'day', 'night'];
+  const themes = ['dawn', 'day', 'night', 'reader'];
   const currentIndex = themes.indexOf(theme || 'dawn');
   const nextTheme = themes[(currentIndex + 1) % themes.length];
 
@@ -27,6 +27,8 @@ export function ThemeToggle({ inline }: { inline?: boolean } = {}) {
         return <Sun className="w-5 h-5" strokeLinejoin="round" strokeLinecap="round" />;
       case 'night':
         return <Moon className="w-5 h-5" strokeLinejoin="round" strokeLinecap="round" />;
+      case 'reader':
+        return <BookOpen className="w-5 h-5" strokeLinejoin="round" strokeLinecap="round" />;
       default:
         return <Sun className="w-5 h-5" strokeLinejoin="round" strokeLinecap="round" />;
     }
@@ -37,6 +39,7 @@ export function ThemeToggle({ inline }: { inline?: boolean } = {}) {
       case 'dawn': return 'Dawn';
       case 'day': return 'Day';
       case 'night': return 'Night';
+      case 'reader': return 'Reader';
       default: return 'Day';
     }
   };

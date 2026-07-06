@@ -2,10 +2,10 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import { Sunrise, Sun, Moon } from 'lucide-react';
+import { Sunrise, Sun, Moon, BookOpen } from 'lucide-react';
 
 /**
- * Theme toggle button for cycling through color modes: dawn, day, night
+ * Theme toggle button for cycling through color modes: dawn, day, night, reader
  */
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -24,7 +24,7 @@ export function ThemeToggle() {
     );
   }
 
-  const themes = ['dawn', 'day', 'night'];
+  const themes = ['dawn', 'day', 'night', 'reader'];
   const currentIndex = themes.indexOf(theme || 'dawn');
   const nextTheme = themes[(currentIndex + 1) % themes.length];
 
@@ -36,6 +36,8 @@ export function ThemeToggle() {
         return <Sun className="w-5 h-5" strokeLinejoin="round" strokeLinecap="round" />;
       case 'night':
         return <Moon className="w-5 h-5" strokeLinejoin="round" strokeLinecap="round" />;
+      case 'reader':
+        return <BookOpen className="w-5 h-5" strokeLinejoin="round" strokeLinecap="round" />;
       default:
         return <Sun className="w-5 h-5" strokeLinejoin="round" strokeLinecap="round" />;
     }

@@ -4,6 +4,7 @@
 @variant dawn (&:where(.dawn, .dawn *));
 @variant day (&:where(.day, .day *));
 @variant night (&:where(.night, .night *));
+@variant reader (&:where(.reader, .reader *));
 
 :root {
   --background: #4269E8;
@@ -23,6 +24,17 @@
 :root.night {
   --background: #14151A;
   --foreground: #ededed;
+}
+
+/* Reader: a cool, light "paper" background with dark grey text.
+   This theme inverts the site's default light-on-dark scheme. Rather than
+   editing the ~20 files that use `text-white`/`bg-white`/`border-white`, we
+   override the `--color-white` token those utilities resolve to, flipping
+   every white utility (including /opacity variants) to dark grey at once. */
+:root.reader {
+  --background: #E4E9EC;
+  --foreground: #2b2b2b;
+  --color-white: #2b2b2b;
 }
 
 @theme inline {
@@ -190,6 +202,21 @@ body {
 
 .prose hr {
   border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Reader theme: flip the hardcoded white prose accents to dark equivalents. */
+.reader .prose blockquote {
+  border-left-color: rgba(43, 43, 43, 0.3) !important;
+  color: rgba(43, 43, 43, 0.8) !important;
+}
+
+.reader .prose hr {
+  border-color: rgba(43, 43, 43, 0.2) !important;
+}
+
+.reader .prose .image-with-caption .caption-text,
+.reader .prose .video-with-caption .caption-text {
+  color: rgba(43, 43, 43, 0.6);
 }
 
 /* Match body text line-height to description */
