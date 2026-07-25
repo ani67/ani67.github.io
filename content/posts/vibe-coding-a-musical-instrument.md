@@ -33,13 +33,13 @@ Then I thought: I grew up playing sitar. What would this look like with Indian n
 ## The Indian layer
  The sitar doesn't approximate pitch. It sits inside it. Western instruments are built on a tuning system that rounds every note to the nearest acceptable compromise. A historical fix that let one instrument play in every key without retuning. It works. But it means every note is slightly off from where the physics naturally land.
 
-Indian classical music doesn't make that compromise. It has 22 distinct pitch positions per octave rather than 12, each sitting exactly where the frequency mathematics put it. That's what I'd felt as a kid without being able to name it. Not a style difference. A tuning difference.
+Indian classical music doesn't make that compromise. It has 22 distinct pitch positions per octave rather than 12, each sitting exactly where the frequency mathematics put it. That's what I'd felt as a kid without being able to name it: a tuning difference, not a style difference.
 
 <div class="video-with-caption"><video src="https://res.cloudinary.com/duw0custw/video/upload/v1779005700/ins003_qo91pc.mov" controls></video><div class="caption-text">Indian sounds</div></div>
 
 So I added it. Switch between the two systems with one button. Six Indian rāgas, specific sets of notes with their own character, their own time of day, their own emotional weight. Nine Western scales. Same keyboard, same layout, different tuning underneath.
 
-The question of how to label the Indian notes on a keyboard that also speaks Western pitch turned out to have no clean answer. Indian classical music has two traditions for how you name and notate pitch. One where the home note is fixed, one where it moves. I had to pick. I picked the fixed version because it made the keyboard cross-referenceable. Most Indian classical teachers would pick differently. I'm still not sure I got that right.
+The question of how to label the Indian notes on a keyboard that also speaks Western pitch turned out to have no clean answer. Indian classical music has two traditions for how you name and notate pitch. One where the home note is fixed, one where it moves. I had to pick. I picked the fixed version because it made it easier to line up against Western notes. Most Indian classical teachers would pick differently. I'm still not sure I got that right.
 
 ## What the build revealed
  The two modes are both broken in different ways.
@@ -49,7 +49,7 @@ In the expanded mode, full spread across all four rows, the key you want is too 
 In the compressed mode, just the scale, everything close, the range is too small. The note you want exists somewhere outside the octave you're in and you can't get there.
 
 ### The instrument I actually want sits somewhere between those two that doesn't exist yet.
- That's what the build revealed. Not a solution but a sharper version of the problem. Which is, I think, what building things is actually for.
+ That's what the build revealed. Not a solution but a sharper version of the problem.
 
 ## What's next
  The project is live at [https://anidalal.com/instrument](https://anidalal.com/instrument). Still thinking about where it goes. Audio-reactive backgrounds, looping so you can layer ideas, and many more.
