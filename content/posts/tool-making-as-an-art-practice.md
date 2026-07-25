@@ -6,7 +6,7 @@ tags: ["art"]
 image: "https://res.cloudinary.com/duw0custw/image/upload/wormhole-96_uce9kl.jpg"
 ---
 
-I've been making tools for eight years now. At first, I thought there was a clear line: product tools on one side, art on the other. But somewhere during my generative art practice, I realized that my art wasn't necessarily what I made *with* the tools. The tools themselves were the art, especially when I made them non-utilitarian, wacky and emotional.
+I've been making tools for eight years now. At first, I thought there was a clear line: product tools on one side, art on the other. But somewhere during my generative art practice, I realized the tools themselves were the art, especially when I made them non-utilitarian, wacky and emotional.
 
 We don't usually think about tools this way. We think about the painting, not the brush. The building, not the hammer. The song, not the instrument.
 
@@ -22,7 +22,7 @@ So I built this thing: a dashboard that ate real-time audio and spat out visuali
 
 ![An image depicting the output of a tool that visualizes the shape of popular music, revealing patterns across an album.](https://media.giphy.com/media/41feWzUfPSJafM0ME0/giphy.gif "An image depicting the output of a tool that visualizes the shape of popular music, revealing patterns across an album.")
 
-At the time, I thought I was just making something exciting. Playing. I didn't realize I was making a tool. The realization came later: what I'd built wasn't the output, the visualizations or the games. What I'd built was a way of seeing. A lens.
+At the time, I thought I was just making something exciting. Playing. I didn't realize I was making a tool. The realization came later: what I'd built was a way of seeing. A lens.
 
 # Tools are instruments for perceiving data as a living material.
  That was the first time I felt it: tools themselves can be the art.
@@ -41,13 +41,13 @@ One piece involved generating music from complete randomness. I expected chaos. 
 The tool wasn't just enabling the art. The tool *was* the art. The choices I made about parameters, constraints, randomness, that was the creative practice. The output was just evidence that the tool existed.
 
 ## What tools do at scale
- Now I lead product design at Dashverse, building Frameo, a platform for creating short dramas at scale. Before that, Dashtoon Studio, a comic creation tool. Here's what I've learned from making tools that other people use:
+ Now I lead product design at Dashverse, building Frameo, a platform for creating short dramas at scale. Before that, Dashtoon Studio, a comic creation tool.
 
 # Tools shape behaviour more than instructions ever could.
  You can write documentation all day, but the real teaching happens in the defaults you set, the paths you make easy, the friction you choose to add or remove.
 
 # Tools get repurposed.
- Canvas at Frameo was supposed to be a workspace for content creation. Users turned it into an insane reviewing tool—bringing together people from different professions because it made collaboration feel natural in ways we never designed for. When a tool breaks in the right direction, that's not a bug. That's the tool becoming more than you imagined.
+ Canvas at Frameo was supposed to be a workspace for content creation. Users turned it into an insane reviewing tool, bringing together people from different professions because it made collaboration feel natural in ways we never designed for. When a tool breaks in the right direction, that's the tool becoming more than you imagined.
 
 # Utilitarian tools also carry philosophy.
  Every design decision is a belief about how the world should work. When I design Frameo to let creators "just ask" and the tool handles the rest, I'm making a bet about what matters: their story, not their technical skills. But that bet has consequences I'm still figuring out.
@@ -60,25 +60,23 @@ The tool wasn't just enabling the art. The tool *was* the art. The choices I mad
 ## Objects of power
  Think about the tools that shaped human history. Not the things made with them, the tools themselves.
 
-The printing press didn't just make books. It changed what it meant to have an idea, to share knowledge, to challenge authority. The tool rewired how humans thought about truth.
+The printing press changed what it meant to have an idea, to share knowledge, to challenge authority. The tool rewired how humans thought about truth.
 
-The camera didn't just capture images. It created new ways of seeing, new forms of memory, new relationships between observer and observed.
+The camera created new ways of seeing, new forms of memory, new relationships between observer and observed.
 
-The synthesizer didn't just make sounds. It opened up entire territories of music that couldn't exist before, sounds that didn't come from strings or air or drums but from electricity and mathematics.
-
-These weren't just enabling technologies. They were powerful objects. Signals that transcended their moment. They changed what was imaginable. When I'm making tools, I'm chasing that same quality, not just enabling creation, but changing what's imaginable. Not "here's a thing that lets you do X," but "here's a new way of being in a relationship with your own creativity."
+They were powerful objects. Signals that transcended their moment. They changed what was imaginable. When I'm making tools, I'm chasing that same quality, not just enabling creation, but changing what's imaginable. Not "here's a thing that lets you do X," but "here's a new way of being in a relationship with your own creativity."
 
 ![An image of the hotline, an object of power from the video game Control.](https://res.cloudinary.com/duw0custw/image/upload/control-hotline_xuk19s.jpg "An image of the hotline, an object of power from the video game Control.")
 
 ## The AI moment
  Right now we're in this weird inflection point with AI tools. They're changing faster than people can learn them. New models every few months. New capabilities that rewrite what's possible.
 
-I spend my days designing tools that leverage AI to make creation feel effortless.
+I spend my days designing tools that use AI to make creation feel effortless.
 
-# Sufficiently advanced technology is indistinguishable from magic.
+# Clarke's law: sufficiently advanced technology is indistinguishable from magic.
  So I aspire to make it feel so magical that people don't have to think about the tool at all.
 
-But something interesting is happening in parallel. People are making AI tools that refuse to be purely utilitarian. ClawdBot—an AI agent that's functional but also has personality, quirks, a way of being that's deliberately crafted. Moltbook's social media agents that blur the line between automation and performance art. These aren't just tools that do things. They're expressions. Responses to the moment. Ways of saying "here's how I think an AI should behave in the world."
+But something interesting is happening in parallel. People are making AI tools that refuse to be purely utilitarian. ClawdBot, an AI agent that's functional but also has personality, quirks, a way of being that's deliberately crafted. Moltbook's social media agents that blur the line between automation and performance art. They're expressions. Responses to the moment. Ways of saying "here's how I think an AI should behave in the world."
 
 ![Screenshot from the homepage of Moltbook.](https://res.cloudinary.com/duw0custw/image/upload/Screenshot_2026-02-14_at_2.41.18_AM_dx4edf.png "Screenshot from the homepage of Moltbook.")
 
@@ -99,28 +97,16 @@ When I'm designing product tools, I think I'm being purely utilitarian, solving 
 
 Maybe all tools are both. Maybe the best tools are the ones where utility and expression aren't separate categories but the same gesture.
 
-The printing press was utilitarian—it made book production faster, cheaper. But it was also expressive—it carried Gutenberg's vision of what knowledge could be.
+The printing press was utilitarian: it made book production faster, cheaper. But it was also expressive: it carried Gutenberg's vision of what knowledge could be.
 
-The tools I'm building now—Frameo, the Canvas that became a review system, the AI workflows that let people create without technical skills—these aren't just functional objects. They're carrying beliefs about creation, collaboration, what matters when you're trying to tell a story.
+The tools I'm building now: Frameo, the Canvas that became a review system, the AI workflows that let people create without technical skills. They carry beliefs about creation, collaboration, what matters when you're trying to tell a story.
 
 Maybe that's what it means for tool-making to be an art practice: not that some tools are art and others aren't, but that making any tool is an act of imagination. You're proposing a way of being in the world. You're saying, "here's how I think this should work," and hoping the tool becomes powerful enough to make that vision real.
 
 ## Questions that are haunting me right now
  If a tool thinks for you, are you still the one creating?
 
-What do we become when we no longer need to understand the things we make?
-
-When creation becomes effortless, does its value decrease?
-
-Are we building tools that extend us, or are we slowly becoming extensions of our tools?
-
-If future generations inherit our tools but not our understanding of them, what kind of generational gap does that create?
-
 At what point does a tool stop serving you and you start serving it?
-
-When a tool becomes invisible—so good you forget it's there—what part of yourself stops developing? What do we lose in the process?
-
-What's the difference between a tool that amplifies your vision and a tool that replaces it?
 
 ![An image of the cover of the science fiction anthology, AI 2041 by Kai-Fu Lee and Chen Qiufan.](https://res.cloudinary.com/duw0custw/image/upload/ai-2041_pu6g7d.jpg "An image of the cover of the science fiction anthology, AI 2041 by Kai-Fu Lee and Chen Qiufan.")
 

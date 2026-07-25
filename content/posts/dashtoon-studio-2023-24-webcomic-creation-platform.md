@@ -13,7 +13,7 @@ I joined Dashverse back in June 2023. The vision at that time was to build the f
 
 Dashtoon Studio canvas, with panels from a webcomic, 2024
 
-This version was a lot of fun to use, with 8K weekly active creators, 600 episodes published every week, content production velocity up by 5 times, from where we started.
+This version was a lot of fun to use, with 8K weekly active creators, 600 episodes published every week, speed up by 5 times, from where we started.
 
 But the journey to this point was full of challenges. Here's a short demo before getting into it.
 
@@ -29,7 +29,7 @@ This is what I started with, Automatic 1111 with SD 1.5.
 
 Now, webcomics are episodic in nature. And creating a professional webcomic requires a script, storyboards, image generation with consistency, page layout, SFX and speech bubbles, post processing, publishing.
 
-The pitch was to bring it all together and increase content velocity in the process. I pushed for two directions: 
+The pitch was to bring it all together and increase speed in the process. I pushed for two directions: 
 **a Photoshop-with-actions approach, 
 or a Figma-with-bulk-generations approach. **
 

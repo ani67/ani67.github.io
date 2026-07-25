@@ -7,7 +7,7 @@ image: "https://res.cloudinary.com/duw0custw/image/upload/parametric-geometry-94
 ---
 
 ## Where I am now
- I am currently leading product design for the creator side of things at Dashverse. Its been an insane experience being at the forefront of AI tech applications in the creative space. Over the past 3 years, I have worked on 2 products, Dashtoon Studio and Frameo, with the vision of democratising the storytelling experience for comic and video creators.
+ I am currently leading product design for the creator side of things at Dashverse. Its been an insane experience working on AI tech applications in the creative space. Over the past 3 years, I have worked on 2 products, Dashtoon Studio and Frameo, so more people can tell stories.
 
 ![](https://res.cloudinary.com/duw0custw/image/upload/agentic-ai-sticker_s0aymr.png "A sticker design representing the Frameo.ai cat mascot, in a levitating pose, with legs crossed, controlling various surfaces hinting an agentic behaviour")
 
@@ -34,13 +34,13 @@ It was intense, and it taught me 2 things:
 # You have the power to decide what You do in Your life.
  It was 2020, the year of the Covid, and I was back in India, doing nothing, feeling more hopeless than when I had left. My realisations informed me about what I didn't want but it didn't exactly tell me what I could do.
 
-So I started back from square 1. I started working in this startup and I worked on my skills creating my first 0 to 1 product, making websites, videos, managing their socials and a bunch of other random stuff. At the same time, I found an artistic outlet in the form of generative art as NFTs in FxHash.
+So I started back from square 1. I started working in this startup and I worked on my skills building my first product from scratch, making websites, videos, managing their socials and a bunch of other random stuff. At the same time, I found an artistic outlet in the form of generative art as NFTs in FxHash.
 
 It helped me understand myself better, improved my skills and gave me a purpose.
 
 ## Make cool shit again.
 ![](https://res.cloudinary.com/duw0custw/image/upload/parametric-geometry-94_zfsfp6.jpg "An output from my generative art explorations in webgl involving parametric surfaces, noise and point-clouds as an investigation into the shape of information")
 
-And I have been doing that ever since. And I think that's about it for this post. Its already gone into the tldr zone for me. My intent from here on out with this corner of the internet is to just dump my stuff. Its gonna be messy, chaotic and hopefully beautiful. Mostly honest vibes from when the thinking is still half-baked.
+And I have been doing that ever since.
 
 Fingers crossed.

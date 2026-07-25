@@ -1,7 +1,7 @@
 ---
 title: "Vibing this website into existence"
 date: "2026-03-03"
-description: "Your portfolio has the same problem mine did. Here's how I fixed mine — and why you can fix yours too."
+description: "Your portfolio has the same problem mine did. Here's how I fixed mine, and why you can fix yours too."
 tags: ["work"]
 image: "https://res.cloudinary.com/duw0custw/image/upload/v1771568442/2022-portfolio-website-editor_qyh1o6.png"
 published: true
@@ -15,7 +15,7 @@ So they stopped.
 
 The fourth time, I did something different. I wrote a doc first.
 
-Not a brief. Not a spec. Just a few paragraphs of what I wanted it to *feel* like. A portfolio that felt like a journal. Something between a blog and a showcase. Easy enough to update that publishing didn't feel like a deployment. Personal enough that I actually wanted to.
+Not a brief. Not a spec. Just a few paragraphs of what I wanted it to *feel* like. A portfolio that felt like a journal. Something between a blog and a showcase. Easy enough to update that publishing didn't feel like a deployment. Personal enough that I wanted to.
 
 That doc became the seed. Everything else grew from it.
 
@@ -29,13 +29,13 @@ The vision doc doesn't need to be long. Mine was maybe 400 words. But it answere
 
 **What kind of thing is this?** Not just "portfolio." That's too vague. Mine was: a digital garden. A space that grows as I do. Modular, chronological, easy to add to. Less gallery, more journal.
 
-**Who is it actually for?** I kept coming back to: future me, trying to remember the thread. The story connecting the work. That framing changed everything. It meant the writing mattered as much as the images.
+**Who is it for?** I kept coming back to: future me, trying to remember the thread. The story connecting the work. That framing changed everything. It meant the writing mattered as much as the images.
 
-**What would make me actually use it?** This one is underrated. The answer for me was: adding a post should feel lighter than writing a Notion doc. If it's heavier than that, I won't do it.
+**What would make me use it?** This one is underrated. The answer for me was: adding a post should feel lighter than writing a Notion doc. If it's heavier than that, I won't do it.
 
 Sound familiar?
 
-Write your version of this before you open any tool. Even a voice memo works. The point is to have a north star that is not aesthetic but behavioural. What would make you actually tend this garden?
+Write your version of this before you open any tool. Even a voice memo works. The point is to have a guide that is not aesthetic but behavioural. What would make you tend this garden?
 
 ## The ground: 
 structure before beauty
@@ -73,7 +73,7 @@ My first prompt was something like:
 
 That's it. It scaffolded the whole thing. I reviewed what it built, asked it to adjust a few things, and we were off.
 
-The most important mindset shift: you're not learning to code. You're creative directing. You describe the *what* and the *why*. Claude Code figures out the *how*. If something doesn't look right, you don't need to debug. You describe what's wrong and ask it to fix it.
+You're not learning to code. You're creative directing. You describe the *what* and the *why*. Claude Code figures out the *how*. If something doesn't look right, you don't need to debug. You describe what's wrong and ask it to fix it.
 
 ![the content editor, for this website, its a simple local WYSIWYG text editor I built on top of TipTap](https://res.cloudinary.com/duw0custw/image/upload/v1771568442/2022-portfolio-website-editor_qyh1o6.png "the content editor, for this website, its a simple local WYSIWYG text editor I built on top of TipTap")
 
@@ -113,7 +113,7 @@ Content lives as markdown files in `/content/posts/`. No database, no external C
 
 This part was smooth. The hard part was the editor.
 
-I wanted to write directly inside the site. Not push markdown files manually. Not use an external CMS. Actually open my portfolio, click write, and have a rich text editor that saved straight to those markdown files.
+I wanted to write directly inside the site. Not push markdown files manually. Not use an external CMS. Open my portfolio, click write, and have a rich text editor that saved straight to those markdown files.
 
 That meant building a custom editor with [Tiptap](https://tiptap.dev), an open-source headless editor, that wrote back to the filesystem. And this is where Claude Code and I went back and forth the most. Not because it couldn't build it, but because what I wanted was specific in ways I had to discover through iteration.
 
@@ -123,10 +123,10 @@ Each time, I described exactly what was broken. Claude Code fixed it. The loop w
 
 It took longer than everything else combined. But that's the nature of the thing you use most. The editor is where I live inside this site, so it had to be exactly right.
 
-The lesson: when you hit the hard part, don't interpret friction as failure. It's just where the interesting work is. Stay specific in your descriptions. Trust the loop.
+When you hit the hard part, don't interpret friction as failure. It's just where the interesting work is. Stay specific in your descriptions. Trust the loop.
 
 ## What the garden looks like now
-Starting simple worked. Not just as a design principle, but as a way to actually see something through. Every step felt like a small task. Small enough to finish. Finishing felt good. Good enough to come back tomorrow.
+Starting simple worked. Not just as a design principle, but as a way to see something through. Every step felt like a small task. Small enough to finish. Finishing felt good. Good enough to come back tomorrow.
 
 The site is live. Adding a post means opening the editor and writing. No git commits. No deployment commands. No friction I didn't choose. New work (a product case study, a generative art piece, a rambling essay about AI) drops into the feed without anything needing to be reorganised.
 
@@ -135,16 +135,16 @@ The garden is fun to tend. That was the whole point.
 ## What still needs planting
 A post ends and there's nowhere to go. No footer, no next read. The interactions are silent. Sound or haptic feedback could push it further. There are performance improvements I keep meaning to make.
 
-These aren't failures. They're just the next things to plant.
+These are just the next things to plant, not failures.
 
 ## If you want to build yours
-Your portfolio has the same problem mine did. The platform stopped fitting. The friction accumulated. The thread got lost. The bar to fixing it is lower than you think.
+Your portfolio has the same problem mine did. The platform stopped fitting. The thread got lost. The bar to fixing it is lower than you think.
 
-**Start with the vision.** Even 200 words. What kind of thing is this? Who's it for? What would make you actually use it?
+**Start with the vision.** Even 200 words. What kind of thing is this? Who's it for? What would make you use it?
 
 **Install Claude Code.** [Here's the link.](https://docs.anthropic.com/en/docs/claude-code/getting-started) Get comfortable with a first prompt before you worry about the design.
 
-**Design for maintenance, not for launch.** The fanciest site you'll never update is less valuable than the simplest one you actually will.
+**Design for maintenance, not for launch.** The fanciest site you'll never update is less valuable than the simplest one you will.
 
 **Your taste is the skill.** The ability to describe precisely what you want, and why. That is what gets you outputs that feel like yours. That's a designer's native language. Use it.
 
