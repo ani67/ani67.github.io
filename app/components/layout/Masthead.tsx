@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import Link from 'next/link';
 import { ROUTES } from '@/lib/routes';
 import { ThemeToggle } from './ThemeToggle';
+import { SocialLinks } from './SocialLinks';
 import { Flame } from './Flame';
 import { MastheadNav } from './MastheadNav';
 import { SHELL_CONTAINER, SHELL_GRID, SHELL_CONTENT, SHELL_SPACER, SHELL_ASIDE } from './shell';
@@ -36,7 +37,8 @@ export function Masthead({ headline, below }: MastheadProps) {
         <Flame className="h-5 w-auto" />
       </Link>
 
-      <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
+      <div className="absolute right-4 top-4 z-20 flex items-center md:right-6 md:top-6">
+        <SocialLinks />
         <ThemeToggle iconOnly />
       </div>
 
