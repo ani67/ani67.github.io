@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ScrambleText } from '../ScrambleText';
 import { ThemeToggle } from './ThemeToggle';
+import { blogTagHref } from '@/lib/routes';
 
 interface NavigationLinksProps {
   selectedTag: string | null;
@@ -20,7 +21,7 @@ export function NavigationLinks({
   selectedTag, onTagSelect, useLinks,
   listClassName = 'space-y-2',
   itemClassName = 'text-xl',
-  inactiveClassName = 'text-white/50 hover:text-white',
+  inactiveClassName = 'text-ink-muted hover:text-ink',
 }: NavigationLinksProps) {
   const tagItems: { label: string; tag: string | null }[] = [
     { label: 'All',   tag: null   },
@@ -35,7 +36,7 @@ export function NavigationLinks({
   return (
     <nav>
       <div>
-        <p className="text-[10px] text-white/30 mb-3 font-[family-name:var(--font-mori)]">Tools</p>
+        <p className="text-[10px] text-ink-faint mb-3 font-[family-name:var(--font-mori)]">Tools</p>
         <ul className={listClassName}>
           <li>
             <Link
@@ -65,13 +66,13 @@ export function NavigationLinks({
       </div>
 
       <div className="mt-12">
-        <p className="text-[10px] text-white/30 mb-3 font-[family-name:var(--font-mori)]">Filter by</p>
+        <p className="text-[10px] text-ink-faint mb-3 font-[family-name:var(--font-mori)]">Filter by</p>
         <ul className={listClassName}>
           {tagItems.map(({ label, tag }) => {
-            const href = tag === null ? '/' : `/?tag=${tag}`;
+            const href = blogTagHref(tag);
             const isActive = selectedTag === tag;
             const className = `${itemClassName} transition-colors focus:outline-none block ${
-              isActive ? 'text-white' : inactiveClassName
+              isActive ? 'text-ink' : inactiveClassName
             }`;
             return (
               <li key={label}>
@@ -109,7 +110,7 @@ export function NavigationLinks({
           <li>
             <a
               href="/editor"
-              className={`${itemClassName} text-white/50 hover:text-white transition-colors focus:outline-none`}
+              className={`${itemClassName} text-ink-muted hover:text-ink transition-colors focus:outline-none`}
             >
               <ScrambleText text="Editor" />
             </a>

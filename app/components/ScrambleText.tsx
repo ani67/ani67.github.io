@@ -125,6 +125,21 @@ export function ScrambleText({
 
   const pointerClass = disableHover ? 'pointer-events-none' : '';
 
+  /*
+   * The real text always holds the box, and the scrambling text floats over it.
+   *
+   * Substituted glyphs are rarely the same width as the ones they replace — the
+   * site's display face is proportional, not monospaced — so rendering the
+   * scramble in the flow resized the element on every frame and shoved its
+   * neighbours around. Sizing from `text` instead pins the width to what the
+   * word will settle at, and the overlay is free to be any width without the
+   * layout noticing.
+   *
+   * While animating, the in-flow copy goes transparent rather than hidden: it
+   * stays in the accessibility tree and in the text selection, so the word can
+   * still be read and copied mid-scramble, while the overlay — decoration only
+   * — is hidden from assistive tech.
+   */
   return (
     <Component
       ref={containerRef as any}
@@ -132,11 +147,21 @@ export function ScrambleText({
       style={{
         color: 'inherit',
         display: 'inline-block',
+        position: 'relative',
+        whiteSpace: 'pre',
       }}
       onMouseEnter={handleMouseEnter}
       {...props}
     >
-      {displayText}
+      <span style={isAnimating ? { color: 'transparent' } : undefined}>{text}</span>
+      {isAnimating && (
+        <span
+          aria-hidden="true"
+          style={{ position: 'absolute', left: 0, top: 0, whiteSpace: 'pre' }}
+        >
+          {displayText}
+        </span>
+      )}
     </Component>
   );
 }

@@ -36,12 +36,12 @@ export function PostCard({ post }: PostCardProps) {
         <h4 className="text-xl lg:text-3xl font-normal mb-2 font-[family-name:var(--font-mondwest)]">
           <ScrambleText
             text={post.title}
-            className="text-white"
+            className="text-ink"
             disableHover={true}
             trigger={isHovering}
           />
         </h4>
-        <p className="text-white/50 group-hover:text-white transition-colors text-base md:text-xl mb-4 line-clamp-2 font-[family-name:var(--font-mondwest)]">
+        <p className="text-ink-muted group-hover:text-ink transition-colors text-base md:text-xl mb-4 line-clamp-2 font-[family-name:var(--font-mondwest)]">
           {post.description}
         </p>
         {/* Post image */}
@@ -58,7 +58,7 @@ export function PostCard({ post }: PostCardProps) {
               </defs>
             </svg>
             <div
-              className="w-full aspect-video bg-white/10 overflow-hidden"
+              className="w-full aspect-video bg-surface overflow-hidden"
               style={{ clipPath: `url(#${clipId})` }}
             >
               <ImageGlitch

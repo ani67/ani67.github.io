@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getPostBySlug, getAllPostSlugs, getPopularTags, getPostsByTag } from '@/lib/posts';
+import { getPostBySlug, getAllPostSlugs, getRelatedPosts } from '@/lib/posts';
 import PostPageClient from '@/app/components/PostPage';
 
 export async function generateStaticParams() {
@@ -48,8 +48,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     notFound();
   }
 
-  const popularTags = getPopularTags(4);
-
   const postJsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -72,15 +70,10 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd) }}
       />
-      <PostPageClient post={post} popularTags={popularTags} relatedPosts={
-        post.tags.length > 0
-          ? post.tags
-              .flatMap(tag => getPostsByTag(tag))
-              .filter((p, i, arr) => p.slug !== slug && arr.findIndex(x => x.slug === p.slug) === i)
-              .sort(() => Math.random() - 0.5)
-              .slice(0, 3)
-          : []
-      } />
+      <PostPageClient
+        post={post}
+        relatedPosts={getRelatedPosts(slug, post.tags)}
+      />
     </>
   );
 }

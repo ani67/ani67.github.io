@@ -7,7 +7,6 @@ import { NavigationLinks } from './NavigationLinks';
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  popularTags?: { tag: string; count: number }[];
   selectedTag?: string | null;
   onTagSelect?: (tag: string | null) => void;
   useLinks?: boolean;
@@ -34,19 +33,19 @@ export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect, useLinks
 
   return (
     <div
-      className="md:hidden fixed inset-0 bg-white/10 backdrop-blur-md z-50 flex flex-col"
+      className="md:hidden fixed inset-0 bg-surface backdrop-blur-md z-50 flex flex-col"
       role="dialog"
       aria-modal="true"
       aria-label="Navigation menu"
     >
       {/* Top: name + close button */}
       <div className="flex items-center justify-between px-6 py-4">
-        <Link href="/" className="text-white focus:outline-none" onClick={onClose}>
+        <Link href="/" className="text-ink focus:outline-none" onClick={onClose}>
           <h1 className="text-xl font-normal font-[family-name:var(--font-mondwest)]">
             Ani Dalal
           </h1>
         </Link>
-        <button onClick={onClose} className="text-white focus:outline-none p-1" aria-label="Close menu">
+        <button onClick={onClose} className="text-ink focus:outline-none p-1" aria-label="Close menu">
           <svg className="w-6 h-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -66,7 +65,7 @@ export function MobileMenu({ isOpen, onClose, selectedTag, onTagSelect, useLinks
             useLinks={useLinks}
             listClassName="space-y-3"
             itemClassName="text-xl"
-            inactiveClassName="text-white"
+            inactiveClassName="text-ink"
           />
         </nav>
       )}

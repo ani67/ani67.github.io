@@ -194,7 +194,7 @@ export function ImageLightbox({ images, currentIndex, onClose, onNavigate }: Ima
       {/* Close */}
       <button
         onClick={(e) => { e.stopPropagation(); handleClose(); }}
-        className="absolute top-4 right-4 z-10 text-white/60 hover:text-white transition-colors p-2"
+        className="absolute top-4 right-4 z-10 text-ink/60 hover:text-ink transition-colors p-2"
         style={{
           opacity: phase === 'active' ? 1 : 0,
           transition: 'opacity 0.3s ease 0.15s',

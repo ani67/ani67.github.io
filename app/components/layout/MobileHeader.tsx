@@ -13,8 +13,8 @@ interface MobileHeaderProps {
  */
 export function MobileHeader({ onToggleMenu, showBackButton }: MobileHeaderProps) {
   return (
-    <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white/10 backdrop-blur-md px-6 py-4 flex items-center justify-between">
-      <Link href="/" className="text-white focus:outline-none flex flex-col items-start gap-2">
+    <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-surface backdrop-blur-md px-6 py-4 flex items-center justify-between">
+      <Link href="/" className="text-ink focus:outline-none flex flex-col items-start gap-2">
         <h1 className="text-xl font-normal font-[family-name:var(--font-mondwest)]">
           Ani Dalal
         </h1>
@@ -22,7 +22,7 @@ export function MobileHeader({ onToggleMenu, showBackButton }: MobileHeaderProps
       {showBackButton ? (
         <Link
           href="/"
-          className="text-white focus:outline-none p-1"
+          className="text-ink focus:outline-none p-1"
           aria-label="Back to home"
         >
           <svg
@@ -41,7 +41,7 @@ export function MobileHeader({ onToggleMenu, showBackButton }: MobileHeaderProps
       ) : (
         <button
           onClick={onToggleMenu}
-          className="text-white focus:outline-none p-1"
+          className="text-ink focus:outline-none p-1"
           aria-label="Open menu"
         >
           <svg

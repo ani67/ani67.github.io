@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { cache } from 'react';
 import matter from 'gray-matter';
 import readingTime from 'reading-time';
 import { z } from 'zod';
@@ -35,10 +36,16 @@ export interface Post extends PostMetadata {
 }
 
 /**
- * Retrieves all blog posts from the content directory
+ * Reads and parses every post on disk, drafts included.
+ *
+ * Wrapped in React's `cache()` so the directory is read and validated once per
+ * request/render pass instead of once per caller — `getPopularTags`,
+ * `getPostsByTag` and friends all funnel through here, so an uncached version
+ * meant a full re-read of `content/posts` for each of them.
+ *
  * @returns Array of post metadata sorted by date (newest first)
  */
-export function getAllPosts(options?: { includeDrafts?: boolean }): PostMetadata[] {
+const readAllPosts = cache((): PostMetadata[] => {
   // Check if posts directory exists
   if (!fs.existsSync(postsDirectory)) {
     console.warn(`Posts directory does not exist: ${postsDirectory}`);
@@ -85,18 +92,28 @@ export function getAllPosts(options?: { includeDrafts?: boolean }): PostMetadata
       })
       .filter((post): post is PostMetadata => post !== null);
 
-    const filtered = options?.includeDrafts
-      ? allPostsData
-      : allPostsData.filter((post) => post.published);
-
     // Sort by date using proper date comparison
-    return filtered.sort((a, b) =>
+    return allPostsData.sort((a, b) =>
       compareDesc(parseISO(a.date), parseISO(b.date))
     );
   } catch (error) {
     console.error('Error reading posts directory:', error);
     return [];
   }
+});
+
+/**
+ * Retrieves all blog posts from the content directory
+ * @param options.includeDrafts - Include posts with `published: false`
+ * @returns Array of post metadata sorted by date (newest first)
+ */
+export function getAllPosts(options?: { includeDrafts?: boolean }): PostMetadata[] {
+  const all = readAllPosts();
+  // Always hand back a copy — the underlying array is shared via `cache()`,
+  // so an in-place `.sort()` by a caller would corrupt every later reader.
+  return options?.includeDrafts
+    ? all.slice()
+    : all.filter((post) => post.published);
 }
 
 /**
@@ -104,7 +121,7 @@ export function getAllPosts(options?: { includeDrafts?: boolean }): PostMetadata
  * @param slug - The post slug (filename without .md extension)
  * @returns Post object with content, or null if not found/invalid
  */
-export function getPostBySlug(slug: string): Post | null {
+export const getPostBySlug = cache((slug: string): Post | null => {
   try {
     // Validate slug to prevent path traversal
     if (!slug || slug.includes('..') || slug.includes('/')) {
@@ -153,7 +170,7 @@ export function getPostBySlug(slug: string): Post | null {
     console.error(`Error loading post "${slug}":`, error);
     return null;
   }
-}
+});
 
 /**
  * Gets all post slugs for static generation (published only)
@@ -188,6 +205,36 @@ export function getPostsByTag(tag: string): PostMetadata[] {
   return posts.filter((post) =>
     post.tags.map(t => t.toLowerCase()).includes(tag.toLowerCase())
   );
+}
+
+/**
+ * Picks the posts most related to a given one, by shared-tag count.
+ *
+ * Deliberately deterministic: the site is a static export, so anything random
+ * here is rolled once at build time and then frozen into the HTML — every
+ * visitor sees the same "random" picks until the next deploy. Ranking by tag
+ * overlap gives genuinely related posts instead, and ties fall back to the
+ * newest-first order `getAllPosts` already guarantees (the sort is stable).
+ *
+ * @param slug - Slug of the post to find relatives for (excluded from results)
+ * @param tags - Tags of that post
+ * @param limit - Maximum number of posts to return (default: 3)
+ */
+export function getRelatedPosts(slug: string, tags: string[], limit = 3): PostMetadata[] {
+  if (tags.length === 0) return [];
+
+  const wanted = new Set(tags.map((t) => t.toLowerCase()));
+
+  return getAllPosts()
+    .filter((post) => post.slug !== slug)
+    .map((post) => ({
+      post,
+      shared: post.tags.filter((t) => wanted.has(t.toLowerCase())).length,
+    }))
+    .filter(({ shared }) => shared > 0)
+    .sort((a, b) => b.shared - a.shared)
+    .slice(0, limit)
+    .map(({ post }) => post);
 }
 
 /**

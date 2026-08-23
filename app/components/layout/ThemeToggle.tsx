@@ -5,7 +5,13 @@ import { useEffect, useState } from 'react';
 import { Sunrise, Sun, Moon, BookOpen } from 'lucide-react';
 import { ScrambleText } from '../ScrambleText';
 
-export function ThemeToggle({ inline }: { inline?: boolean } = {}) {
+interface ThemeToggleProps {
+  inline?: boolean;
+  /** Icon only, no theme name — for the masthead's top-right corner. */
+  iconOnly?: boolean;
+}
+
+export function ThemeToggle({ inline, iconOnly }: ThemeToggleProps = {}) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -44,10 +50,23 @@ export function ThemeToggle({ inline }: { inline?: boolean } = {}) {
     }
   };
 
+  if (iconOnly) {
+    return (
+      <button
+        onClick={() => setTheme(nextTheme)}
+        className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+        aria-label={`Switch to ${nextTheme} mode`}
+        title={getThemeName()}
+      >
+        {getThemeIcon()}
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={() => setTheme(nextTheme)}
-      className={`${inline ? '' : 'mt-8 '}flex items-center gap-2 text-white/50 hover:text-white transition-colors focus:outline-none group`}
+      className={`${inline ? '' : 'mt-8 '}flex items-center gap-2 text-ink-muted hover:text-ink transition-colors focus:outline-none group`}
       aria-label={`Switch to ${nextTheme} mode`}
     >
       <span className="text-xl font-[family-name:var(--font-mondwest)]">
