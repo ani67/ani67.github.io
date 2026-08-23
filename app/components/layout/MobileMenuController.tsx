@@ -6,13 +6,12 @@ import { MobileMenu } from './MobileMenu';
 
 interface MobileMenuControllerProps {
   showBackButton?: boolean;
-  popularTags?: { tag: string; count: number }[];
   selectedTag?: string | null;
   onTagSelect?: (tag: string | null) => void;
   useLinks?: boolean;
 }
 
-export function MobileMenuController({ showBackButton, popularTags, selectedTag, onTagSelect, useLinks }: MobileMenuControllerProps) {
+export function MobileMenuController({ showBackButton, selectedTag, onTagSelect, useLinks }: MobileMenuControllerProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -24,7 +23,6 @@ export function MobileMenuController({ showBackButton, popularTags, selectedTag,
       <MobileMenu
         isOpen={menuOpen}
         onClose={() => setMenuOpen(false)}
-        popularTags={popularTags}
         selectedTag={selectedTag}
         onTagSelect={onTagSelect}
         useLinks={useLinks}

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored, pre-bundled Cables.gl export — not ours to lint.
+    "thegiftofpoetry/**",
   ]),
 ]);
 

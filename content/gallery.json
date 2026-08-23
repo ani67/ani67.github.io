@@ -1,0 +1,1261 @@
+[
+  {
+    "id": "chaos",
+    "title": "Chaos",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "A celebration of chaos as something that can end up beautiful rather than only destructive — a ray of hope amid tumultuous times. An open edition of 1024, made in cables.gl.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmPKuU9CVMoZaMcpZfdd8FeBEjFUcLWGMw2tNgzD3pwixt/?fxhash=opPMis8rQW7GycaSUtkj1gZaGTaTQTUKHwLzJihCxxVmnXV5fAF",
+        "poster": "https://media.fxhash.xyz/w_800/QmZgA7LLYx3z2yymEUUwE9ukdWPukXiyfnj9p7z1iMhFJ9",
+        "title": "Chaos #5",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "chaos",
+      "count": 1024
+    },
+    "href": "https://objkt.com/collections/fxhash/projects/16914",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "terra-nova",
+    "title": "Terra Nova",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "Year 2250: the first galactic sector is mapped and new worlds marked for terraforming. Six noise-driven layers build every planet without a single external texture.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmT23QT78hzhxHqhcei5irXCjAEcGwJ6KmD7k49x6t9F2i/?fxhash=opV12xkoSemPaA4Vc6xj37qytn34Bj96oXkiwp4ZF8nkAea3pVN",
+        "poster": "https://media.fxhash.xyz/w_800/QmeQ5yVY4DnFip3BLpZoKDBpTCYjbsZ3WeY7VuyiqUzr34",
+        "title": "Terra Nova #13",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "terra-nova",
+      "count": 255
+    },
+    "controls": [
+      "Q — scroll across the environment",
+      "W — cycle the minted colour palette",
+      "E / R / T — toggle layer groups",
+      "Y — rotate the environment",
+      "P — pause rotation",
+      "O — performance details"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/12497",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "beyond",
+    "title": "Beyond",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "A collaboration with the NFT Museum of Newberry, South Carolina, on the ethereal space where the real and the virtual meet. Reaction-diffusion morphs automated exclusion zones through visual feedback.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmY7yid33CvEaXZcuULcwSP4A2GEtX414EuwJKYE6annpE/?fxhash=opC7rEHjKtesNsdkG3JCsrf372pJkAiiExQVFcyHAVWhk3LozRz",
+        "poster": "https://media.fxhash.xyz/w_800/QmSMz2PpfdZFRYNwp6uMGaf1qnZht2g1hHFkV1fQNAYEWG",
+        "title": "Beyond #19",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "beyond",
+      "count": 254
+    },
+    "controls": [
+      "P — show or hide the cursor"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/14985",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "terra",
+    "title": "Terra",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "Year 2242: with Earth dying, drones sweep galactic sectors for habitable planets. Five landscape types and six drone classes, generated from noise and basic geometry.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmWTEeDNdAsdynyDtkQfzjNSocTuK238cWjrfCJNH1TKbw/?fxhash=opFAfrL3K9VtCV6KDnoPR2JR5mCKD6dxNuy4Lt7RZckQviFKWtH",
+        "poster": "https://media.fxhash.xyz/w_800/QmTRmK2XhmcsdWXjwkHmVxAna7pEyn9GcnJtpSxQJf6Q7X",
+        "title": "Terra #52",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "terra",
+      "count": 128
+    },
+    "href": "https://objkt.com/collections/fxhash/projects/8184",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "smart-materials-e4071",
+    "title": "Smart Materials | E4071",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "Year 2150: an artificial singularity opens gateways to alternate Earths. This is a glimpse of the smart materials of Earth 4071, a barren icy world that specialised in cryo tech.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmevNihwumY7aChxqDSMpc6GmkDGNXaFYoKDzrgKonzNWW/?fxhash=onu4PHquvYmjmfjaD2AdmQhqKeonXvDziXtyG7XTB8SST5X5teW",
+        "poster": "https://media.fxhash.xyz/w_800/QmNos6SVrMB2LwMqFVye2AoCmdy8AKqqP395driXsqngjH",
+        "title": "Smart Materials | E4071 #125",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "smart-materials-e4071",
+      "count": 128
+    },
+    "controls": [
+      "Hover — play with the material"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/11592",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "causality",
+    "title": "Causality",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "A response to cause and effect. We understand causality perfectly well; the trouble is the limit we put on how far ahead we are willing to look.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmcrLQt5zm9dYE4K3ifdzP2vp4CfjEbmJ3qpKrPSmBysBx/?fxhash=ooSPwRy4yhjaC8ywTuVnsXJRNM95PdGdtbyGGdr8Rg5wntg1zPR",
+        "poster": "https://media.fxhash.xyz/w_800/QmefTrAK1XYv4orxTQEDwZFGFK6x1NhPwZkvtc1EbbnbK1",
+        "title": "Causality #7",
+        "ratio": 1.7778
+      }
+    ],
+    "collection": {
+      "file": "causality",
+      "count": 128
+    },
+    "controls": [
+      "1–5 — increase resolution"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/19335",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "the-end",
+    "title": "THE END",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "An ode to short lives and shorter years, with time as a prison on land while the cosmos runs on without us. A cosmic fidget spinner with melancholic 90s generative audio.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmTo4dBV188EiYgg7nGt7t2K6KUMjLRCfrQXqG4GJyWpW9/?fxhash=op2vFVj4p4mUjerzp25MmxBLiEjMJyfXuqV8J4rzcdRChLQewRM",
+        "poster": "https://media.fxhash.xyz/w_800/QmNoiaie75QA6nLPRKBpS5aMg62yggwmHA53GNkVoGGtYz",
+        "title": "THE END #3",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "the-end",
+      "count": 128
+    },
+    "controls": [
+      "Click and drag — move the sculpture",
+      "M — audio on or off",
+      "P — performance",
+      "Hover the top-right corner — all of the above, on mobile"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/22761",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "computational-decay",
+    "title": "Computational Decay",
+    "year": "2023",
+    "medium": "Generative art · fxhash",
+    "blurb": "It is 2074, twenty-five years after the world wide web collapsed. Decentralised hubs replaced it, and scavengers dive the ruins of the old network for whatever the rich will pay for.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmZmyNWTQVwajB95UtoLczLKF94MFdomhV3z8VsudhkM6x/?fxhash=onhTzFJwkrWPX46tAXChma3trW5K58tVJoXdmC3eRVFXtEtwrww",
+        "poster": "https://media.fxhash.xyz/w_800/QmaotbhUDFqohNuvpNmB2fLKbTM9cbjayudJXT12rhCwDA",
+        "title": "Computational Decay #14",
+        "ratio": 1.8957
+      }
+    ],
+    "collection": {
+      "file": "computational-decay",
+      "count": 92
+    },
+    "controls": [
+      "A — animate",
+      "D — toggle resolution, 4096×2160 or 8192×4320"
+    ],
+    "caution": "The larger resolution is heavy.",
+    "href": "https://objkt.com/collections/fxhash/projects/25545",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "human-exclusion-zones",
+    "title": "Human Exclusion Zones",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "Automated factory floors meeting biopunk, asking when biology accelerates the way maths and physics already have. Grid noise and reaction-diffusion keep it morphing.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmeCoGdhTwW2vLrnjK1fQZ8nTLrAZLaUeNDbUJWLRxTfAa/?fxhash=onp8ePuKTdxUajLaYwq3NR3Sh5gPDi6GeF9wYjFaBJjzeW8ZaHF",
+        "poster": "https://media.fxhash.xyz/w_800/Qmbb7BL8bWk86FtD8adJwmLi3xuFFTXyHsSAqwHMiFeCZH",
+        "title": "Human Exclusion Zones #78",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "human-exclusion-zones",
+      "count": 81
+    },
+    "href": "https://objkt.com/collections/fxhash/projects/15588",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "sublime",
+    "title": "Sublime",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "Energy is never created or destroyed, only changed — a half-remembered line from school, taken as a subject. Change is inevitable; what we become from it is not.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmfGiiguTxNC1QcpChPLicGH9zdRTWww4waYwiontanmku/?fxhash=opTVEQ7jTkm526WpwwkRirvpYoXv6L735cbh4hD9ochADuq3iqq",
+        "poster": "https://media.fxhash.xyz/w_800/Qmb5q62MmsVGvtFmHTFmVLCoaamuBgjFZMDTMMVZtxMdC7",
+        "title": "Sublime #1",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "sublime",
+      "count": 79
+    },
+    "controls": [
+      "Hold P — performance"
+    ],
+    "caution": "The feedback system can get heavy.",
+    "href": "https://objkt.com/collections/fxhash/projects/17375",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "cheap-petri-dish",
+    "title": "Cheap Petri Dish",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "A petri dish emulated with a reaction-diffusion algorithm, with an eraser to interfere with the culture. Five diffusion styles and 1800 colour styles, scaling with resolution.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmasPSgrNxedjTsYJzCgcHnLArA1BF5fdJQA28CAa2dwRJ/?fxhash=opKSbdDuSWwfFbzemSvdhYVDnBsw1ZZDdpcQKFuYeR93hrqG4qH",
+        "poster": "https://media.fxhash.xyz/w_800/QmWqETc8VrRKTkwxVKUvtniaW7qXyriZPif4CLQwFQnYxP",
+        "title": "Cheap Petri Dish #5",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "cheap-petri-dish",
+      "count": 77
+    },
+    "controls": [
+      "O — skeleton view",
+      "P — performance"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/9503",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "fuzzy-logic",
+    "title": "Fuzzy Logic",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "Order emerging out of chaos — invisible but present, waiting for boundary conditions to give it shape. Several kinds of noise over basic geometry, making abstract urban space.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/Qmdzg4186NfiALG61AkrRHLxiSAkKDHBVGDhhan4smCfSy/?fxhash=oo67Jn4hwBN6Mkf9Tuiq4LsUwo1sziTB1L2h4Zt7S1nUFooPH33",
+        "poster": "https://media.fxhash.xyz/w_800/QmXVfcGaNe8GJNjHSCR818N4eQXTyq4zEziw4XPr24JhUZ",
+        "title": "Fuzzy Logic #3",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "fuzzy-logic",
+      "count": 42
+    },
+    "controls": [
+      "D — destroy"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/20697",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "what-on-earth",
+    "title": "What on Earth?",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "A speculative projection drawn from the IPCC climate reports, expanding Terra's history into a multiverse of possible Earths. Six base maps under two procedural layers, each carrying its own narrative.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/Qmb4aSDUAcFba3kmw4obX2GcfYLzrcNvu32nV3z5FbViJM/?fxhash=oouXnmSTRMFMbo5wMcJRjBJis9q2m7ZZQXa8ugqvT1AJypMqEyL",
+        "poster": "https://media.fxhash.xyz/w_800/QmXSSekrvab5c7fTadJsaD4W9zPLk8myDmRdjt4XN95r2g",
+        "title": "What on Earth? #9",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "what-on-earth",
+      "count": 37
+    },
+    "controls": [
+      "Click and drag — turn your Earth",
+      "Hover the top-right corner — story and settings"
+    ],
+    "caution": "'Acid' in the settings uses flashing imagery and glitch effects.",
+    "href": "https://objkt.com/collections/fxhash/projects/8719",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "scape",
+    "title": "Scape",
+    "year": "2023",
+    "medium": "Generative art · fxhash",
+    "blurb": "An audio-visual generative poster series on pollution and migration — 100 phrases mixed with generated patterns and audio built from numbers. Between criticism, enquiry and hope.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmaAtG3rwQSYvZGyoEsY9GaLZxzfWXnS5vN4VXzR1P7UFJ//?fxhash=ooZD2pZvsueHV1hEksrLx5NoPWG9a8PTf7uvJsYN3Xf5kabWL4E&fxminter=tz2UuQzRQxag5yaaa8t2bPAvdE9yWqv8jrHV",
+        "poster": "https://media.fxhash.xyz/w_800/QmV6NxWsnq7spia41E1eGeuz665Seyhv3WGytCGNHQB8Jz",
+        "title": "Scape #5",
+        "ratio": 0.7073
+      }
+    ],
+    "collection": {
+      "file": "scape",
+      "count": 37
+    },
+    "controls": [
+      "R — toggle high-res still or animated",
+      "M — audio on or off",
+      "Tap the top-left corner — controls, on mobile"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/27063",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "lotus-field",
+    "title": "Lotus Field",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "Nature as simulation, built in cables.gl from basic geometry and instancing pushed around by noise. Lotus, leaf, plant, water, rain, fish and pipe across four compositions.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmWYyExWuD7jbQRnqbbAM2SbsSp6x2mGVpTkkVbCVLRbMP/?fxhash=ong7rfUhEiXdmywE4C43xc1Es662CuEPVGCewAQiKzUfH7REHnz",
+        "poster": "https://media.fxhash.xyz/w_800/QmYpY31d3ms8hXhNt1xDUdepNAthaxX3nbgfTizREsnMxx",
+        "title": "Lotus Field #8",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "lotus-field",
+      "count": 36
+    },
+    "controls": [
+      "P — play or pause the animated mode",
+      "1 / 2 / 3 — resolution 1024², 2048² or 4096²",
+      "M — performance",
+      "Hover the top-right corner — hidden menu, works on mobile"
+    ],
+    "caution": "Animated mode is heavy at the larger resolutions.",
+    "href": "https://objkt.com/collections/fxhash/projects/18963",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "the-temple-at-the-end-of-time",
+    "title": "The Temple at the End of Time",
+    "year": "2023",
+    "medium": "Generative art · fxhash",
+    "blurb": "A musical response to the year the war against AI began, while AGI is nowhere near the horizon. Parametric surfaces driven by rule-based generative audio, somewhere beyond time.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmWhHzRcFYJ5tCu6cqNDFFaaE9HGmFqj17XxLQAeddpGSB/?fxhash=ooFa63TLj671uGwnX3ihrkA18SLbfechX8yQaR4o7B2o9cxG9kH",
+        "poster": "https://media.fxhash.xyz/w_800/QmTPSkcvz3FbkYfkfi7Gfh547gonKdb78NUmBUJ6utDAFD",
+        "title": "The Temple at the End of Time #23",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "the-temple-at-the-end-of-time",
+      "count": 32
+    },
+    "controls": [
+      "Click — play or pause (one-finger tap on mobile)",
+      "Right click — open or close the summary (two-finger tap)"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/23758",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "messy-garden",
+    "title": "Messy Garden",
+    "year": "2023",
+    "medium": "Generative art · fxhash",
+    "blurb": "A response to overlapping global crises, set against infrastructure covering the planet inch by inch — growth and scale chasing utopia, arriving somewhere dystopic. It began from a single petal.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmZpoojtWD2SS38UJrjdf6YanALA4CAV21gPFA9r2L7k6E/?fxhash=oo4BPEbVYEmMaSgEFKCYY82Bax3TCiibDoXjdJAeA7pSbBUi5Py",
+        "poster": "https://media.fxhash.xyz/w_800/Qmd66YZaUnGMwvHnEzN2kjfwWXKXcdTZK646E69jwHxrtQ",
+        "title": "Messy Garden #27",
+        "ratio": 1.7778
+      }
+    ],
+    "collection": {
+      "file": "messy-garden",
+      "count": 32
+    },
+    "caution": "Slow to load, and heavy on the system.",
+    "href": "https://objkt.com/collections/fxhash/projects/24840",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "fermi-paradox",
+    "title": "Fermi Paradox",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "UFOs as galactic watchers, sent to keep tabs on other intelligent life. A digital diorama that puts you in the aliens' place, gazing at planets as the watchers explore.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmbryjGTmSesEr2bvAZq1h3JE8qE7PDKFoe7M2JieFapTG/?fxhash=ooLyNtEBQevdnQGoXiHTDf8ZKGDU5Rb8ou7ewMzaGwhTw7DFrmm",
+        "poster": "https://media.fxhash.xyz/w_800/QmZeATFtUdDu35sCtu7f7Mcg5drFpyLefg4dZfkjLpBt2M",
+        "title": "Fermi Paradox #2",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "fermi-paradox",
+      "count": 24
+    },
+    "controls": [
+      "Hold P — performance"
+    ],
+    "caution": "Can be heavy on your system.",
+    "href": "https://objkt.com/collections/fxhash/projects/16281",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "vincent-pop",
+    "title": "Vincent Pop",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "A pop treatment of Van Gogh, switching between a portrait piece and animated variants.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmadVGen1jNLmLh1Yx7d9no4bpsXFVyzN6uxn5dZ1D5q3w/?fxhash=ooi2E8tFaiXrUDWBxk9dx6LEDbu1TnULjS2C2wWhoVKaJgPcCgG",
+        "poster": "https://media.fxhash.xyz/w_800/QmNzmdLvteh9wQyAqc4u8tRtx58qmmZ9vQSN3Pt8FVTCbz",
+        "title": "Vincent Pop #9",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "vincent-pop",
+      "count": 11
+    },
+    "controls": [
+      "1 — the PFP piece",
+      "2 / 3 / 4 — the animated pieces",
+      "Top-right corner — settings and further control"
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/11971",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "monalisa-overdrive",
+    "title": "Monalisa Overdrive",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "Procedural abstractions of the Mona Lisa, drawn from retro sci-fi neon and the grunge of old CRT screens. The first NFT collection by Jaali Bandar.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmVVpdvrkXrYWzJzHxP5ChD63RGEJv9S9icATcEGYuu3Y1/?fxhash=op8dpRQhXuKSyyNiawybaYeDb243NHX9Gd1S3RLYdQL9Yhh8E1D",
+        "poster": "https://media.fxhash.xyz/w_800/QmWZXnNR1XEXjyFCnods9p2amVDgnsWKD7QrXyqcJbTRLz",
+        "title": "Monalisa Overdrive #1",
+        "ratio": 1.0
+      }
+    ],
+    "href": "https://objkt.com/collections/fxhash/projects/7296",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "the-leftovers",
+    "title": "The Leftovers",
+    "year": "2022",
+    "medium": "Generative art · fxhash",
+    "blurb": "Algorithmically generated landscapes asking what becomes of our infrastructure once life disappears. How long do the ghosts of a lost civilisation lurk without their creators?",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://gateway.fxhash.xyz/ipfs/QmWzq42TUbyhneRJLEwjPc3433LhvefXYEES5R526Qydmi/?fxhash=opYzMSgsc9N3bicSSgqcpwAsUVdeLzZDTqgW8oAdrm46V45ki37",
+        "poster": "https://media.fxhash.xyz/w_800/QmWj4hcax1AcC9qMYqArai6VEGt1fwySoRnMf7GLA9NrG2",
+        "title": "The Leftovers #5",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "the-leftovers",
+      "count": 10
+    },
+    "href": "https://objkt.com/collections/fxhash/projects/18041",
+    "hrefLabel": "View on objkt",
+    "external": true
+  },
+  {
+    "id": "post-human-fantasy",
+    "title": "Post Human Fantasy",
+    "year": "2022",
+    "medium": "AI generated · Versum",
+    "blurb": "A speculative AI-generated series on the future, minted on Versum in the summer of 2022.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://res.cloudinary.com/duw0custw/image/upload/v1787492593/web/nov%20rain/objkt/post-human-fantasy-018.jpg",
+        "alt": "Post Human Fantasy #18",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "post-human-fantasy",
+      "count": 29
+    }
+  },
+  {
+    "id": "renditions",
+    "title": "Renditions",
+    "year": "2022",
+    "medium": "Algorithmic rendition",
+    "blurb": "Existing images put through a dithering process — two old master paintings, Alessandro Allori's 'Maria de' Medici' and Rogier van der Weyden's 'Crucifixion' diptych, alongside work-in-progress frames from Beyond.",
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://res.cloudinary.com/duw0custw/image/upload/v1787492559/web/nov%20rain/objkt/daily-experiments-001.jpg",
+        "alt": "Renditions",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "renditions",
+      "count": 3
+    }
+  },
+  {
+    "id": "bh-edify-holistic-health-monitoring-wearable",
+    "title": "Edify - Holistic Health Monitoring Wearable",
+    "medium": "Behance",
+    "href": "https://www.behance.net/gallery/58442651/Edify-Holistic-Health-Monitoring-Wearable",
+    "hrefLabel": "View on Behance",
+    "external": true,
+    "tags": [
+      "design"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://mir-s3-cdn-cf.behance.net/project_modules/max_3840_webp/18ce8958442651.5a04ae98ddd6f.png",
+        "alt": "Edify - Holistic Health Monitoring Wearable",
+        "ratio": 0.153
+      }
+    ],
+    "collection": {
+      "file": "bh-edify-holistic-health-monitoring-wearable",
+      "count": 3
+    },
+    "year": "2017",
+    "layout": "board"
+  },
+  {
+    "id": "bh-cosmic-sounds",
+    "title": "Cosmic Sounds",
+    "medium": "Behance",
+    "blurb": "AudioReactive experiments for visual development.Data and Future",
+    "href": "https://www.behance.net/gallery/81964983/Cosmic-Sounds",
+    "hrefLabel": "View on Behance",
+    "external": true,
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/33edd781964983.5d0f9c45117c2.gif",
+        "alt": "Cosmic Sounds",
+        "ratio": 1.7812
+      }
+    ],
+    "collection": {
+      "file": "bh-cosmic-sounds",
+      "count": 5
+    },
+    "year": "2019"
+  },
+  {
+    "id": "bh-shunya",
+    "title": "Shunya",
+    "year": "2017",
+    "medium": "Behance",
+    "blurb": "Its a glimpse at my Semester long Project. Its an educative interactive exploratory experience with a gamified approach.",
+    "href": "https://www.behance.net/gallery/56453147/Shunya",
+    "hrefLabel": "View on Behance",
+    "external": true,
+    "tags": [
+      "design"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://res.cloudinary.com/duw0custw/image/upload/v1787492555/web/nov%20rain/behance/shunya-cover.jpg",
+        "alt": "Shunya",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "bh-shunya",
+      "count": 2
+    },
+    "layout": "board"
+  },
+  {
+    "id": "bh-krita",
+    "title": "Krita",
+    "medium": "Behance",
+    "blurb": "Quick sketches/ digital painting with Krita.",
+    "href": "https://www.behance.net/gallery/31998839/Krita",
+    "hrefLabel": "View on Behance",
+    "external": true,
+    "tags": [
+      "illustration"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://mir-s3-cdn-cf.behance.net/project_modules/max_1200_webp/0777e531998839.566c4ee9e2db0.jpg",
+        "alt": "Krita",
+        "ratio": 1.6667
+      }
+    ],
+    "collection": {
+      "file": "bh-krita",
+      "count": 16
+    },
+    "year": "2015"
+  },
+  {
+    "id": "ph-light-painting",
+    "title": "Light Painting",
+    "year": "2015",
+    "medium": "Photography",
+    "blurb": "Names and shapes drawn in the air with a torch on a rooftop, held open long enough for the writing to land and the writers to blur.",
+    "tags": [
+      "photography"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://drscdn.500px.org/photo/122790241/m%3D900/v2?sig=62d4d8681d2c85d6e38f82c15458c7fef729f788bfbf251f1e97d5ed3ca1c2b7",
+        "alt": "Light Painting",
+        "ratio": 1.6543
+      }
+    ],
+    "collection": {
+      "file": "ph-light-painting",
+      "count": 13
+    }
+  },
+  {
+    "id": "ph-bengal",
+    "title": "Bengal",
+    "year": "2014–2017",
+    "medium": "Photography",
+    "blurb": "Roads, paddy, buses and the people on them — the countryside at working height.",
+    "tags": [
+      "photography"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://drscdn.500px.org/photo/86552125/m%3D900/v2?sig=a9b008669e0bfaadb95f1199c1fd0d6670110afb98ca1eb86754b21b048b643b",
+        "alt": "Bengal",
+        "ratio": 1.5103
+      }
+    ],
+    "collection": {
+      "file": "ph-bengal",
+      "count": 12
+    }
+  },
+  {
+    "id": "ph-macro",
+    "title": "Macro",
+    "year": "2013–2018",
+    "medium": "Photography",
+    "blurb": "Insects, spiders, seed heads and lichen at close range, from a stretch of shooting whatever was small enough to need getting down on the ground for.",
+    "tags": [
+      "photography"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://drscdn.500px.org/photo/75683517/m%3D900/v2?sig=6a631501ceddac0e2fc79fc85814a2afaab184f128c13a95412e1693c1ed2cea",
+        "alt": "Macro",
+        "ratio": 1.5103
+      }
+    ],
+    "collection": {
+      "file": "ph-macro",
+      "count": 19
+    }
+  },
+  {
+    "id": "ph-abstract",
+    "title": "Abstract",
+    "year": "2014–2016",
+    "medium": "Photography",
+    "blurb": "Ink and oil in water, lit from beneath and shot close — colour behaving like weather.",
+    "tags": [
+      "photography"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://drscdn.500px.org/photo/63973867/m%3D900/v2?sig=e28c3b7cb0d0cdf01e5cfd4baaa61c44da93fb3a7b6a892b953e422f29387fa6",
+        "alt": "Abstract",
+        "ratio": 1.5103
+      }
+    ],
+    "collection": {
+      "file": "ph-abstract",
+      "count": 7
+    }
+  },
+  {
+    "id": "ph-flora",
+    "title": "Flora",
+    "year": "2013–2015",
+    "medium": "Photography",
+    "blurb": "Roses, gerberas and euphorbia, shallow and dark-grounded.",
+    "tags": [
+      "photography"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://drscdn.500px.org/photo/94804205/m%3D900/v2?sig=69acffd40be16fcc758bfad0f25891419545f97e35bc4ce3bee85953df78e4c3",
+        "alt": "Flora",
+        "ratio": 1.5103
+      }
+    ],
+    "collection": {
+      "file": "ph-flora",
+      "count": 11
+    }
+  },
+  {
+    "id": "ph-portraits",
+    "title": "Portraits",
+    "year": "2014–2017",
+    "medium": "Photography",
+    "blurb": "Friends, strangers and passers-by, almost all in available light.",
+    "tags": [
+      "photography"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://mir-s3-cdn-cf.behance.net/project_modules/disp/d96f6a50799263.58da0d7f4c733.jpg",
+        "alt": "Portraits",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "ph-portraits",
+      "count": 23
+    }
+  },
+  {
+    "id": "ph-northeast",
+    "title": "Northeast",
+    "year": "2016–2017",
+    "medium": "Photography",
+    "blurb": "Monasteries, prayer flags, mountain lakes and the road between them, much of it through a fisheye.",
+    "tags": [
+      "photography"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://drscdn.500px.org/photo/232778715/m%3D900/v2?sig=56250ee946575fcbaee295bba26eab6dd8b994f1ff0d6a076eb5118002d90b95",
+        "alt": "Northeast",
+        "ratio": 1.0
+      }
+    ],
+    "collection": {
+      "file": "ph-northeast",
+      "count": 40
+    }
+  },
+  {
+    "id": "ph-a-sense-of-home",
+    "title": "A sense of home",
+    "year": "2013–2015",
+    "medium": "Photography",
+    "blurb": "Rooms, corridors, doorways and the light that gets into them.",
+    "tags": [
+      "photography"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://drscdn.500px.org/photo/94684819/m%3D900/v2?sig=afe5ea47619d3e27ce344974d7264e5c0cabebf0f723965d7c0ed92325c61ade",
+        "alt": "A sense of home",
+        "ratio": 1.5103
+      }
+    ],
+    "collection": {
+      "file": "ph-a-sense-of-home",
+      "count": 19
+    }
+  },
+  {
+    "id": "ph-others",
+    "title": "Others",
+    "year": "2014–2018",
+    "medium": "Photography",
+    "blurb": "Frames that belong to no set in particular.",
+    "tags": [
+      "photography"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://drscdn.500px.org/photo/274789257/m%3D900/v2?sig=b28c5617c179258cebe07eabd9adc04e69be7ca7e26ad82061d0a8ef4a146217",
+        "alt": "Others",
+        "ratio": 1.7778
+      }
+    ],
+    "collection": {
+      "file": "ph-others",
+      "count": 4
+    }
+  },
+  {
+    "id": "forget-me-not",
+    "title": "Forget me not",
+    "year": "2023",
+    "medium": "Real-time animation · cables.gl",
+    "blurb": "Made in about three hours after the call turned up in the cables Discord — too late to submit to the MountainBytes 2023 fast challenge, but it screened at the after party anyway. Sound by GLXBLT.",
+    "href": "https://www.youtube.com/watch?v=yafIdy2DK_w",
+    "hrefLabel": "Watch on YouTube",
+    "external": true,
+    "tags": [
+      "motion"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://www.youtube-nocookie.com/embed/yafIdy2DK_w",
+        "poster": "https://i.ytimg.com/vi/yafIdy2DK_w/maxresdefault.jpg",
+        "title": "Forget me not",
+        "ratio": 1.7778
+      }
+    ]
+  },
+  {
+    "id": "arc-reactor",
+    "title": "Arc Reactor",
+    "year": "2023",
+    "medium": "Audio-reactive animation · cables.gl",
+    "blurb": "Parametric geometry redrawn as lines through its own points, mapped whimsically to the track. The hard part of visualising music isn't the geometry, it's the mapping — a subjective call with no correct answer, only the one the maker picks.",
+    "href": "https://www.youtube.com/watch?v=qQsL3ExoOSE",
+    "hrefLabel": "Watch on YouTube",
+    "external": true,
+    "tags": [
+      "motion"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://www.youtube-nocookie.com/embed/qQsL3ExoOSE",
+        "poster": "https://i.ytimg.com/vi/qQsL3ExoOSE/maxresdefault.jpg",
+        "title": "Arc Reactor",
+        "ratio": 1.7778
+      }
+    ]
+  },
+  {
+    "id": "toska",
+    "title": "Тоска",
+    "year": "2023",
+    "medium": "Music video · cables.gl, Mixamo, Blender",
+    "blurb": "A visual narrative set to Molchat Doma's Тоска — a rigged skeleton animated through Mixamo and Blender, then driven by the audio in cables.gl.",
+    "href": "https://www.youtube.com/watch?v=kEVDRrsH4uc",
+    "hrefLabel": "Watch on YouTube",
+    "external": true,
+    "tags": [
+      "motion"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://www.youtube-nocookie.com/embed/kEVDRrsH4uc",
+        "poster": "https://i.ytimg.com/vi/kEVDRrsH4uc/maxresdefault.jpg",
+        "title": "Тоска",
+        "ratio": 1.7778
+      }
+    ]
+  },
+  {
+    "id": "can-you-hear-the-music",
+    "title": "Can You Hear The Music",
+    "year": "2023",
+    "medium": "Music video · cables.gl",
+    "blurb": "Space and particles, built as a particle system against Ludwig Göransson's score. Contains rapid flashing throughout — worth skipping if you are photosensitive.",
+    "href": "https://www.youtube.com/watch?v=0F2d4kwCItw",
+    "hrefLabel": "Watch on YouTube",
+    "external": true,
+    "tags": [
+      "motion"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://www.youtube-nocookie.com/embed/0F2d4kwCItw",
+        "poster": "https://i.ytimg.com/vi/0F2d4kwCItw/maxresdefault.jpg",
+        "title": "Can You Hear The Music",
+        "ratio": 1.7778
+      }
+    ]
+  },
+  {
+    "id": "lost-in-a-dreamscape",
+    "title": "Lost in a Dreamscape",
+    "year": "2020",
+    "medium": "Digital experience · cables.gl",
+    "venue": "Pollinator Virtual Nursery · Processing Community Day, Porto",
+    "blurb": "A navigable red world offered as an alternate imaginary for the ontological fissure of the contemporary — 2020 lived as dream and nightmare at once. Made for 'Fissure', curated by Shaleen Wadhwana.",
+    "controls": [
+      "W A S D — move",
+      "Click and drag — change direction",
+      "Right click — interact with objects"
+    ],
+    "caution": "Uses the camera and microphone to drive an audio-reactive camera; no image, audio or video is captured. Best on a desktop.",
+    "href": "https://lostinadreamscape.github.io/",
+    "hrefLabel": "Enter the dreamscape",
+    "external": true,
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://res.cloudinary.com/duw0custw/image/upload/web/nov%20rain/dreamscape/05-astronaut.jpg",
+        "alt": "Lost in a Dreamscape — an astronaut adrift in a red world",
+        "ratio": 1.5941
+      }
+    ],
+    "collection": {
+      "file": "lost-in-a-dreamscape",
+      "count": 7
+    }
+  },
+  {
+    "id": "the-instrument",
+    "title": "The Instrument",
+    "year": "2026",
+    "medium": "Digital instrument · web",
+    "blurb": "A keyboard instrument rebuilt for the laptop it actually runs on rather than borrowed from the 16th century — all forty keys in play, and 22 pitch positions per octave instead of 12.",
+    "href": "/instrument",
+    "hrefLabel": "Play it",
+    "tags": [
+      "design"
+    ],
+    "media": [
+      {
+        "type": "video",
+        "src": "https://res.cloudinary.com/duw0custw/video/upload/v1779005068/ins001_uwczxa.mp4",
+        "poster": "https://res.cloudinary.com/duw0custw/video/upload/v1779005068/ins001_uwczxa.jpg",
+        "ratio": 1.7778
+      }
+    ],
+    "collection": {
+      "file": "the-instrument",
+      "count": 5
+    }
+  },
+  {
+    "id": "urban-trees-in-india",
+    "title": "Urban Trees in India",
+    "year": "2022",
+    "medium": "Website · cables.gl",
+    "venue": "Heinrich Böll Stiftung, Regional Office New Delhi",
+    "blurb": "A zoomable canvas holding India's urban tree laws, satellite change data and press clippings in one place — built from the Urban Trees Report by Kanchi Kohli and Manju Menon. Designed and developed end to end.",
+    "controls": [
+      "Scroll — zoom in and out",
+      "Click and drag — move around the canvas",
+      "Menu — jump to a section"
+    ],
+    "href": "https://urbantrees.in/",
+    "hrefLabel": "Visit the site",
+    "external": true,
+    "tags": [
+      "design"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://res.cloudinary.com/duw0custw/image/upload/web/nov%20rain/urban-trees/canvas-still.png",
+        "alt": "Urban Trees in India — the zoomable canvas of cards",
+        "ratio": 1.594
+      }
+    ],
+    "collection": {
+      "file": "urban-trees",
+      "count": 7
+    }
+  },
+  {
+    "id": "veha",
+    "title": "Veha",
+    "year": "2020",
+    "medium": "Speculative cartography · The Terraforming, Strelka",
+    "venue": "Tbilisi Architecture Biennale",
+    "blurb": "Anthropocentric terraforming has fragmented habitat at planetary scale. Veha maps global connectivity corridors across Russia, treating the Half-Earth concept as infrastructure rather than aspiration. With Liudmila Gridneva and Tatiana Lyubimova.",
+    "href": "https://www.youtube.com/watch?v=HBXMyKdaqJY",
+    "hrefLabel": "Watch the presentation",
+    "external": true,
+    "tags": [
+      "design"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://res.cloudinary.com/duw0custw/image/upload/web/nov%20rain/veha/10-corridor-concept.png",
+        "alt": "Veha — potential corridor concept across Russia",
+        "ratio": 1.9963
+      }
+    ],
+    "collection": {
+      "file": "veha",
+      "count": 12
+    }
+  },
+  {
+    "id": "univ-ai",
+    "title": "Univ.AI",
+    "year": "2020–2023",
+    "medium": "Product design · Univ.AI",
+    "blurb": "Two and a half years on a learning and recruitment platform, pulling coursework, assessments, job search, interviews and certificates into one system. The last four screens are the interface it replaced.",
+    "href": "https://univ.ai/",
+    "hrefLabel": "Visit Univ.AI",
+    "external": true,
+    "tags": [
+      "design"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://res.cloudinary.com/duw0custw/image/upload/web/nov%20rain/univ-ai/new-01-job-stats.png",
+        "alt": "Univ.AI — a candidate's progress through a job application funnel",
+        "ratio": 1.7772
+      }
+    ],
+    "collection": {
+      "file": "univ-ai",
+      "count": 16
+    },
+    "hidden": true
+  },
+  {
+    "id": "dashtoon-studio",
+    "title": "Dashtoon Studio",
+    "year": "2023–2024",
+    "medium": "Product design · Dashverse.AI",
+    "blurb": "Joined the month Studio launched and rebuilt it from there, taking comic creation to 5x the velocity. The first two demos are the 2023 release and the V3 rebuild six weeks after it — open canvas, concurrent generations. The last two are 2024: the product a year on, then Story and Screenplay modes.",
+    "href": "/posts/dashtoon-studio-2023-24-webcomic-creation-platform/",
+    "hrefLabel": "Read the case study",
+    "tags": [
+      "design"
+    ],
+    "media": [
+      {
+        "type": "embed",
+        "src": "https://www.youtube-nocookie.com/embed/MnsaKzLC0AU",
+        "poster": "https://i.ytimg.com/vi/MnsaKzLC0AU/maxresdefault.jpg",
+        "title": "Create stunning comics with Dashtoon Studio",
+        "ratio": 1.7778
+      }
+    ],
+    "collection": {
+      "file": "dashtoon-studio",
+      "count": 4
+    }
+  },
+  {
+    "id": "dashtoon-studio-features",
+    "title": "Dashtoon Studio — Features",
+    "year": "2024",
+    "medium": "Product design · Dashverse.AI",
+    "blurb": "Twelve minutes of the surface behind the 5x: prompting, character consistency, multi-character scenes, fixing faces and hands, Live mode, storyboard to comic, lettering, publishing. In the order a creator meets them.",
+    "href": "https://dashtoon.com/studio",
+    "hrefLabel": "Open Studio",
+    "external": true,
+    "tags": [
+      "design"
+    ],
+    "media": [
+      {
+        "type": "video",
+        "src": "https://res.cloudinary.com/duw0custw/video/upload/web/nov%20rain/dashtoon-features/04-multi-character.mp4",
+        "poster": "https://res.cloudinary.com/duw0custw/video/upload/so_25/web/nov%20rain/dashtoon-features/04-multi-character.jpg",
+        "ratio": 1.7778
+      }
+    ],
+    "collection": {
+      "file": "dashtoon-features",
+      "count": 12
+    }
+  },
+  {
+    "id": "audiovisualizer",
+    "title": "Audiovisualizer",
+    "year": "2026",
+    "medium": "Interactive tool · web",
+    "blurb": "Every pixel of an image becomes a particle placed in space by its own RGB value, so a picture scatters into the colour cube it was made from. Move the mouse and the swarm gathers onto a sphere; drop in another image and it rebuilds from that.",
+    "controls": [
+      "Move the mouse — gather the swarm onto a sphere",
+      "Drag — orbit",
+      "Drop an image — rebuild the swarm from its pixels",
+      "Controls — resolution, mapping, bloom, rotation, microphone"
+    ],
+    "href": "/audiovisualizer.html",
+    "hrefLabel": "Open it",
+    "external": true,
+    "tags": [
+      "generative art"
+    ],
+    "media": [
+      {
+        "type": "video",
+        "src": "https://res.cloudinary.com/duw0custw/video/upload/web/nov%20rain/audiovisualizer/walkthrough.mp4",
+        "poster": "https://res.cloudinary.com/duw0custw/image/upload/web/nov%20rain/audiovisualizer/poster.png",
+        "ratio": 1.658
+      }
+    ]
+  }
+]

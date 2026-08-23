@@ -6,9 +6,34 @@
 @variant night (&:where(.night, .night *));
 @variant reader (&:where(.reader, .reader *));
 
+/* ---------------------------------------------------------------------------
+   Semantic colour tokens
+
+   Everything the site paints derives from a single `--ink` — the foreground
+   colour of the current theme — mixed down to fixed opacities. Components ask
+   for a *role* (`text-ink-muted`, `bg-surface`, `border-hairline`) rather than
+   a literal (`text-white/50`), so a theme only has to redefine `--ink` and the
+   whole scale follows.
+
+   The mapping is exact: `--ink-muted` is 50% ink, which is what `text-white/50`
+   already resolved to, so adopting a token is never a visual change.
+
+   Roles, by where they're used:
+     ink          headings, active nav, primary text
+     ink-body     long-form prose
+     ink-muted    descriptions, inactive nav
+     ink-subtle   dates, metadata, section headings
+     ink-faint    rail labels, draft/disabled state
+     surface      subtle fills — image placeholders, code blocks
+     surface-hover  hover fills
+     hairline     default borders
+     hairline-*   the quieter/louder ends of that
+     scrim        media overlays (gallery use)
+--------------------------------------------------------------------------- */
 :root {
   --background: #4269E8;
   --foreground: #ededed;
+  --ink: #ffffff;
 }
 
 :root.dawn {
@@ -26,14 +51,19 @@
   --foreground: #ededed;
 }
 
-/* Reader: a cool, light "paper" background with dark grey text.
-   This theme inverts the site's default light-on-dark scheme. Rather than
-   editing the ~20 files that use `text-white`/`bg-white`/`border-white`, we
-   override the `--color-white` token those utilities resolve to, flipping
-   every white utility (including /opacity variants) to dark grey at once. */
+/* Reader: a cool, light "paper" background with dark grey text — the one theme
+   that inverts the site's light-on-dark scheme. Flipping `--ink` carries the
+   whole semantic scale across on its own.
+
+   The `--color-white` override is a compatibility shim for the code that still
+   asks for literal white: `app/canvas`, `app/instrument` and the editor. It
+   forces every `*-white` utility to dark grey at once. Retire it once those
+   have moved onto the tokens above (or, for the two tools, onto their own
+   `--inst-*` scale) — nothing in the blog shell depends on it any more. */
 :root.reader {
   --background: #E4E9EC;
   --foreground: #2b2b2b;
+  --ink: #2b2b2b;
   --color-white: #2b2b2b;
 }
 
@@ -42,6 +72,31 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Semantic scale — see the block above `:root`. Each step is a fixed mix of
+     the theme's `--ink`, matching the `white/NN` opacity it replaces. */
+  --color-ink:            var(--ink);
+  --color-ink-body:       color-mix(in oklab, var(--ink) 90%, transparent);
+  --color-ink-muted:      color-mix(in oklab, var(--ink) 50%, transparent);
+  --color-ink-subtle:     color-mix(in oklab, var(--ink) 40%, transparent);
+  --color-ink-faint:      color-mix(in oklab, var(--ink) 30%, transparent);
+
+  --color-surface:        color-mix(in oklab, var(--ink) 10%, transparent);
+  --color-surface-hover:  color-mix(in oklab, var(--ink) 20%, transparent);
+
+  --color-hairline:         color-mix(in oklab, var(--ink) 20%, transparent);
+  --color-hairline-subtle:  color-mix(in oklab, var(--ink) 10%, transparent);
+  --color-hairline-strong:  color-mix(in oklab, var(--ink) 30%, transparent);
+
+  /* Media overlays. Anchored to black rather than ink so it darkens artwork
+     consistently in every theme, reader included. */
+  --color-scrim:          color-mix(in oklab, #000 55%, transparent);
+  --color-scrim-soft:     color-mix(in oklab, #000 25%, transparent);
+
+  /* Frosted glass for the gallery overlay: the theme's own background at 60%,
+     meant to be paired with a heavy `backdrop-blur`. Tracks `--background`, so
+     it re-tints itself in every theme without further work. */
+  --color-veil:           color-mix(in oklab, var(--background) 60%, transparent);
 
   /* Instrument (see /instrument route) — tokens are applied under `.instrument-root`. */
   --color-inst-background:             hsl(var(--inst-background));
@@ -102,7 +157,11 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-mondwest), Arial, Helvetica, sans-serif;
+  /* PP Mori is the site's default: it does the labels, navigation, controls
+     and every other piece of interface text. Mondwest is a bitmap display face
+     and is opted into deliberately — the masthead headline, the writing, and
+     the about page — rather than being the thing everything falls back to. */
+  font-family: var(--font-mori), Arial, Helvetica, sans-serif;
   font-size: 20px;
 }
 
@@ -113,6 +172,13 @@ body {
   50%, 100% {
     opacity: 0;
   }
+}
+
+/* The writing itself stays in Mondwest. It used to inherit that from `body`;
+   once the default flipped to Mori it had to be asked for explicitly, or every
+   article would have quietly changed face. */
+.prose {
+  font-family: var(--font-mondwest), Arial, Helvetica, sans-serif;
 }
 
 /* Apply squircle effect to all prose images and videos */

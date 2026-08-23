@@ -20,7 +20,6 @@ const rehypeRawOptions = {
 
 interface PostPageProps {
   post: Post;
-  popularTags: { tag: string; count: number }[];
   relatedPosts?: import('@/lib/posts').PostMetadata[];
 }
 
@@ -102,7 +101,7 @@ const components = {
 /**
  * Post page component for displaying individual blog posts
  */
-export default function PostPageClient({ post, popularTags, relatedPosts = [] }: PostPageProps) {
+export default function PostPageClient({ post, relatedPosts = [] }: PostPageProps) {
   // Validate and format date
   const postDate = parseISO(post.date);
   const formattedDate = isValid(postDate)
@@ -110,22 +109,19 @@ export default function PostPageClient({ post, popularTags, relatedPosts = [] }:
     : 'Invalid date';
 
   return (
-    <BlogLayout
-      popularTags={popularTags}
-      useLinks
-    >
+    <BlogLayout useLinks>
       {/* Main Content - Responsive */}
-      <article className="flex-1 px-6 pt-24 pb-24 md:px-0 md:pt-0 md:pb-32">
+      <article className="flex-1 px-6 pt-16 pb-24 md:px-0 md:pt-10 md:pb-32">
           <header className="mb-8 lg:mb-12">
             <h1 className="text-3xl lg:text-5xl font-normal leading-snug font-[family-name:var(--font-mondwest)]">
               {post.title}
             </h1>
-            <p className="mt-4 lg:mt-6 text-xl lg:text-2xl text-white/50">{post.description}</p>
+            <p className="mt-4 lg:mt-6 text-xl lg:text-2xl text-ink-muted">{post.description}</p>
           </header>
 
           <VideoAutoplay />
           <PostContent>
-            <div className="prose prose-lg lg:prose-2xl max-w-none prose-headings:font-normal prose-headings:text-white prose-headings:leading-tight prose-headings:mt-8 prose-headings:mb-4 prose-p:text-white/90 prose-p:mb-6 prose-a:text-white prose-a:underline hover:prose-a:text-white prose-strong:text-white prose-code:text-white/90 prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-white/10 prose-pre:border prose-pre:border-white/30 prose-ul:text-white/90 prose-ol:text-white/90 prose-li:text-white/90 prose-li:marker:text-white/90">
+            <div className="prose prose-lg lg:prose-2xl max-w-none prose-headings:font-normal prose-headings:text-ink prose-headings:leading-tight prose-headings:mt-8 prose-headings:mb-4 prose-p:text-ink-body prose-p:mb-6 prose-a:text-ink prose-a:underline hover:prose-a:text-ink prose-strong:text-ink prose-code:text-ink-body prose-code:bg-surface prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-surface prose-pre:border prose-pre:border-hairline-strong prose-ul:text-ink-body prose-ol:text-ink-body prose-li:text-ink-body prose-li:marker:text-ink-body">
               <MDXRemote
                 source={post.content}
                 components={components}
@@ -139,7 +135,7 @@ export default function PostPageClient({ post, popularTags, relatedPosts = [] }:
             </div>
           </PostContent>
 
-          <time className="block mt-8 text-xl text-white/40">{formattedDate}</time>
+          <time className="block mt-8 text-xl text-ink-subtle">{formattedDate}</time>
 
           <ReadMore posts={relatedPosts} />
       </article>

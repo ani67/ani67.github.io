@@ -11,7 +11,7 @@ const jsonLd = {
   url: "https://anidalal.com",
   email: "anidalal3@gmail.com",
   jobTitle: "Product Designer",
-  description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
+  description: "Designer, artist and builder. Sets design direction and owns the product side of go-to-market at Frameo.AI.",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Bengaluru",
@@ -24,6 +24,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { ThemeTransition } from "./components/ThemeTransition";
 import { PixelTransition } from "./components/PixelTransition";
 import { Analytics } from "./components/Analytics";
+import { HEADLINE_TEXT } from "./components/layout/headline";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,13 +36,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Two real cuts, so `font-bold` picks up the drawn bold rather than letting
+// the browser synthesise one — on a bitmap face a synthesised weight smears
+// the pixel edges that are the whole point of it.
 const mondwest = localFont({
-  src: '../public/fonts/PPMondwest-Regular.ttf',
+  src: [
+    { path: '../public/fonts/PPMondwest-Regular.ttf', weight: '400', style: 'normal' },
+    { path: '../public/fonts/PPMondwest-Bold.ttf', weight: '700', style: 'normal' },
+  ],
   variable: "--font-mondwest",
 });
 
+// Three real cuts. `font-semibold` is what the labels ask for, so the browser
+// gets a drawn weight instead of synthesising one — the same reason Mondwest
+// carries its own bold.
 const mori = localFont({
-  src: '../public/fonts/PPMori-Book.woff',
+  src: [
+    { path: '../public/fonts/PPMori-Book.woff', weight: '400', style: 'normal' },
+    { path: '../public/fonts/PPMori-Semibold.woff', weight: '600', style: 'normal' },
+    { path: '../public/fonts/PPMori-Black.woff', weight: '900', style: 'normal' },
+  ],
   variable: "--font-mori",
 });
 
@@ -61,12 +75,12 @@ export const metadata: Metadata = {
     default: "Ani Dalal",
     template: "%s | Ani Dalal",
   },
-  description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
+  description: HEADLINE_TEXT,
   keywords: ["design", "portfolio", "generative art", "product design", "AI"],
   authors: [{ name: "Ani Dalal" }],
   openGraph: {
     title: "Ani Dalal",
-    description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
+    description: HEADLINE_TEXT,
     url: "https://anidalal.com",
     siteName: "Ani Dalal",
     type: "website",
@@ -83,7 +97,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Ani Dalal",
-    description: "Product designer and artist with 8+ years of experience, currently building AI native tools for the future.",
+    description: HEADLINE_TEXT,
     images: ["https://res.cloudinary.com/duw0custw/image/upload/v1771154307/theend30_q3abo8.jpg"],
   },
   alternates: {
@@ -149,7 +163,12 @@ export default function RootLayout({
           </svg>
         </div>
         <ThemeProvider>
-          <Analytics />
+          {/* Reads the query string, so it needs its own boundary — without
+              one it forces the whole tree client-side and /404 cannot
+              prerender at all. */}
+          <Suspense>
+            <Analytics />
+          </Suspense>
           <ThemeTransition />
           <Suspense><PixelTransition /></Suspense>
           {children}

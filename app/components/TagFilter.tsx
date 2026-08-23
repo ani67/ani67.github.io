@@ -24,7 +24,7 @@ export function TagFilter({ posts }: TagFilterProps) {
   return (
     <div className="space-y-10 md:space-y-12">
       {filteredPosts.length === 0 ? (
-        <p className="text-white/50">
+        <p className="text-ink-muted">
           {selectedTag
             ? `No posts found with tag "${selectedTag}". Try selecting a different tag.`
             : 'No posts yet. Add markdown files to the content/posts directory to get started.'}
