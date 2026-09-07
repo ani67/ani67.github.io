@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import type { PostMetadata } from '@/lib/posts';
 import { PostCard } from './PostCard';
 
@@ -10,7 +10,6 @@ interface TagFilterProps {
 }
 
 export function TagFilter({ posts }: TagFilterProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const selectedTag = searchParams.get('tag');
 

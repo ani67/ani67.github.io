@@ -31,6 +31,7 @@ export function BlogIndex() {
       }
     >
       <main className="flex-1 px-6 pt-16 pb-24 md:px-0 md:pt-10 md:pb-32">
+        <h1 className="mb-8 text-3xl font-[family-name:var(--font-mondwest)]">Writing on design, AI & art</h1>
         <Suspense fallback={
           <div className="space-y-10 md:space-y-12">
             {posts.map((post) => (

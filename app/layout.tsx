@@ -1,8 +1,10 @@
 import { Suspense } from "react";
+import Script from "next/script";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { SITE_TITLE, SITE_DESCRIPTION, SOCIAL_PROFILES } from "@/lib/seo";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -17,14 +19,13 @@ const jsonLd = {
     addressLocality: "Bengaluru",
     addressCountry: "IN",
   },
-  sameAs: [],
+  sameAs: SOCIAL_PROFILES,
   image: "https://res.cloudinary.com/duw0custw/image/upload/v1771154307/theend30_q3abo8.jpg",
 };
 import { ThemeProvider } from "./components/ThemeProvider";
 import { ThemeTransition } from "./components/ThemeTransition";
 import { PixelTransition } from "./components/PixelTransition";
 import { Analytics } from "./components/Analytics";
-import { HEADLINE_TEXT } from "./components/layout/headline";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,15 +73,15 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://anidalal.com"),
   title: {
-    default: "Ani Dalal",
+    default: SITE_TITLE,
     template: "%s | Ani Dalal",
   },
-  description: HEADLINE_TEXT,
+  description: SITE_DESCRIPTION,
   keywords: ["design", "portfolio", "generative art", "product design", "AI"],
   authors: [{ name: "Ani Dalal" }],
   openGraph: {
-    title: "Ani Dalal",
-    description: HEADLINE_TEXT,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     url: "https://anidalal.com",
     siteName: "Ani Dalal",
     type: "website",
@@ -96,8 +97,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ani Dalal",
-    description: HEADLINE_TEXT,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     images: ["https://res.cloudinary.com/duw0custw/image/upload/v1771154307/theend30_q3abo8.jpg"],
   },
   alternates: {
@@ -113,21 +114,24 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <noscript><style>{`#initial-cover { display: none !important; }`}</style></noscript>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <script
-          async
+        <Script
+          strategy="afterInteractive"
           src="https://www.googletagmanager.com/gtag/js?id=G-5F61ZX6857"
         />
-        <script
+        <Script
+          id="analytics-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-5F61ZX6857');
+              gtag('config', 'G-5F61ZX6857', { send_page_view: false });
             `,
           }}
         />

@@ -339,3 +339,7 @@ body {
 .ProseMirror .video-with-caption .caption-text:focus {
   color: rgba(255, 255, 255, 0.8);
 }
+
+/* Retain the intro; reveal the content eventually if hydration never finishes. */
+@keyframes intro-fallback { to { visibility: hidden; pointer-events: none; } }
+#initial-cover { animation: intro-fallback 0s 8s forwards; }

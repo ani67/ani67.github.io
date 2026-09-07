@@ -8,6 +8,7 @@ import { CollectionIterations } from './CollectionIterations';
 import { CollectionBoard } from './CollectionBoard';
 import { PixelSwap } from './PixelSwap';
 import { containBox } from './stage';
+import { PROJECT_LINKS } from '@/lib/work-links';
 import { track, linkTarget } from '@/lib/analytics';
 
 interface GalleryOverlayProps {
@@ -250,6 +251,10 @@ export function GalleryOverlay({ entry, onClose, onPrev, onNext }: GalleryOverla
               </Link>
             )}
           </div>
+        )}
+
+        {PROJECT_LINKS[entry.id] && PROJECT_LINKS[entry.id] !== entry.href && (
+          <Link href={PROJECT_LINKS[entry.id]} className="mt-5 block text-sm underline">About this project →</Link>
         )}
 
         {/* How to drive it, kept apart from what it is. The artist's fxhash

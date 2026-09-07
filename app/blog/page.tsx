@@ -1,12 +1,8 @@
 import { BlogIndex } from '@/app/components/BlogIndex';
 
-export const metadata = {
-  title: 'Blog',
-  description: 'Writing on design, AI, tools and generative art by Ani Dalal.',
-  alternates: {
-    canonical: '/blog/',
-  },
-};
+import { pageMetadata } from '@/lib/seo';
+
+export const metadata = pageMetadata('Writing on Design, AI & Generative Art', 'Essays by Ani Dalal on product design, AI creation tools, generative art and building for the web.', '/blog/');
 
 export default function BlogPage() {
   return <BlogIndex />;

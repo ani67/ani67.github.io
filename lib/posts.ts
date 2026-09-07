@@ -3,22 +3,10 @@ import path from 'path';
 import { cache } from 'react';
 import matter from 'gray-matter';
 import readingTime from 'reading-time';
-import { z } from 'zod';
+import { PostFrontmatterSchema } from './post-frontmatter';
 import { parseISO, compareDesc, isValid } from 'date-fns';
 
 const postsDirectory = path.join(process.cwd(), 'content/posts');
-
-/**
- * Schema for validating post frontmatter
- */
-const PostFrontmatterSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/, 'Date must be in YYYY-MM-DD or YYYY-MM-DDTHH:mm format'),
-  description: z.string().min(1, 'Description is required'),
-  image: z.string().nullish(),
-  tags: z.array(z.string()).optional().default([]),
-  published: z.boolean().optional().default(true),
-});
 
 export interface PostMetadata {
   title: string;

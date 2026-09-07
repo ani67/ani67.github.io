@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Static export serves authored media directly; these renderers preserve arbitrary source dimensions. */
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -5,22 +6,32 @@ import { useEditor, EditorContent, NodeViewWrapper } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TiptapLink from '@tiptap/extension-link';
-import TiptapImage from '@tiptap/extension-image';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import NextLink from 'next/link';
 import { BlogLayout } from './layout/BlogLayout';
-import type { PostMetadata } from '@/lib/posts';
+import type { Post, PostMetadata } from '@/lib/posts';
+import { serializePost } from '@/lib/serialize-post.mjs';
 import { Bold, Italic, Type, Heading1, Heading2, Heading3, List, ListOrdered, Code2, Quote, Table2, Link2, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
 import { getSvgPath } from 'figma-squircle';
 import { ScrambleText } from './ScrambleText';
-import { mergeAttributes, Node } from '@tiptap/core';
+import { mergeAttributes, Node, type NodeViewProps } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    captionMedia: {
+      setImage: (options: { src: string; alt?: string; caption?: string }) => ReturnType;
+      setYouTube: (options: { src: string; caption?: string }) => ReturnType;
+      setVideo: (options: { src: string; caption?: string }) => ReturnType;
+    };
+  }
+}
+
 // Image Node View Component
-function ImageNodeView({ node, updateAttributes }: any) {
+function ImageNodeView({ node, updateAttributes }: NodeViewProps) {
   const { src, alt, caption } = node.attrs;
 
   // Always render with caption wrapper so user can add captions
@@ -100,13 +111,13 @@ const CustomImage = Node.create({
 
   addCommands() {
     return {
-      setImage: (options: { src: string; alt?: string; caption?: string }) => ({ commands }: any) => {
+      setImage: (options: { src: string; alt?: string; caption?: string }) => ({ commands }) => {
         return commands.insertContent({
           type: this.name,
           attrs: options,
         });
       },
-    } as any;
+    };
   },
 
   addNodeView() {
@@ -127,7 +138,7 @@ function getYouTubeEmbedUrl(url: string): string | null {
 }
 
 // YouTube Node View Component
-function YouTubeNodeView({ node, updateAttributes }: any) {
+function YouTubeNodeView({ node, updateAttributes }: NodeViewProps) {
   const { src, caption } = node.attrs;
 
   return (
@@ -214,13 +225,13 @@ const CustomYouTube = Node.create({
 
   addCommands() {
     return {
-      setYouTube: (options: { src: string; caption?: string }) => ({ commands }: any) => {
+      setYouTube: (options: { src: string; caption?: string }) => ({ commands }) => {
         return commands.insertContent({
           type: this.name,
           attrs: options,
         });
       },
-    } as any;
+    };
   },
 
   addNodeView() {
@@ -229,7 +240,7 @@ const CustomYouTube = Node.create({
 });
 
 // Video Node View Component
-function VideoNodeView({ node, updateAttributes }: any) {
+function VideoNodeView({ node, updateAttributes }: NodeViewProps) {
   const { src, caption } = node.attrs;
 
   // Always render with caption wrapper so user can add captions
@@ -307,13 +318,13 @@ const CustomVideo = Node.create({
 
   addCommands() {
     return {
-      setVideo: (options: { src: string; caption?: string }) => ({ commands }: any) => {
+      setVideo: (options: { src: string; caption?: string }) => ({ commands }) => {
         return commands.insertContent({
           type: this.name,
           attrs: options,
         });
       },
-    } as any;
+    };
   },
 
   addNodeView() {
@@ -329,25 +340,16 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
   const [, forceUpdate] = useState({});
-  const [toolbarSize, setToolbarSize] = useState({ width: 0, height: 0 });
-  const toolbarRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string>('vibes');
+  const [additionalTags, setAdditionalTags] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [isPublished, setIsPublished] = useState(true);
   const [originalDate, setOriginalDate] = useState<string | null>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
-
-  // Measure toolbar dimensions when it's shown
-  useEffect(() => {
-    if (showToolbar && toolbarRef.current) {
-      const rect = toolbarRef.current.getBoundingClientRect();
-      setToolbarSize({ width: rect.width, height: rect.height });
-    }
-  }, [showToolbar]);
 
   // Auto-resize textareas when content changes
   useEffect(() => {
@@ -375,115 +377,67 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
     return `path('${path}')`;
   }, []);
 
-  const toolbarClipPath = useMemo(() => {
-    if (toolbarSize.width === 0 || toolbarSize.height === 0) return '';
-    const path = getSvgPath({
-      width: toolbarSize.width,
-      height: toolbarSize.height,
-      cornerRadius: 12,
-      cornerSmoothing: 1, // 100% smoothing
-    });
-    return `path('${path}')`;
-  }, [toolbarSize]);
-
   const handleLoadPost = async (slug: string) => {
     try {
       const response = await fetch(`/api/posts/${slug}`);
-      const { content } = await response.json();
-
-      // Set the current slug to track we're editing an existing post
+      if (!response.ok) throw new Error('Failed to load post');
+      const { post }: { post: Post } = await response.json();
       setCurrentSlug(slug);
+      setTitle(post.title);
+      setDescription(post.description);
+      setOriginalDate(post.date);
+      setIsPublished(post.published);
+      setSelectedTag(post.tags[0] || 'vibes');
+      setAdditionalTags(post.tags.slice(1));
+      setImageUrl(post.image || '');
+      const markdownContent = post.content.trim();
+      // Convert markdown to HTML for Tiptap (simplified)
+      // First, extract code blocks before other processing
+      const codeBlocks: string[] = [];
+      const processedContent = markdownContent.replace(/```[\s\S]*?```/g, (match: string) => {
+        const code = match.replace(/^```\w*\n?/, '').replace(/\n?```$/, '');
+        const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+        codeBlocks.push(`<pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`);
+        return `\n\n${placeholder}\n\n`;
+      });
 
-      // Parse frontmatter and content
-      const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-      if (frontmatterMatch) {
-        const frontmatterText = frontmatterMatch[1];
-        const markdownContent = frontmatterMatch[2].trim();
-
-        // Parse title, description, tags, and image from frontmatter
-        const titleMatch = frontmatterText.match(/title:\s*"(.+?)"/) || frontmatterText.match(/title:\s*'(.+?)'/);
-        const descriptionMatch = frontmatterText.match(/description:\s*"([\s\S]+?)"/) || frontmatterText.match(/description:\s*'([\s\S]+?)'/);
-        const dateMatch = frontmatterText.match(/date:\s*"(.+?)"/) || frontmatterText.match(/date:\s*'(.+?)'/);
-        const tagsMatch = frontmatterText.match(/tags:\s*\[(.*?)\]/);
-        const imageMatch = frontmatterText.match(/image:\s*(?:["'](.+?)["']|null)/);
-        const publishedMatch = frontmatterText.match(/published:\s*(true|false)/);
-
-        if (titleMatch) setTitle(titleMatch[1]);
-        if (dateMatch) setOriginalDate(dateMatch[1]);
-        setIsPublished(publishedMatch ? publishedMatch[1] === 'true' : true);
-        if (descriptionMatch) setDescription(descriptionMatch[1]);
-
-        // Parse tags - get first tag only
-        if (tagsMatch && tagsMatch[1].trim()) {
-          const parsedTags = tagsMatch[1]
-            .split(',')
-            .map((t: string) => t.trim().replace(/["']/g, ''))
-            .filter((t: string) => t);
-          // Use first tag or default to vibes
-          const firstTag = parsedTags[0];
-          if (firstTag === 'work' || firstTag === 'art' || firstTag === 'vibes') {
-            setSelectedTag(firstTag);
-          } else {
-            setSelectedTag('vibes');
+      let html = processedContent
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        // Images with captions: ![alt](url "caption") - Don't include textarea in HTML, React node view will render it
+        .replace(/!\[(.*?)\]\((.*?)\s+"(.*?)"\)/g, '<div class="image-with-caption" data-caption="$3"><img src="$2" alt="$1" /></div>')
+        // Regular images: ![alt](url)
+        .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" />')
+        .split('\n\n')
+        .map((para: string) => {
+          if (para.match(/^__CODE_BLOCK_\d+__$/)) {
+            return para;
           }
-        } else {
-          setSelectedTag('vibes');
-        }
+          if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<ol') || para.startsWith('<img') || para.startsWith('<video') || para.startsWith('<iframe') || para.startsWith('<div class="image-with-caption"') || para.startsWith('<div class="video-with-caption"')) {
+            return para;
+          }
+          if (para.startsWith('- ')) {
+            const items = para.split('\n').map((line: string) =>
+              line.replace(/^- (.+)$/, '<li>$1</li>')
+            ).join('');
+            return `<ul>${items}</ul>`;
+          }
+          return `<p>${para.replace(/\n/g, '<br>')}</p>`;
+        })
+        .join('\n');
 
-        // Parse image URL
-        if (imageMatch && imageMatch[1]) {
-          setImageUrl(imageMatch[1]);
-        } else {
-          setImageUrl('');
-        }
-        // Convert markdown to HTML for Tiptap (simplified)
-        // First, extract code blocks before other processing
-        const codeBlocks: string[] = [];
-        let processedContent = markdownContent.replace(/```[\s\S]*?```/g, (match: string) => {
-          const code = match.replace(/^```\w*\n?/, '').replace(/\n?```$/, '');
-          const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
-          codeBlocks.push(`<pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`);
-          return `\n\n${placeholder}\n\n`;
-        });
+      // Restore code blocks
+      codeBlocks.forEach((block, i) => {
+        html = html.replace(`__CODE_BLOCK_${i}__`, block);
+      });
 
-        let html = processedContent
-          .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-          .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-          .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-          .replace(/\*(.+?)\*/g, '<em>$1</em>')
-          // Images with captions: ![alt](url "caption") - Don't include textarea in HTML, React node view will render it
-          .replace(/!\[(.*?)\]\((.*?)\s+"(.*?)"\)/g, '<div class="image-with-caption" data-caption="$3"><img src="$2" alt="$1" /></div>')
-          // Regular images: ![alt](url)
-          .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" />')
-          .split('\n\n')
-          .map((para: string) => {
-            if (para.match(/^__CODE_BLOCK_\d+__$/)) {
-              return para;
-            }
-            if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<ol') || para.startsWith('<img') || para.startsWith('<video') || para.startsWith('<iframe') || para.startsWith('<div class="image-with-caption"') || para.startsWith('<div class="video-with-caption"')) {
-              return para;
-            }
-            if (para.startsWith('- ')) {
-              const items = para.split('\n').map((line: string) =>
-                line.replace(/^- (.+)$/, '<li>$1</li>')
-              ).join('');
-              return `<ul>${items}</ul>`;
-            }
-            return `<p>${para.replace(/\n/g, '<br>')}</p>`;
-          })
-          .join('\n');
+      // TipTap strips empty <p></p> — use <p><br></p> to preserve blank lines
+      html = html.replace(/<p><\/p>/g, '<p><br></p>');
 
-        // Restore code blocks
-        codeBlocks.forEach((block, i) => {
-          html = html.replace(`__CODE_BLOCK_${i}__`, block);
-        });
-
-        // TipTap strips empty <p></p> — use <p><br></p> to preserve blank lines
-        html = html.replace(/<p><\/p>/g, '<p><br></p>');
-
-        editor?.commands.setContent(html);
-      }
+      editor?.commands.setContent(html);
     } catch (error) {
       console.error('Failed to load post:', error);
       alert('Failed to load post');
@@ -496,6 +450,7 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
     setCurrentSlug(null);
     setOriginalDate(null);
     setSelectedTag('vibes');
+    setAdditionalTags([]);
     setImageUrl('');
     setIsPublished(true);
     editor?.commands.setContent('<p></p>');
@@ -582,19 +537,9 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
     // Always generate slug from current title
     const newSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-    // If we're editing an existing post and the slug changed, delete the old file
-    if (currentSlug && currentSlug !== newSlug) {
-      try {
-        await fetch('/api/delete-post', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ slug: currentSlug }),
-        });
-      } catch (error) {
-        console.error('Failed to delete old post file:', error);
-      }
+    if (!newSlug) {
+      alert('The title must include a letter or number to create a URL');
+      return false;
     }
 
     const pub = options?.published ?? isPublished;
@@ -603,16 +548,14 @@ export default function MarkdownEditor({ posts = [] }: MarkdownEditorProps) {
     const html = editor.getHTML();
     const markdown = htmlToMarkdown(html);
 
-    const frontmatter = `---
-title: "${title}"
-date: "${dateStr}"
-description: "${description}"
-tags: ["${selectedTag}"]
-image: ${imageUrl ? `"${imageUrl}"` : 'null'}
-published: ${pub}
----
-
-${markdown}`;
+    const frontmatter = serializePost({
+      title,
+      date: dateStr,
+      description,
+      tags: [...new Set([selectedTag, ...additionalTags])],
+      image: imageUrl || null,
+      published: pub,
+    }, markdown);
 
     try {
       const response = await fetch('/api/save-post', {
@@ -622,6 +565,7 @@ ${markdown}`;
         },
         body: JSON.stringify({
           slug: newSlug,
+          previousSlug: currentSlug,
           content: frontmatter,
         }),
       });
@@ -630,6 +574,7 @@ ${markdown}`;
 
       if (response.ok) {
         setCurrentSlug(newSlug);
+        setOriginalDate(dateStr);
         const status = pub ? 'Published' : 'Draft';
         alert(`✅ Saved "${title}" (${status})`);
         return true;
@@ -935,7 +880,6 @@ ${markdown}`;
       {/* Floating Toolbar */}
       {showToolbar && (
         <div
-          ref={toolbarRef}
           className="fixed z-50 shadow-2xl flex gap-0.5 items-center"
           style={{
             top: `${toolbarPosition.top}px`,
@@ -1091,7 +1035,7 @@ ${markdown}`;
                   const url = prompt('Enter image URL:');
                   if (url) {
                     // Insert image with empty caption - user can add caption in the UI textarea
-                    (editor.chain().focus() as any).setImage({ src: url, alt: '', caption: '' }).run();
+                    editor.chain().focus().setImage({ src: url, alt: '', caption: '' }).run();
                   }
                 }}
                 className="p-1.5 transition-colors hover:bg-white/20"
@@ -1106,9 +1050,9 @@ ${markdown}`;
                   if (url) {
                     const embedUrl = getYouTubeEmbedUrl(url);
                     if (embedUrl) {
-                      (editor.chain().focus() as any).setYouTube({ src: embedUrl, caption: '' }).run();
+                      editor.chain().focus().setYouTube({ src: embedUrl, caption: '' }).run();
                     } else {
-                      (editor.chain().focus() as any).setVideo({ src: url, caption: '' }).run();
+                      editor.chain().focus().setVideo({ src: url, caption: '' }).run();
                     }
                   }
                 }}

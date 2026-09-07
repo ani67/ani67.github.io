@@ -1,5 +1,5 @@
 /**
- * Custom events, on top of the `page_view` GA4 sends by itself.
+ * Custom events and explicit page views from the Analytics component.
  *
  * The gallery keeps its state in the query string — `?piece=chaos`,
  * `?work=photography` — and a page view is measured by path, so without these

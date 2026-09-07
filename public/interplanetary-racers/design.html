@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interplanetary Racers · Design</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #0b0b0e; color: #eee; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; overflow: hidden; }
+  #app { display: grid; grid-template-columns: 340px 1fr; height: 100%; }
+  #panel { overflow-y: auto; padding: 18px 18px 40px; border-right: 1px solid #222; background: #101014; }
+  #panel h1 { font-size: 18px; margin: 0 0 4px; letter-spacing: 1px; }
+  #panel .sub { opacity: .55; margin-bottom: 14px; line-height: 1.5; }
+  #panel nav a { color: #9cf; margin-right: 10px; }
+  .row { display: grid; grid-template-columns: 110px 1fr 52px; gap: 8px; align-items: center; margin: 6px 0; }
+  .row label { opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row input[type=range] { width: 100%; accent-color: #fff; }
+  .row output { text-align: right; opacity: .75; }
+  .row input[type=text], select { font: inherit; color: #fff; background: #1a1a20; border: 1px solid #333; border-radius: 6px; padding: 4px 6px; width: 100%; box-sizing: border-box; }
+  h3 { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; opacity: .5; margin: 18px 0 6px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  button { font: inherit; color: #fff; background: #23232b; border: 1px solid #3a3a44; border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  button.primary { background: #fff; color: #000; border-color: #fff; }
+  button:hover { filter: brightness(1.15); }
+  #view { position: relative; }
+  canvas#gl { width: 100%; height: 100%; display: block; }
+  #hint { position: absolute; left: 14px; bottom: 12px; opacity: .5; }
+  #status { position: absolute; right: 14px; top: 12px; opacity: .6; }
+  #link { font-size: 10px; word-break: break-all; opacity: .5; margin-top: 8px; }
+  #err { position: absolute; inset: 0; display: none; place-items: center; background: #000; padding: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="panel">
+    <h1 id="title">Design</h1>
+    <div class="sub" id="subtitle"></div>
+    <nav><a href="design.html?mode=vehicle">craft</a><a href="design.html?mode=terrain">planet</a><a href="design.html?mode=track">track</a><a href="index.html">race</a></nav>
+    <div id="controls"></div>
+    <div class="btns">
+      <button id="race" class="primary">Race with this</button>
+      <button id="rand">Randomize</button>
+      <button id="copy">Copy link</button>
+    </div>
+    <div id="link"></div>
+  </div>
+  <div id="view">
+    <canvas id="gl"></canvas>
+    <div id="status"></div>
+    <div id="hint">drag to orbit · wheel to zoom</div>
+    <div id="err"></div>
+  </div>
+</div>
+<script src="src/math.js"></script>
+<script src="src/palettes.js"></script>
+<script src="src/planets.js"></script>
+<script src="src/craft.js"></script>
+<script src="src/kitbash.js"></script>
+<script src="src/stats.js"></script>
+<script src="src/tracks.js"></script>
+<script src="src/weapons.js"></script>
+<script src="src/particles.js"></script>
+<script src="src/biomes.js"></script>
+<script src="src/world.js"></script>
+<script src="src/geometry.js"></script>
+<script src="src/flora.js"></script>
+<script src="src/propsets.js"></script>
+<script src="src/shaders.js"></script>
+<script src="src/gpu.js"></script>
+<script src="src/frame.js"></script>
+<script src="src/design.js"></script>
+<script>
+  Design.start().catch(e => { console.error(e); const el = document.getElementById('err'); el.style.display = 'grid'; el.textContent = 'Could not start: ' + e.message; });
+</script>
+</body>
+</html>

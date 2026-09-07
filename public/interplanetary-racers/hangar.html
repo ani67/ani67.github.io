@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hangar</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #0b0b0e; color: #eee; font-family: ui-monospace, Menlo, monospace; font-size: 12px; overflow: hidden; }
+  canvas#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #bar { position: fixed; left: 14px; top: 12px; display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,.45); padding: 6px 10px; border-radius: 10px; backdrop-filter: blur(6px); }
+  #bar input, #bar select, #bar button { font: inherit; color: #fff; background: #1a1a20; border: 1px solid #333; border-radius: 6px; padding: 3px 6px; }
+  #bar input { width: 70px; }
+  #bar a { color: #9cf; margin-left: 6px; }
+  #labels { position: fixed; inset: 0; pointer-events: none; }
+  .lbl { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer; width: 46px; height: 34px; border-radius: 8px; }
+  .lbl span { display: none; position: absolute; left: 50%; top: 100%; transform: translate(-50%, 2px); font-size: 10px; letter-spacing: .3px; color: #000; background: #fff; padding: 2px 6px; border-radius: 8px; white-space: nowrap; }
+  .lbl:hover { outline: 1px solid rgba(255,255,255,.7); }
+  .lbl:hover span { display: block; }
+  #info { position: fixed; right: 14px; top: 12px; width: 240px; background: rgba(0,0,0,.55); padding: 10px 12px; border-radius: 10px; backdrop-filter: blur(6px); display: none; }
+  #info .row { display: grid; grid-template-columns: 70px 1fr; gap: 6px; align-items: center; margin: 3px 0; }
+  #info .b { height: 6px; background: #222; border-radius: 3px; overflow: hidden; } #info .b i { display: block; height: 100%; background: #9cf; }
+  #status { position: fixed; left: 14px; bottom: 12px; opacity: .55; }
+  #err { position: fixed; inset: 0; display: none; place-items: center; background: #000; padding: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="labels"></div>
+<div id="bar">
+  <span>hangar</span>
+  <label>seed <input id="seed" type="number" value="1"></label>
+  <select id="style"><option value="">any style</option></select>
+  <select id="hull"><option value="">any hull</option></select>
+  <select id="race"><option value="">no race bias</option></select>
+  <button id="go">generate 100</button>
+  <a href="design.html?mode=vehicle">designer</a><a href="craft.html">viewer</a><a href="index.html">race</a>
+</div>
+<div id="info"></div>
+<div id="status"></div>
+<div id="err"></div>
+<script src="src/math.js"></script>
+<script src="src/palettes.js"></script>
+<script src="src/planets.js"></script>
+<script src="src/craft.js"></script>
+<script src="src/kitbash.js"></script>
+<script src="src/stats.js"></script>
+<script src="src/world.js"></script>
+<script src="src/geometry.js"></script>
+<script src="src/shaders.js"></script>
+<script src="src/gpu.js"></script>
+<script src="src/frame.js"></script>
+<script>
+(async () => {
+  const q = new URLSearchParams(location.search);
+  const $ = id => document.getElementById(id);
+  for (const s of Kitbash.STYLES) { const o = document.createElement('option'); o.value = s; o.textContent = s; $('style').appendChild(o); }
+  for (const h of Kitbash.HULLS) { const o = document.createElement('option'); o.value = h; o.textContent = h; $('hull').appendChild(o); }
+  for (const r of Planets.RACES) { const o = document.createElement('option'); o.value = r.id; o.textContent = r.name; $('race').appendChild(o); }
+  $('seed').value = q.get('seed') || 1; $('style').value = q.get('style') || ''; $('hull').value = q.get('hull') || ''; $('race').value = q.get('race') || '';
+  const b64e = o => btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+  const hsl = (h, s, l) => { const f = n => { const k = (n + h * 12) % 12, a = s * Math.min(l, 1 - l); return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); }; return [f(0), f(8), f(4)]; };
+  const canvas = $('gl');
+  try {
+    await Gpu.init(canvas);
+    const desc = World.generate('Hangar', Planets.planet('nullsector'), {}); desc.noTerrain = true; desc.fog = 0.0004;
+    const g = 70, gv = new Float32Array([-g, 0, -g, 0, 1, 0, -g, -g, 0, 0.3, 0, 0, g, 0, -g, 0, 1, 0, g, -g, 0, 0.3, 0, 0, g, 0, g, 0, 1, 0, g, g, 0, 0.3, 0, 0, -g, 0, g, 0, 1, 0, -g, g, 0, 0.3, 0, 0]);
+    const ground = Gpu.createMesh({ verts: gv, idx: new Uint32Array([0, 2, 1, 0, 3, 2]) });
+    const scene = { frame: new Float32Array(Gpu.FRAME_FLOATS), statics: [ground], props: null, carGroups: [] };
+    let ships = [];
+    const COLS = 10, SP = 7.5;
+    function generateAll() {
+      const seed = +$('seed').value || 1, style = $('style').value, hull = $('hull').value, race = $('race').value;
+      const t0 = performance.now(); let rej = 0, unresolved = 0, tris = 0;
+      ships = [];
+      for (let i = 0; i < 100; i++) {
+        const s = seed * 1000 + i;
+        const recipe = race ? Kitbash.forRace(race, s) : Kitbash.generate(s, { style: style || undefined, hull: hull || undefined });
+        if (race && (style || hull)) { const r2 = Kitbash.generate(s, { style: style || recipe.style, hull: hull || undefined }); Object.assign(recipe, r2); }
+        const built = Craft.build(recipe, s);
+        rej += built.rejections; unresolved += built.problems.length ? 1 : 0; tris += built.tris;
+        const data = new Float32Array(Gpu.CAR_FLOATS);
+        const rnd = M.mulberry32(s);
+        const hue = race ? (Planets.race(race).hue + (rnd() - 0.5) * 0.1 + 1) % 1 : rnd();
+        const col = hsl(hue, 0.7, 0.55);
+        const x = ((i % COLS) - (COLS - 1) / 2) * SP, z = (Math.floor(i / COLS) - 4.5) * SP;
+        ships.push({ recipe, built, seed: s, hue, col, x, z, group: { mesh: Gpu.createMesh(built), inst: Gpu.createInstances(data), data, count: 1 }, stats: Stats.compute(recipe, s) });
+      }
+      scene.carGroups = ships.map(s => s.group);
+      $('status').textContent = `100 craft · ${Math.round(tris / 100)} tris avg · ${rej} retried builds · ${unresolved} unresolved · ${Math.round(performance.now() - t0)} ms`;
+      buildLabels();
+    }
+    const labels = $('labels');
+    function buildLabels() {
+      labels.innerHTML = '';
+      for (const s of ships) {
+        const d = document.createElement('div'); d.className = 'lbl'; d.innerHTML = `<span>${s.recipe.archetype} · ${s.recipe.style}</span>`; s.label = d;
+        d.onmouseenter = () => showInfo(s); d.onmouseleave = () => { $('info').style.display = 'none'; };
+        d.onclick = () => { const race = $('race').value || Planets.RACES[0].id; const st = { planet: Planets.race(race).planet, race, seed: 'Amber-Trefoil-1', craft: { ...s.recipe, seed: s.seed }, hue: s.hue }; location.href = `design.html?mode=vehicle#${b64e(st)}`; };
+        labels.appendChild(d);
+      }
+    }
+    function showInfo(s) {
+      const b = s.stats.bars, bar = (l, v) => `<div class="row"><span>${l}</span><div class="b"><i style="width:${Math.round(v * 100)}%"></i></div></div>`;
+      $('info').style.display = 'block';
+      $('info').innerHTML = `<div style="font-size:13px;margin-bottom:6px">${s.recipe.archetype}</div><div style="opacity:.6;margin-bottom:6px">${s.recipe.style} · ${s.recipe.hullKind} · ${s.recipe.role} · seed ${s.seed} · ${s.built.tris} tris</div>` +
+        bar('speed', b.speed) + bar('accel', b.accel) + bar('drift', b.drift) + bar('defense', b.defense) + bar('life', b.life) +
+        `<div style="opacity:.55;margin-top:6px">mass x${s.stats.massMul.toFixed(2)} · budget ${Math.round(s.stats.budget * 100)}%${s.built.problems.length ? '<br>unresolved: ' + s.built.problems.join(', ') : ''}<br>click to open in the designer</div>`;
+    }
+    $('go').onclick = () => { const u = new URL(location.href); u.searchParams.set('seed', $('seed').value); u.searchParams.set('style', $('style').value); u.searchParams.set('hull', $('hull').value); u.searchParams.set('race', $('race').value); history.replaceState(null, '', u); generateAll(); };
+    generateAll();
+    const camPos = [0, 74, 46], look = [0, 0, -2];
+    const loop = now => {
+      const t = now / 1000, f = scene.frame;
+      ships.forEach((s, i) => {
+        const a = t * 0.35 + i * 0.7, c = Math.cos(a), sn = Math.sin(a), d = s.group.data;
+        d.set([c, 0, -sn], 0); d.set([0, 1, 0], 3); d.set([sn, 0, c], 6); d.set([s.x, 0.6 + Math.sin(t * 1.7 + i) * 0.1, s.z], 9); d.set(s.col, 12);
+        d[15] = 0; d[16] = 0; d.set([1, 1, 1], 17); d[20] = 0.5;
+        Gpu.updateInstances(s.group.inst, d);
+      });
+      Frame.fill(f, desc, { pos: camPos, look, fov: 42, aspect: canvas.clientWidth / canvas.clientHeight, time: t, shadowSize: 55, shadowCenter: [0, 0, 0] }, { speed01: 0 });
+      Gpu.render(scene);
+      // Project labels with the frame's view-projection matrix (column major at f[0..15]).
+      const W = canvas.clientWidth, H = canvas.clientHeight;
+      for (const s of ships) {
+        const x = s.x, y = 0.6, z = s.z;
+        const cx = f[0] * x + f[4] * y + f[8] * z + f[12], cy = f[1] * x + f[5] * y + f[9] * z + f[13], cw = f[3] * x + f[7] * y + f[11] * z + f[15];
+        if (s.label) { s.label.style.left = `${(cx / cw * 0.5 + 0.5) * W}px`; s.label.style.top = `${(0.5 - cy / cw * 0.5) * H}px`; }
+      }
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  } catch (e) { console.error(e); const el = $('err'); el.style.display = 'grid'; el.textContent = 'Could not start: ' + e.message; }
+})();
+</script>
+</body>
+</html>

@@ -24,9 +24,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: rm -rf app/api
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
       - run: npm run build
-      - run: cp -r thegiftofpoetry ./out/thegiftofpoetry
+      - run: npm run verify:export
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./out

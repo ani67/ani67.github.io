@@ -1,5 +1,5 @@
-import type { CanvasObject, Bounds, Camera } from './types';
-import { GRID_SPACING, GRID_PLUS_SIZE, HANDLE_SIZE } from './types';
+import type { CanvasObject, Camera } from './types';
+import { GRID_SPACING, HANDLE_SIZE } from './types';
 import { getBounds, combineBounds, getFrameChildren } from './geometry';
 
 interface RenderState {

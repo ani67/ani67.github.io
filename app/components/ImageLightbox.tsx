@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Static export serves authored media directly; these renderers preserve arbitrary source dimensions. */
 'use client';
 
 import { useEffect, useCallback, useRef, useState } from 'react';
@@ -140,7 +141,7 @@ export function ImageLightbox({ images, currentIndex, onClose, onNavigate }: Ima
     const entering = phase === 'entering';
     const exiting = phase === 'exiting';
 
-    let tx = isDragging ? dragX : 0;
+    const tx = isDragging ? dragX : 0;
     const rotation = isDragging ? dragX * 0.01 : 0;
 
     return {

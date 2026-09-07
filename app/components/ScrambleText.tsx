@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, type HTMLAttributes } from 'react';
 
-interface ScrambleTextProps {
+interface ScrambleTextProps extends HTMLAttributes<HTMLElement> {
+  href?: string;
+  target?: string;
+  rel?: string;
+  type?: 'button' | 'submit' | 'reset';
   text: string;
   className?: string;
   as?: 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'a' | 'button';
@@ -10,7 +14,6 @@ interface ScrambleTextProps {
   disableHover?: boolean;
   trigger?: boolean;
   onTrigger?: () => void;
-  [key: string]: any;
 }
 
 const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -38,9 +41,8 @@ export function ScrambleText({
   const [isAnimating, setIsAnimating] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const mountedRef = useRef(false);
-  const containerRef = useRef<HTMLElement>(null);
 
-  const scramble = () => {
+  const scramble = useCallback(() => {
     if (window.innerWidth < 768) return;
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -78,36 +80,32 @@ export function ScrambleText({
       }
     };
 
-    animate();
-  };
+    timeoutRef.current = setTimeout(animate, frameInterval);
+  }, [text]);
 
 
   useEffect(() => {
-    if (triggerOnMount && !mountedRef.current) {
+    if (!triggerOnMount || mountedRef.current) return;
+    const timer = setTimeout(() => {
       mountedRef.current = true;
       scramble();
-    }
-  }, [triggerOnMount]);
-
-  // Trigger animation when parent triggers it
-  useEffect(() => {
-    if (trigger && !isAnimating) {
-      scramble();
-    }
-  }, [trigger]);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [triggerOnMount, scramble]);
 
   useEffect(() => {
-    if (onTrigger) {
-      // Expose scramble function through callback
-      (window as any).__scrambleCallbacks = (window as any).__scrambleCallbacks || {};
-      (window as any).__scrambleCallbacks[text] = scramble;
-    }
-    return () => {
-      if (onTrigger && (window as any).__scrambleCallbacks) {
-        delete (window as any).__scrambleCallbacks[text];
-      }
-    };
-  }, [text, onTrigger]);
+    if (!trigger) return;
+    const timer = setTimeout(scramble, 0);
+    return () => clearTimeout(timer);
+  }, [trigger, scramble]);
+
+  useEffect(() => {
+    if (!onTrigger) return;
+    const host = window as Window & { __scrambleCallbacks?: Record<string, () => void> };
+    const callbacks = host.__scrambleCallbacks ??= {};
+    callbacks[text] = scramble;
+    return () => { delete callbacks[text]; };
+  }, [text, onTrigger, scramble]);
 
   const handleMouseEnter = () => {
     if (!disableHover) {
@@ -142,7 +140,6 @@ export function ScrambleText({
    */
   return (
     <Component
-      ref={containerRef as any}
       className={`${className} inherit-color ${pointerClass}`}
       style={{
         color: 'inherit',

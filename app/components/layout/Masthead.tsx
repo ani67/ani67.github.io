@@ -10,6 +10,7 @@ import { SHELL_CONTAINER, SHELL_GRID, SHELL_CONTENT, SHELL_SPACER, SHELL_ASIDE }
 interface MastheadProps {
   /** The large headline. Omitted on pages that carry their own title. */
   headline?: ReactNode;
+  headlineAs?: 'h1' | 'p';
   /** Optional row under the headline — the tag filter, or the edit toggle. */
   below?: ReactNode;
 }
@@ -23,7 +24,7 @@ interface MastheadProps {
  * drifted out of step between them; the nav now sits directly above the
  * headline, in the same column, rather than beside it.
  */
-export function Masthead({ headline, below }: MastheadProps) {
+export function Masthead({ headline, below, headlineAs: Heading = 'p' }: MastheadProps) {
   return (
     <header className="relative">
       {/* The mark and the theme control take the two top corners, so the nav
@@ -52,9 +53,9 @@ export function Masthead({ headline, below }: MastheadProps) {
             <MastheadNav />
 
             {headline && (
-              <p className="mt-10 text-3xl font-light leading-snug text-ink font-[family-name:var(--font-mondwest)] md:mt-12 md:text-[40px]">
+              <Heading className="mt-10 text-3xl font-light leading-snug text-ink font-[family-name:var(--font-mondwest)] md:mt-12 md:text-[40px]">
                 {headline}
-              </p>
+              </Heading>
             )}
 
             {/* The same step the headline takes from the nav above it. Both

@@ -17,7 +17,7 @@ import { GalleryManifestSchema, manifestPath } from '@/lib/gallery';
  * malformed payload is rejected here instead of breaking the next build.
  */
 export async function PUT(request: Request) {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json({ error: 'Not available' }, { status: 404 });
   }
 
@@ -28,15 +28,6 @@ export async function PUT(request: Request) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid manifest', issues: parsed.error.issues },
-        { status: 400 }
-      );
-    }
-
-    const ids = parsed.data.map((entry) => entry.id);
-    const duplicates = ids.filter((id, i) => ids.indexOf(id) !== i);
-    if (duplicates.length > 0) {
-      return NextResponse.json(
-        { error: `Duplicate id: ${[...new Set(duplicates)].join(', ')}` },
         { status: 400 }
       );
     }

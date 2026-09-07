@@ -136,9 +136,9 @@ export function Instrument() {
             </linearGradient>
           </defs>
         </svg>
-        <span className="font-[family-name:var(--font-mondwest)] text-2xl text-white">
+        <h1 className="font-[family-name:var(--font-mondwest)] text-2xl text-white">
           Instrument
-        </span>
+        </h1>
       </div>
 
       <Link

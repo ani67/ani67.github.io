@@ -15,6 +15,7 @@ Personal blog and portfolio site for Ani Dalal, built with Next.js, TypeScript, 
 ## Getting Started
 
 ```bash
+npm ci
 npm run dev
 ```
 
@@ -43,12 +44,27 @@ Or use the built-in editor at `/editor` during development.
 
 ```bash
 npm run build
+npm start
 ```
+
+The build creates an isolated production tree, excludes development APIs, and exports to `out/` with the poetry project, custom domain, and `.nojekyll` included. It leaves local source files intact. `npm start` previews this static output on localhost:3000. GitHub Pages runs the same build.
+
+Run `npm run lint`, `npm run typecheck`, and `npm test` before shipping. After building, `npm run verify:export` validates the exported SEO metadata and sitemap.
+
+The `/work/` index links to selected project pages, existing case studies and playable tools. New project stories are authored in `lib/work.ts`; `lib/work-links.ts` maps gallery cards to their canonical pages. Card clicks retain the fullscreen gallery, while opening a link in a new tab reaches its project page.
+
+## Interplanetary Racers
+
+The homepage game card opens the gallery viewer and links to `/interplanetary-racers/`. The standalone game and its designers are included in the same static export. See [hosting and update notes](docs/interplanetary-racers.md).
 
 ## Project Structure
 
 ```
 app/
+  page.tsx           # Gallery homepage (content/gallery.json)
+  blog/              # Blog index
+  instrument/        # Musical instrument
+  canvas/            # Drawing canvas
   components/        # Shared components (PostPage, MarkdownEditor, ScrambleText, etc.)
   components/layout/ # Layout components (Sidebar, BlogLayout, MobileHeader)
   posts/[slug]/      # Dynamic blog post pages

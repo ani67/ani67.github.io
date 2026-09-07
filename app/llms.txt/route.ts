@@ -22,9 +22,14 @@ ${postsList}
 
 ## Pages
 
+- [Selected projects](https://anidalal.com/work/): Product design, generative art and interactive work
+- [Instrument](https://anidalal.com/instrument/): Browser keyboard and microtonal synth
+- [Canvas](https://anidalal.com/canvas/): Browser drawing tool
+
 - [Home](https://anidalal.com/): Portfolio homepage
 - [Blog](https://anidalal.com/blog/): All writing, filterable by tag
 - [About](https://anidalal.com/about/): Background, experience, education, exhibitions, and contact
+- [Interplanetary Racers](https://anidalal.com/interplanetary-racers/): Play a procedural hover racing game across ten planets
 
 ## Contact
 

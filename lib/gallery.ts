@@ -90,7 +90,10 @@ const GalleryEntryInputSchema = z.object({
   }).optional(),
 });
 
-export const GalleryManifestSchema = z.array(GalleryEntryInputSchema);
+export const GalleryManifestSchema = z.array(GalleryEntryInputSchema).refine(
+  (entries) => new Set(entries.map((entry) => entry.id)).size === entries.length,
+  'Gallery entry ids must be unique',
+);
 
 /** A single piece of media in an entry. The first one is the grid thumbnail. */
 export type GalleryMedia = z.infer<typeof GalleryMediaSchema>;
@@ -141,13 +144,8 @@ export interface GalleryEntry {
  * render without a module-cache bust. `cache()` keeps it to one read per pass.
  */
 export const readManifest = cache((): GalleryEntryInput[] => {
-  try {
-    const raw = fs.readFileSync(manifestPath, 'utf8');
-    return GalleryManifestSchema.parse(JSON.parse(raw));
-  } catch (error) {
-    console.error('Error reading gallery manifest:', error);
-    return [];
-  }
+  const raw = fs.readFileSync(manifestPath, 'utf8');
+  return GalleryManifestSchema.parse(JSON.parse(raw));
 });
 
 /**

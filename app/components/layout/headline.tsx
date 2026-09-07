@@ -7,7 +7,7 @@
  * is deliberate rather than left to the wrap; `HEADLINE_TEXT` for the flat
  * string that search, social cards and llms.txt need.
  */
-export const HEADLINE_LEAD = 'Designer, artist, builder.';
+export const HEADLINE_LEAD = 'Product designer, generative artist, builder.';
 export const HEADLINE_ROLE =
   'Currently at Frameo.AI, setting the design direction & owning the product side of GTM.';
 

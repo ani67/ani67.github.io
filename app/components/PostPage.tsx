@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element -- Static export serves authored media directly; these renderers preserve arbitrary source dimensions. */
+import type { ComponentProps } from 'react';
 import { format, parseISO, isValid } from 'date-fns';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
@@ -42,13 +44,13 @@ function MDXImage({ src, alt, title }: { src?: string; alt?: string; title?: str
 }
 
 // Custom video component
-function MDXVideo({ src, controls, style, ...props }: any) {
+function MDXVideo({ src, controls }: ComponentProps<'video'>) {
   if (!src) return null;
   return <video src={src} controls={controls !== false} />;
 }
 
 // Custom div component to handle video-with-caption divs
-function MDXDiv({ className, children, class: _class, ...props }: any) {
+function MDXDiv({ className, children, class: _class }: ComponentProps<'div'> & { class?: string }) {
   const resolvedClass = className || _class;
   if (resolvedClass === 'video-with-caption') {
     return (
@@ -68,7 +70,7 @@ function MDXDiv({ className, children, class: _class, ...props }: any) {
 }
 
 // Custom iframe component for YouTube embeds
-function MDXIframe({ src, frameborder, allowfullscreen, frameBorder: _fb, ...props }: any) {
+function MDXIframe({ src }: ComponentProps<'iframe'>) {
   if (!src) return null;
   return (
     <iframe
@@ -82,7 +84,7 @@ function MDXIframe({ src, frameborder, allowfullscreen, frameBorder: _fb, ...pro
 }
 
 // Custom link component - open in new tab
-function MDXLink({ href, children, ...props }: any) {
+function MDXLink({ href, children, ...props }: ComponentProps<'a'>) {
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
       {children}
@@ -135,7 +137,7 @@ export default function PostPageClient({ post, relatedPosts = [] }: PostPageProp
             </div>
           </PostContent>
 
-          <time className="block mt-8 text-xl text-ink-subtle">{formattedDate}</time>
+          <time dateTime={post.date} className="block mt-8 text-xl text-ink-subtle">{formattedDate}</time>
 
           <ReadMore posts={relatedPosts} />
       </article>

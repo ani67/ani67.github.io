@@ -8,7 +8,7 @@ type SerializedObject = Exclude<CanvasObject, { type: 'image' }> | { type: 'imag
 
 function serializeObjects(objects: CanvasObject[]): string {
   const data: SerializedObject[] = objects.map(obj => {
-    if (obj.type === 'image') { const { img: _, ...rest } = obj; return rest; }
+    if (obj.type === 'image') { const { img, ...rest } = obj; void img; return rest; }
     return obj;
   });
   return JSON.stringify(data);

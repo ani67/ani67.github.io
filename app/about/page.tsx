@@ -1,21 +1,16 @@
 import { BlogLayout } from '@/app/components/layout/BlogLayout';
 import { Headline } from '@/app/components/layout/headline';
 
-export const metadata = {
-  title: 'About',
-  description: 'Ani Dalal — designer, artist and builder. Design direction and the new-user experience at Frameo.AI.',
-  // Without this the page inherits the root layout's canonical and declares
-  // itself to be the homepage.
-  alternates: {
-    canonical: '/about/',
-  },
-};
+import { pageMetadata } from '@/lib/seo';
+
+export const metadata = pageMetadata('About Ani Dalal', 'Product designer and generative artist in Bengaluru. Experience at Frameo, Dashtoon Studio, Univ.AI and Samsung, plus education and exhibitions.', '/about/');
 
 export default function AboutPage() {
   return (
     <BlogLayout useLinks headline={<Headline />}>
       <article className="flex-1 px-6 pt-16 pb-24 md:px-0 md:pt-10 md:pb-32 font-[family-name:var(--font-mondwest)]">
 
+        <h1 className="mb-8 text-3xl">About Ani Dalal</h1>
         <div className="space-y-12">
 
           {/* Experience */}

@@ -144,7 +144,6 @@ export function PixelTransition() {
   // Cleanup on unmount
   useEffect(() => {
     return () => clearAllTimeouts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!isVisible) return null;

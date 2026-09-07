@@ -1,7 +1,11 @@
 'use client';
 
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
+
+const subscribe = () => () => {};
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
 import { Sunrise, Sun, Moon, BookOpen } from 'lucide-react';
 import { ScrambleText } from '../ScrambleText';
 
@@ -13,11 +17,7 @@ interface ThemeToggleProps {
 
 export function ThemeToggle({ inline, iconOnly }: ThemeToggleProps = {}) {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot);
 
   if (!mounted) return null;
 

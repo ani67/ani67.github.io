@@ -65,6 +65,7 @@ export default function CanvasPage() {
   const dragOffset = useRef<Point | null>(null);
   const panStart = useRef<Point | null>(null);
   const spaceHeld = useRef(false);
+  const [isSpaceHeld, setIsSpaceHeld] = useState(false);
   const resizeHandleRef = useRef<Handle | null>(null);
   const resizeStartBounds = useRef<{ minX: number; minY: number; maxX: number; maxY: number } | null>(null);
   const previewRef = useRef<CanvasObject | null>(null);
@@ -398,7 +399,7 @@ export default function CanvasPage() {
         setContextPos({ x: b.maxX * c.zoom + c.x + 12, y: b.minY * c.zoom + c.y - 4 });
       }
     }
-  }, []);
+  }, [setTool]);
 
   // --- Wheel zoom ---
   useEffect(() => {
@@ -455,7 +456,7 @@ export default function CanvasPage() {
       if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
       const meta = e.metaKey || e.ctrlKey;
 
-      if (e.code === 'Space') { e.preventDefault(); spaceHeld.current = true; }
+      if (e.code === 'Space') { e.preventDefault(); spaceHeld.current = true; setIsSpaceHeld(true); }
 
       // Undo / Redo
       if (e.key === 'z' && meta && !e.shiftKey) { e.preventDefault(); store.undo(); }
@@ -580,7 +581,7 @@ export default function CanvasPage() {
       if (e.key === '-' && meta) { e.preventDefault(); const c = store.camera; const cx = window.innerWidth / 2, cy = window.innerHeight / 2; const nz = Math.max(MIN_ZOOM, c.zoom / 1.2); const s = nz / c.zoom; store.setCamera({ x: cx - (cx - c.x) * s, y: cy - (cy - c.y) * s, zoom: nz }); }
       if (e.key === '0' && meta) { e.preventDefault(); store.setCamera({ x: 0, y: 0, zoom: 1 }); }
     };
-    const onKeyUp = (e: KeyboardEvent) => { if (e.code === 'Space') spaceHeld.current = false; };
+    const onKeyUp = (e: KeyboardEvent) => { if (e.code === 'Space') { spaceHeld.current = false; setIsSpaceHeld(false); } };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     return () => { window.removeEventListener('keydown', onKeyDown); window.removeEventListener('keyup', onKeyUp); };
@@ -633,7 +634,7 @@ export default function CanvasPage() {
   }, [colors.stroke]);
 
   const getCursor = () => {
-    if (spaceHeld.current) return 'grab';
+    if (isSpaceHeld) return 'grab';
     switch (activeTool) {
       case 'select': return 'default';
       case 'hand': return 'grab';
@@ -646,21 +647,26 @@ export default function CanvasPage() {
   const cam = store.camera;
   const zoomPercent = Math.round(cam.zoom * 100);
 
-  // Close edit panel and reposition when selection changes
+  const selectionKey = [...store.selectedIds].sort().join(',');
+
+  // Position the menu after the selection has been painted.
   useEffect(() => {
-    setEditPanelOpen(false);
-    if (store.selectedIds.size === 1) {
-      const id = [...store.selectedIds][0];
-      const obj = store.objects.find(o => o.id === id);
-      if (obj) {
-        const b = getBounds(obj, store.objects);
-        const c = store.camera;
-        setContextPos({ x: b.maxX * c.zoom + c.x + 12, y: b.minY * c.zoom + c.y - 4 });
-        return;
+    const frame = requestAnimationFrame(() => {
+      setEditPanelOpen(false);
+      if (store.selectedIds.size === 1) {
+        const id = [...store.selectedIds][0];
+        const obj = store.objects.find(o => o.id === id);
+        if (obj) {
+          const b = getBounds(obj, store.objects);
+          const c = store.camera;
+          setContextPos({ x: b.maxX * c.zoom + c.x + 12, y: b.minY * c.zoom + c.y - 4 });
+          return;
+        }
       }
-    }
-    setContextPos(null);
-  }, [store.selectedIds.size]);
+      setContextPos(null);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [selectionKey]);
 
   // --- Selected object ---
   const getSelectedObj = (): CanvasObject | null => {

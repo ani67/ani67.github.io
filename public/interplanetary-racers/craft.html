@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Craft viewer</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #0b0b0e; color: #eee; font-family: ui-monospace, Menlo, monospace; font-size: 12px; overflow: hidden; }
+  canvas#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #bar { position: fixed; left: 14px; top: 12px; display: flex; gap: 8px; align-items: center; }
+  #bar a, #bar span { color: #fff; opacity: .8; }
+  #bar a.on { text-decoration: underline; opacity: 1; }
+  #status { position: fixed; right: 14px; bottom: 12px; max-width: 60vw; text-align: right; opacity: .6; }
+  #hint { position: fixed; left: 14px; bottom: 12px; opacity: .5; }
+  #err { position: fixed; inset: 0; display: none; place-items: center; background: #000; padding: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="bar"></div>
+<div id="status"></div>
+<div id="hint">drag to orbit · wheel to zoom · ?family=hulk&seed=3&planet=vantera</div>
+<div id="err"></div>
+<script src="src/math.js"></script>
+<script src="src/palettes.js"></script>
+<script src="src/planets.js"></script>
+<script src="src/world.js"></script>
+<script src="src/geometry.js"></script>
+<script src="src/shaders.js"></script>
+<script src="src/gpu.js"></script>
+<script src="src/frame.js"></script>
+<script src="src/craft.js"></script>
+<script src="src/kitbash.js"></script>
+<script src="src/stats.js"></script>
+<script>
+(async () => {
+  const q = new URLSearchParams(location.search);
+  const family = q.get('family') || 'falcon', seed = +(q.get('seed') || 1), planetId = q.get('planet') || 'vantera';
+  const bar = document.getElementById('bar');
+  for (const k of [...Object.keys(Planets.RECIPES), 'kitbash']) { const a = document.createElement('a'); a.href = `craft.html?family=${k}&seed=${seed}&planet=${planetId}`; a.textContent = k; if (k === family) a.className = 'on'; bar.appendChild(a); }
+  const style = q.get('style') || '';
+  if (family === 'kitbash') for (const st of ['', ...Kitbash.STYLES]) { const a = document.createElement('a'); a.href = `craft.html?family=kitbash&seed=${seed}&planet=${planetId}&style=${st}`; a.textContent = st || 'any'; a.style.opacity = '.7'; if (st === style) a.className = 'on'; bar.appendChild(a); }
+  const hangar = document.createElement('a'); hangar.href = 'hangar.html'; hangar.textContent = 'hangar'; hangar.style.marginLeft = '10px'; bar.appendChild(hangar);
+  const canvas = document.getElementById('gl');
+  try {
+    await Gpu.init(canvas);
+    const desc = World.generate('Craft-' + seed, Planets.planet(planetId), {});
+    desc.noTerrain = true;
+    const race = Planets.RACES.find(r => r.vehicle === family) || Planets.RACES[0];
+    const recipe = family === 'kitbash' ? Kitbash.generate(seed, { style: style || undefined }) : Planets.RECIPES[family];
+    const mesh = Craft.build(recipe, seed);
+    const st = Stats.compute(recipe, seed);
+    document.title = `${family} · ${mesh.recipe.archetype} · ${mesh.tris} tris · ${mesh.rejections} rejected${mesh.problems.length ? ' · unresolved: ' + mesh.problems.join(', ') : ''}`;
+    document.getElementById('status').textContent = `${family} · ${mesh.recipe.archetype} · seed ${seed} · ${mesh.tris} triangles · ${mesh.rejections} rejected builds${mesh.fixes.length ? ' · fixes: ' + mesh.fixes.join(', ') : ''} · speed ${st.bars.speed.toFixed(2)} accel ${st.bars.accel.toFixed(2)} drift ${st.bars.drift.toFixed(2)} def ${st.bars.defense.toFixed(2)} life ${st.bars.life.toFixed(2)} · budget ${Math.round(st.budget * 100)}%`;
+    const seeds = document.createElement('span'); seeds.style.marginLeft = '12px'; seeds.append('seed ');
+    for (let k = 1; k <= 8; k++) { const a = document.createElement('a'); a.href = `craft.html?family=${family}&seed=${k}&planet=${planetId}`; a.textContent = k; a.style.marginRight = '4px'; if (k === seed) a.className = 'on'; seeds.appendChild(a); }
+    bar.appendChild(seeds);
+    // Ground plane so the shadow has something to land on.
+    const g = 14, gv = new Float32Array([-g, 0, -g, 0, 1, 0, -g, -g, 0, 0.3, 0, 0, g, 0, -g, 0, 1, 0, g, -g, 0, 0.3, 0, 0, g, 0, g, 0, 1, 0, g, g, 0, 0.3, 0, 0, -g, 0, g, 0, 1, 0, -g, g, 0, 0.3, 0, 0]);
+    const ground = Gpu.createMesh({ verts: gv, idx: new Uint32Array([0, 2, 1, 0, 3, 2]) });
+    const data = new Float32Array(Gpu.CAR_FLOATS);
+    const group = { mesh: Gpu.createMesh(mesh), inst: Gpu.createInstances(data), data, count: 1 };
+    const scene = { frame: new Float32Array(Gpu.FRAME_FLOATS), statics: [ground], props: null, carGroups: [group] };
+    const orbit = { az: 0.9, el: 0.32, dist: 8.5, auto: true };
+    let drag = null;
+    canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; orbit.auto = false; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointermove', e => { if (!drag) return; orbit.az += (e.clientX - drag.x) * 0.006; orbit.el = Math.max(-0.1, Math.min(1.4, orbit.el + (e.clientY - drag.y) * 0.006)); drag = { x: e.clientX, y: e.clientY }; });
+    canvas.addEventListener('pointerup', () => { drag = null; });
+    canvas.addEventListener('wheel', e => { orbit.dist *= Math.exp(e.deltaY * 0.001); e.preventDefault(); }, { passive: false });
+    const hsl = (h, s, l) => { const f = n => { const k = (n + h * 12) % 12, a = s * Math.min(l, 1 - l); return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); }; return [f(0), f(8), f(4)]; };
+    const col = hsl(race.hue, 0.75, 0.55);
+    const loop = now => {
+      const t = now / 1000;
+      if (orbit.auto) orbit.az += 0.004;
+      const c = [0, 1.0, 0], d = orbit.dist;
+      const pos = [c[0] + Math.cos(orbit.az) * Math.cos(orbit.el) * d, c[1] + Math.sin(orbit.el) * d, c[2] + Math.sin(orbit.az) * Math.cos(orbit.el) * d];
+      const bob = Math.sin(t * 2.2) * 0.06;
+      data.set([1, 0, 0], 0); data.set([0, 1, 0], 3); data.set([0, 0, 1], 6); data.set([0, 0.4 + bob, 0], 9); data.set(col, 12);
+      data[15] = 0; data[16] = 0; data.set([1, 1, 1], 17); data[20] = 0.7 + Math.sin(t * 3) * 0.2;
+      Gpu.updateInstances(group.inst, data);
+      Frame.fill(scene.frame, desc, { pos, look: c, fov: 38, aspect: canvas.clientWidth / canvas.clientHeight, time: t, shadowSize: 9, shadowCenter: c }, { speed01: 0 });
+      Gpu.render(scene);
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  } catch (e) { console.error(e); const el = document.getElementById('err'); el.style.display = 'grid'; el.textContent = 'Could not start: ' + e.message; }
+})();
+</script>
+</body>
+</html>

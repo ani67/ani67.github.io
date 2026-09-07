@@ -1,5 +1,33 @@
 [
   {
+    "id": "interplanetary-racers",
+    "title": "Interplanetary Racers",
+    "year": "2026",
+    "medium": "Browser game · Procedural racing",
+    "blurb": "A procedural hover racer across ten planets. Choose a craft, chase the gates, and race against bots or friends. Every world and ship starts from a seed.",
+    "tags": [
+      "games"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "/images/interplanetary-racers.jpg",
+        "alt": "Interplanetary Racers — a hover craft racing through a procedurally generated planet",
+        "ratio": 1.7777777777777777
+      }
+    ],
+    "href": "/interplanetary-racers/",
+    "hrefLabel": "Play game",
+    "external": true,
+    "controls": [
+      "W / S — throttle / brake · A / D — steer",
+      "↑ / ↓ — pitch · Space — thrust",
+      "Shift — drift · E — item",
+      "R — reset"
+    ],
+    "caution": "Requires a browser and device with WebGPU support. Best played with a keyboard."
+  },
+  {
     "id": "chaos",
     "title": "Chaos",
     "year": "2022",

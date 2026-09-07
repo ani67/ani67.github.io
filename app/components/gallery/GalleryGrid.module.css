@@ -1,0 +1,4 @@
+.grid { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px; padding: 0 4px; list-style: none; }
+.tile { flex: 0 0 var(--width-sm); aspect-ratio: var(--ratio-sm); min-width: 0; }
+@media (min-width: 640px) { .tile { flex-basis: var(--width-md); aspect-ratio: var(--ratio-md); } }
+@media (min-width: 1024px) { .tile { flex-basis: var(--width-lg); aspect-ratio: var(--ratio-lg); } }
