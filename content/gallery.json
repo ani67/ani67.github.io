@@ -10,9 +10,10 @@
     ],
     "media": [
       {
-        "type": "image",
-        "src": "/images/interplanetary-racers.jpg",
-        "alt": "Interplanetary Racers — a hover craft racing through a procedurally generated planet",
+        "type": "embed",
+        "src": "/interplanetary-racers/?preview=1#p=halcyon&s=Neon-Meridian-829",
+        "poster": "/images/interplanetary-racers.jpg",
+        "title": "Interplanetary Racers — live game",
         "ratio": 1.7777777777777777
       }
     ],

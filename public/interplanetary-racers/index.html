@@ -379,6 +379,9 @@
 <script src="src/game.js"></script>
 <script src="src/ui.js"></script>
 <script>
+  if (new URLSearchParams(location.search).get('preview') === '1') {
+    document.querySelector('a[aria-label="Back to Ani Dalal’s portfolio"]')?.remove();
+  }
   Game.start(document.getElementById('gl')).then(() => UI.start()).catch(e => {
     console.error(e);
     const el = document.getElementById('err');
