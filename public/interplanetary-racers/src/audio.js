@@ -1,4 +1,4 @@
-// Audio: seeded generative music plus fully synthesised SFX. No files, no network — everything is Web Audio.
+// Audio: live radio music when Radio is loaded, plus synthesised Web Audio SFX.
 // Public API: init(), setMusic(v), setSfx(v), mute(b), planet(desc), race(state), and the sfx.* calls.
 const Audio = (() => {
   let ac = null, ready = false, started = false;
@@ -42,6 +42,7 @@ const Audio = (() => {
 
   // ---------------------------------------------------------------- graph
   function init() {
+    if (typeof Radio !== 'undefined') Radio.start(vol);
     if (ac) { if (ac.state === 'suspended') ac.resume(); return true; }
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return false;
@@ -356,6 +357,7 @@ const Audio = (() => {
   function schedule() {
     if (schedTimer) return;
     schedTimer = setInterval(() => {
+      if (typeof Radio !== 'undefined') return; // The live station replaces the generated score.
       if (!alive() || ac.state !== 'running') return;
       if (++music.poll % 8 === 0) pollGame();
       music.intensity += (music.target - music.intensity) * 0.06;
@@ -620,10 +622,11 @@ const Audio = (() => {
   };
 
   // ---------------------------------------------------------------- api
-  function setMusic(v) { vol.music = clamp(v, 0, 1); if (musicBus) musicBus.gain.setTargetAtTime(vol.music, now(), 0.05); save(); }
+  function setMusic(v) { vol.music = clamp(v, 0, 1); if (musicBus) musicBus.gain.setTargetAtTime(vol.music, now(), 0.05); if (typeof Radio !== 'undefined') Radio.setVolume(vol.music); save(); }
   function setSfx(v) { vol.sfx = clamp(v, 0, 1); if (sfxBus) sfxBus.gain.setTargetAtTime(vol.sfx, now(), 0.05); save(); }
   function mute(b) {
     vol.muted = b === undefined ? !vol.muted : !!b; save();
+    if (typeof Radio !== 'undefined') Radio.setMuted(vol.muted);
     if (master) master.gain.setTargetAtTime(vol.muted ? 0 : 1, now(), 0.03);
     if (ac) { if (vol.muted) { try { ac.suspend(); } catch (e) {} } else { try { ac.resume(); } catch (e) {} } }
     return vol.muted;

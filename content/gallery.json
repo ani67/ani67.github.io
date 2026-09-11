@@ -10,13 +10,16 @@
     ],
     "media": [
       {
-        "type": "embed",
-        "src": "/interplanetary-racers/?preview=1#p=halcyon&s=Neon-Meridian-829",
-        "poster": "/images/interplanetary-racers.jpg",
-        "title": "Interplanetary Racers — live game",
+        "type": "image",
+        "src": "https://res.cloudinary.com/duw0custw/image/upload/v1788848985/Screenshot_2026-09-08_at_11.57.02_AM_gmgnhx.png",
+        "alt": "Interplanetary Racers — title screen",
         "ratio": 1.7777777777777777
       }
     ],
+    "collection": {
+      "file": "interplanetary-racers",
+      "count": 4
+    },
     "href": "/interplanetary-racers/",
     "hrefLabel": "Play game",
     "external": true,
