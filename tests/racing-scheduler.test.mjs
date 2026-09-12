@@ -49,9 +49,11 @@ for (const hz of [30, 60, 120, 144]) for (const quality of ['eco', 'balanced']) 
   });
 }
 
-test('menus settle at 12 FPS then stop requesting frames', () => {
-  const h = harness(60, 'balanced', true); h.advance(5);
-  assert.equal(h.updates.length, 0); assert(h.draws.length >= 18 && h.draws.length <= 20);
+for (const preset of ['eco', 'balanced']) test(`${preset} menus move at the preset frame rate then stop requesting frames`, () => {
+  const h = harness(60, preset, true); h.advance(5);
+  assert.equal(h.updates.length, 0);
+  const expected = 1.6 * (preset === 'eco' ? 30 : 60);
+  assert(Math.abs(h.draws.length - expected) <= 1);
   assert.equal(h.pending, false);
   const count = h.draws.length; h.invalidate(); h.advance(0.2);
   assert(h.draws.length > count);

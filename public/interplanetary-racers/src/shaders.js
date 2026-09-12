@@ -522,7 +522,7 @@ fn aces(x : vec3f) -> vec3f {
 @fragment fn fsCompositeEco(i : FOut) -> @location(0) vec4f {
   let c = i.uv - 0.5;
   let r2 = dot(c, c);
-  let uv = 0.5 + c * (1.0 - (0.03 + F.camFwd.w * 0.06) * r2);
+  let uv = 0.5 + c * (1.0 - (0.03 + F.camFwd.w * 0.28) * r2);
   let sample = textureSample(sceneTex, samp, uv);
   var col = sample.xyz;
   let mask = (sample.w - 1.5 * floor(sample.w / 1.5)) / 0.9;
@@ -548,7 +548,7 @@ override WITH_BLOOM: bool = true;
   // Speed fisheye (barrel) on the viewing window.
   let c = uv - 0.5;
   let r2 = dot(c, c);
-  uv = 0.5 + c * (1.0 - (0.03 + speed * 0.06) * r2);
+  uv = 0.5 + c * (1.0 - (0.03 + speed * 0.28) * r2);
   // Chromatic aberration grows with speed and drift.
   let ca = (0.0012 + speed * 0.004 + drift * 0.004 + flash * 0.012) * length(c) * 2.0;
   let dir = normalize(c + vec2f(1e-5));

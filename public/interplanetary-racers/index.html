@@ -58,12 +58,12 @@
   #hud.on { opacity: 1; }
   /* Bow the peripheral instruments toward the edges; aiming and touch controls stay fixed. */
   #hud { --speed-warp: 0; }
-  #brand, #board, #dash, #minimap { --hud-scale: 1; }
-  #brand { transform-origin: left top; transform: perspective(650px) rotateY(calc(var(--speed-warp) * -9deg)) rotateX(calc(var(--speed-warp) * -5deg)) scale(calc(1 + var(--speed-warp) * .025)); }
-  #board { transform-origin: right top; transform: perspective(650px) rotateY(calc(var(--speed-warp) * 9deg)) rotateX(calc(var(--speed-warp) * -5deg)) scale(calc(1 + var(--speed-warp) * .025)); }
-  #dash { transform-origin: left bottom; transform: perspective(650px) rotateY(calc(var(--speed-warp) * -12deg)) rotateX(calc(var(--speed-warp) * 7deg)) scale(calc(var(--hud-scale) * (1 + var(--speed-warp) * .035))); }
-  #minimap { transform-origin: right bottom; transform: perspective(650px) rotateY(calc(var(--speed-warp) * 12deg)) rotateX(calc(var(--speed-warp) * 7deg)) scale(calc(1 + var(--speed-warp) * .035)); }
-  @media (prefers-reduced-motion: reduce) { #hud { --speed-warp: 0 !important; } }
+  #brand, #board, #dash, #minimap { --hud-scale: 1; transition: transform 65ms linear; }
+  #brand { transform-origin: left top; transform: perspective(500px) rotateY(calc(var(--speed-warp) * -18deg)) rotateX(calc(var(--speed-warp) * -9deg)) scale(calc(1 + var(--speed-warp) * .045)); }
+  #board { transform-origin: right top; transform: perspective(500px) rotateY(calc(var(--speed-warp) * 18deg)) rotateX(calc(var(--speed-warp) * -9deg)) scale(calc(1 + var(--speed-warp) * .045)); }
+  #dash { transform-origin: left bottom; transform: perspective(500px) rotateY(calc(var(--speed-warp) * -24deg)) rotateX(calc(var(--speed-warp) * 12deg)) scale(calc(var(--hud-scale) * (1 + var(--speed-warp) * .06))); }
+  #minimap { transform-origin: right bottom; transform: perspective(500px) rotateY(calc(var(--speed-warp) * 24deg)) rotateX(calc(var(--speed-warp) * 12deg)) scale(calc(1 + var(--speed-warp) * .06)); }
+  @media (prefers-reduced-motion: reduce) { #hud { --speed-warp: 0 !important; } #brand, #board, #dash, #minimap { transition: none; } }
   #hud > * { position: absolute; }
   #hud, #ui .head, #ui .steps, #cover .where, #cover .foot, #ui .tools .label { text-shadow: 0 1px 2px rgba(0,0,0,.5), 0 2px 18px rgba(0,0,0,.35); }
   #brand { left: 0; top: 0; padding: 24px 80px 40px 28px; background: radial-gradient(120% 100% at 0% 0%, rgba(0,0,0,.42), rgba(0,0,0,0) 70%); }

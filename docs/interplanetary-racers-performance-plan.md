@@ -8,7 +8,7 @@ Renderer, simulation and mobile UI work ran in parallel. Geometry batching, mult
 
 - [x] Add Eco (30 FPS), Balanced (60 FPS) and High (60 FPS), persisted in `ir.quality`. Default to Eco for coarse primary pointers, Balanced otherwise.
 - [x] Cap internal pixel counts at 1280×720, 1600×900 and 2560×1440 equivalents; preserve aspect ratio and native-resolution HTML UI. Apply adaptive scale after the pixel cap.
-- [x] Render menus at 12 FPS while settling, then stop their frame loop; pause solo races in settings. Suspend hidden rendering/simulation and reset the clock on return.
+- [x] Render menus at the preset frame rate while settling, then stop their frame loop; pause solo races in settings. Suspend hidden rendering/simulation and reset the clock on return.
 - [x] Keep simulation at 60 updates/second with the existing three physics substeps, independent of display/render FPS. Bound catch-up and reset clocks after loading. Make visual banking time-based.
 - [x] Skip shadow and bloom passes in Eco, using shader variants that omit their sampling. Balanced uses 1024 shadows, High 2048. Keep shadow math synchronized with map size.
 - [x] Chunk terrain and scenery, independently reject invisible camera/light batches, and use distant terrain LODs with seam skirts. Retain the original height field for physics and full collision instances.
@@ -73,3 +73,13 @@ Follow-up verification in local headless Chrome:
 - [ ] If support for older non-WebGPU browsers is required, implement and validate a separate WebGL2 fallback. This is a separate renderer project; lower quality cannot supply a missing graphics API.
 
 To test lower workload now, choose **Settings → Graphics → Eco**. WebGPU support is still required. Physical device testing is needed before describing any preset as thermally validated.
+
+## Follow-up: smoother setup and clearer acceleration
+
+The 12 FPS moving menu camera made the pre-race sequence visibly uneven. Menu transitions now use the selected 30/60 FPS budget for their 1.6-second settling window, then stop completely as before.
+
+Setup also rebuilt and simplified the same craft on each screen. A CPU mesh cache keyed by recipe and seed now reuses those results, bounded to 24 entries and 16 MiB. GPU buffers retain their existing scene ownership. A local Halcyon check measured repeated showcase/gallery/race setup at 38.5/34.2/40.2 ms before and 4.4/1.9/2.4 ms after. These timings cover reused craft in an already generated world; generating a new planet can still cause a loading pause.
+
+The acceleration response starts earlier and drives both stronger peripheral HUD perspective and the existing scene composite's barrel distortion. No extra render pass or texture sample is added. Short CSS interpolation smooths the HUD between Eco frames; aiming/touch controls remain fixed. Reduced motion disables the dynamic lens response.
+
+Validation: 38 automated tests, including preset-paced menu settling and bounded craft-cache reuse/eviction; local browser acceleration/reduced-motion and multiplayer startup/pause/resume checks; lint, TypeScript, production build and export verification.

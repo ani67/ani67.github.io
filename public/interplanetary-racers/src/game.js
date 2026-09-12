@@ -75,7 +75,8 @@ const Game = (() => {
           update(STEP); accumulator -= STEP; perf.simulationSteps++;
         }
       } else accumulator = 0;
-      const fps = rs.state === 'idle' ? 12 : (Gpu.qualitySettings?.fps || (quality() === 'eco' ? 30 : 60));
+      // Moving menu cameras need the same pacing as racing; settled menus still stop.
+      const fps = Gpu.qualitySettings?.fps || (quality() === 'eco' ? 30 : 60);
       const nextSampleKey = `${rs.state}:${quality()}:${fps}`;
       if (nextSampleKey !== sampleKey) {
         sampleAt = now; sampleFrames = slowFor = healthyFor = 0;
@@ -316,6 +317,25 @@ const Game = (() => {
     }
     return { recipe: Planets.RECIPES[race.vehicle] || Planets.RECIPES.falcon, seed: e.archSeed || 1 };
   }
+  // Reuse CPU meshes across setup screens and restarts. GPU buffers still follow
+  // scene ownership, so changing worlds cannot leave stale/destroyed handles.
+  const craftMeshes = new Map();
+  let craftMeshBytes = 0;
+  function preparedCraft(params) {
+    const key = JSON.stringify([params.recipe, params.seed]);
+    const cached = craftMeshes.get(key);
+    if (cached) { craftMeshes.delete(key); craftMeshes.set(key, cached); return cached.mesh; }
+    const mesh = Geo.withLods(Craft.build(params.recipe, params.seed));
+    const arrays = new Set([mesh, ...(mesh.lods || [])].flatMap(m => [m.verts, m.idx]));
+    const bytes = [...arrays].reduce((sum, a) => sum + a.byteLength, 0);
+    const budget = 16 * 1024 * 1024;
+    while (craftMeshes.size && (craftMeshes.size >= 24 || craftMeshBytes + bytes > budget)) {
+      const oldest = craftMeshes.keys().next().value;
+      craftMeshBytes -= craftMeshes.get(oldest).bytes; craftMeshes.delete(oldest);
+    }
+    if (bytes <= budget) { craftMeshes.set(key, { mesh, bytes }); craftMeshBytes += bytes; }
+    return mesh;
+  }
   function setupCars() {
     // The environment and gates survive craft changes, but craft and weapon buffers do not.
     Gpu.destroyGroups(carGroups);
@@ -360,12 +380,12 @@ const Game = (() => {
     if (roster) MP.assignCars(cars);
     document.documentElement.style.setProperty('--accent', cssColor(player.color));
     for (const g of groups.values()) {
-      const raw = Craft.build(g.params.recipe, g.params.seed);
+      const raw = preparedCraft(g.params);
       let ext = 1, ylo = 1e9, yhi = -1e9;
       for (let k = 0; k < raw.verts.length; k += Geo.STRIDE) { ext = Math.max(ext, Math.hypot(raw.verts[k], raw.verts[k + 2])); const y = raw.verts[k + 1]; if (y < ylo) ylo = y; if (y > yhi) yhi = y; }
       const vcen = ylo < yhi ? (ylo + yhi) / 2 : 0.8;   // hull mid-height, so the showcase camera can centre the craft
       for (const ci of g.ids) { cars[ci].extent = ext; cars[ci].vcen = vcen; }
-      const mesh = Gpu.createMesh(Geo.withLods(raw));
+      const mesh = Gpu.createMesh(raw);
       const data = new Float32Array(Gpu.CAR_FLOATS * g.ids.length);
       carGroups.push({ mesh, inst: Gpu.createInstances(data), data, count: g.ids.length, ids: g.ids });
     }
@@ -978,14 +998,14 @@ const Game = (() => {
     drawMinimap();
   }
 
-  // A small peripheral lens effect, driven by speed and a brief acceleration push.
+  // A shared scene/HUD lens response, driven by speed and an acceleration push.
   // Update with rendered frames only; no extra canvas, shader pass or animation loop.
   function updateSpeedWarp(dt) {
     const speed = Math.abs(player.speed || 0), h = Math.min(Math.max(dt, 0), 0.1);
     const racing = rs.state === 'racing' && !reducedMotion.matches && player.wrecked <= 0;
     const acceleration = h > 0 ? clamp((speed - warpSpeed) / (h * 80 * SPD), 0, 1) : 0;
     warpSpeed = speed;
-    const target = racing ? clamp(smoothstep(0.08, 0.95, speed / (80 * SPD)) * 0.65 + acceleration * 0.2 + (player.boost > 0 ? 0.15 : 0), 0, 1) : 0;
+    const target = racing ? clamp(smoothstep(0.03, 0.8, speed / (80 * SPD)) * 0.8 + acceleration * 0.35 + (player.boost > 0 ? 0.2 : 0), 0, 1) : 0;
     speedWarp = racing ? mix(speedWarp, target, 1 - Math.exp(-h * (target > speedWarp ? 7 : 4))) : 0;
     const value = speedWarp.toFixed(3);
     if (value !== warpValue) { hud.root.style.setProperty('--speed-warp', value); warpValue = value; }
@@ -1194,7 +1214,7 @@ const Game = (() => {
     Weapons.fill(t, c => craftBasis(c, t));
     const aspect = hud.canvas.clientWidth / hud.canvas.clientHeight;
     Frame.fill(frame, desc, { pos: cam.pos, look: cam.look, fov: cam.fov, aspect, time: t, shadowCenter: [player.x, player.y, player.z], shadowSize: 180 },
-      { speed01: cam.speed01 || 0, drift: player.drifting, glow: player.glow, flash: player.flash });
+      { speed01: speedWarp, drift: player.drifting, glow: player.glow, flash: player.flash });
     Gpu.render(scene);
   }
 
