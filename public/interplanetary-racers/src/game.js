@@ -173,11 +173,11 @@ const Game = (() => {
     if (location.hash !== h) history.replaceState(null, '', h);
   }
 
-  function loadWorld(seedInput) {
+  function loadWorld(seedInput, sharedDescriptor = null) {
     Gpu.destroyScene(scene);
     scene = null; carGroups = []; gateGroup = null;
     seedText = String(seedInput);
-    desc = World.generate(seedText, planet, overrides);
+    desc = sharedDescriptor ? JSON.parse(JSON.stringify(sharedDescriptor)) : World.generate(seedText, planet, overrides);
     tab = World.buildSamples(desc, 800);
     if (!tab.length) { let L = 0; for (let i = 0; i < tab.N; i++) L += len(sub(tab.S[(i + 1) % tab.N].p, tab.S[i].p)); tab.length = L; }
     const corridor = desc.mode === 'corridor', terrainLane = desc.laneStyle === 'terrain';
@@ -447,10 +447,11 @@ const Game = (() => {
       if (app.state !== 'race' || paused) return; // menus own the keyboard elsewhere
       if (e.target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
       keys[e.code] = true;
-      if (e.code === 'KeyN') loadWorld(randomSeedName());
+      const sharedMap = typeof MP !== 'undefined' && MP.connected();
+      if (!sharedMap && e.code === 'KeyN') loadWorld(randomSeedName());
       if (e.code === 'KeyR') respawn(player);
       if ((e.code === 'KeyE' || e.code === 'Enter') && rs.state === 'racing') { player.useItem = true; if (typeof MP !== 'undefined' && MP.active() && MP.isClient()) MP.useItem(); }
-      if (/^Digit[0-9]$/.test(e.code)) { const d = +e.code[5]; const p = Planets.PLANETS[d === 0 ? 9 : d - 1]; if (p) { planet = p; overrides = null; loadWorld(randomSeedName()); } }
+      if (!sharedMap && /^Digit[0-9]$/.test(e.code)) { const d = +e.code[5]; const p = Planets.PLANETS[d === 0 ? 9 : d - 1]; if (p) { planet = p; overrides = null; loadWorld(randomSeedName()); } }
       if (e.code === 'KeyM') { const m = A(a => a.mute()); const el = document.getElementById('muted'); if (el) el.hidden = !m; }
       if (e.code === 'KeyC') camMode = camMode === 'cockpit' ? 'chase' : 'cockpit';
       if (e.code === 'KeyG') camMode = camMode === 'gallery' ? 'chase' : 'gallery';
@@ -1257,7 +1258,24 @@ const Game = (() => {
   }
 
   // ---------------------------------------------------------------- flow API for the UI
+  function worldConfig(planetId = planet?.id || null, seed = seedText) {
+    seed = String(seed);
+    const samePlanet = planetId === (planet?.id || null);
+    const settings = samePlanet ? overrides : null;
+    const descriptor = samePlanet && seed === seedText ? desc : World.generate(seed, Planets.planet(planetId) || null, settings);
+    return JSON.parse(JSON.stringify({ planetId, seed, overrides: settings, descriptor }));
+  }
   function select(o) {
+    if (o.world) {
+      // A room snapshot replaces all local world settings, even with the same seed.
+      const w = o.world;
+      planet = Planets.planet(w.planetId) || null;
+      overrides = w.overrides ? JSON.parse(JSON.stringify(w.overrides)) : null;
+      if (o.mode) app.state = o.mode;
+      loadWorld(w.seed, w.descriptor);
+      if (app.state === 'race') emit('race');
+      return;
+    }
     let reload = false;
     if (o.planetId && (!planet || planet.id !== o.planetId)) { planet = Planets.planet(o.planetId) || planet; overrides = null; reload = true; }
     if (o.seed !== undefined && o.seed !== seedText) reload = true;
@@ -1277,7 +1295,7 @@ const Game = (() => {
     randomSeed: randomSeedName, hashQuery: parseHash, playerName: getPlayerName,
     setPlayerName: n => { if (!n) return; playerName = n; try { localStorage.setItem('ir.name', n); } catch (e) {} if (player) player.name = n; },
     order: () => [...cars].sort((a, b) => b.prog - a.prog), finalOrder, trackLength: () => tab.length || 2000,
-    select, restart: () => { app.state = 'race'; setupCars(); beginPhase(); writeHash(); emit('race'); },
+    worldConfig, select, restart: () => { app.state = 'race'; setupCars(); beginPhase(); writeHash(); emit('race'); },
     home: () => { app.state = 'cover'; beginPhase(); writeHash(); },
     setLook: o => { if (desc && desc.look) Object.assign(desc.look, o); invalidate(); },
     // Thumbnails borrow the canvas for one render; this puts the real scene back in the same task.

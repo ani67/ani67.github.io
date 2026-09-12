@@ -1,7 +1,7 @@
 // Multiplayer session and netcode. Host authoritative: the host's tab simulates every craft, including remote
 // players and bots, and broadcasts snapshots; clients send inputs, predict their own craft and interpolate the rest.
 //
-// Only the seed, planet and roster travel, so each client generates an identical world from the same numbers.
+// The host sends the complete generated world descriptor, replacing local custom settings on every peer.
 // Single player is untouched: when no room is open, every entry point here reports inactive and the game runs as before.
 const MP = (() => {
   const SNAP_HZ = 20, INPUT_HZ = 30, INTERP_MS = 100, CORR_TAU = 0.14;
@@ -52,6 +52,7 @@ const MP = (() => {
   }
   function broadcastLobby() {
     if (mode !== 'host') return;
+    if (!started) world = G().ui.worldConfig();
     Net.send('all', 'evt', { t: 'lobby', players: players.map(p => ({ pid: p.pid, name: p.name, raceId: p.raceId, kit: p.kit, kitSeed: p.kitSeed, archSeed: p.archSeed, ping: p.ping || 0, dropped: !!p.dropped })), world });
     onChange();
   }
@@ -84,6 +85,16 @@ const MP = (() => {
     stats.dropped++;
   }
 
+  let previewKey = '';
+  function receiveWorld(w) {
+    if (!w) return;
+    world = w;
+    if (started || !w.descriptor) return;
+    const key = JSON.stringify(w);
+    if (key === previewKey) return;
+    previewKey = key;
+    G().ui.select({ world: w, mode: 'gallery' });
+  }
   function onEvent(pid, m) {
     if (mode === 'host') {
       if (m.t === 'hello') {
@@ -106,8 +117,8 @@ const MP = (() => {
       return;
     }
     // client
-    if (m.t === 'welcome') { myPid = m.you || Net.id(); world = m.world || world; statusText = 'lobby'; sendHello(); onChange(); }
-    else if (m.t === 'lobby') { players = m.players; world = m.world || world; onChange(); }
+    if (m.t === 'welcome') { myPid = m.you || Net.id(); receiveWorld(m.world); statusText = 'lobby'; sendHello(); onChange(); }
+    else if (m.t === 'lobby') { players = m.players; receiveWorld(m.world); onChange(); }
     else if (m.t === 'full') { errorText = 'that room is full'; statusText = 'error'; onChange(); }
     else if (m.t === 'started') { errorText = 'that race is already in progress'; statusText = 'error'; onChange(); }
     else if (m.t === 'start') applyStart(m);
@@ -128,11 +139,11 @@ const MP = (() => {
 
   // ---------------------------------------------------------------- start
   function sendStart(to) {
-    Net.send(to || 'all', 'evt', { t: 'start', planetId: world.planetId, seed: world.seed, roster, at: Date.now() });
+    Net.send(to || 'all', 'evt', { t: 'start', planetId: world.planetId, seed: world.seed, world, roster, at: Date.now() });
   }
   function startRace(planetId, seed) {
     if (mode !== 'host') return;
-    world = { planetId, seed };
+    world = G().ui.worldConfig(planetId, seed);
     for (const p of players) if (p.pid === myPid) Object.assign(p, selfEntry(myPid));
     roster = makeRoster();
     localSlot = roster.findIndex(r => r.pid === myPid);
@@ -140,16 +151,16 @@ const MP = (() => {
     started = true; hostPaused = false; lastSnapshotTick = null;
     sendStart();
     onChange();
-    G().ui.select({ planetId, seed, mode: 'race' });
+    G().ui.select({ world, mode: 'race' });
   }
   function applyStart(m) {
-    roster = m.roster; world = { planetId: m.planetId, seed: m.seed };
+    roster = m.roster; world = m.world || { planetId: m.planetId, seed: m.seed, overrides: null };
     localSlot = roster.findIndex(r => r.pid === myPid);
     if (localSlot < 0) localSlot = 0;
     started = true; hostPaused = false; lastSnapshotTick = null; buf = []; hist = []; seq = 0; ackSeq = 0;
     statusText = 'racing';
     onChange();
-    G().ui.select({ planetId: m.planetId, seed: m.seed, mode: 'race' });
+    G().ui.select({ world, mode: 'race' });
   }
 
   // ---------------------------------------------------------------- snapshots
@@ -366,7 +377,7 @@ const MP = (() => {
   // ---------------------------------------------------------------- public
   async function hostRoom(roomCode) {
     code = roomCode; mode = 'host'; errorText = ''; started = false;
-    players = [selfEntry('me')];
+    players = [selfEntry('me')]; world = G().ui.worldConfig();
     await Net.host(roomCode, handlers);
     myPid = Net.id(); players[0].pid = myPid;
     statusText = 'hosting'; onChange();
@@ -381,7 +392,7 @@ const MP = (() => {
   // Manual path: no broker, two people paste blobs at each other. Same session logic once a channel is open.
   async function manualHost() {
     code = 'DIRECT'; mode = 'host'; errorText = ''; started = false;
-    myPid = 'host'; players = [selfEntry(myPid)];
+    myPid = 'host'; players = [selfEntry(myPid)]; world = G().ui.worldConfig();
     const blob = await Net.manualHostOffer(handlers);
     statusText = 'manual'; onChange();
     return blob;
@@ -396,7 +407,7 @@ const MP = (() => {
   function leave() {
     if (mode === 'host') Net.send('all', 'evt', { t: 'bye' });
     try { Net.close(); } catch (e) {}
-    mode = null; roster = null; started = false; players = []; buf = []; hist = []; cars = null; myPid = null;
+    previewKey = ''; mode = null; roster = null; started = false; players = []; buf = []; hist = []; cars = null; myPid = null;
     statusText = 'offline'; errorText = ''; hostPaused = false; lastSnapshotTick = null;
     onChange();
   }
@@ -420,7 +431,7 @@ const MP = (() => {
 
   return {
     // lobby / flow
-    hostRoom, joinRoom, leave, setLocal, startRace, manualHost, manualAccept, manualJoin, onChange: f => listeners.push(f),
+    hostRoom, joinRoom, leave, setLocal, refreshWorld: broadcastLobby, startRace, manualHost, manualAccept, manualJoin, onChange: f => listeners.push(f),
     players: () => players.map(p => ({ ...p, ping: mode === 'host' ? Net.ping(p.pid) : p.ping, me: p.pid === myPid })),
     status: () => statusText, error: () => errorText, code: () => code, isHost: () => mode === 'host', isClient: () => mode === 'client',
     connected: () => mode !== null, started: () => started, world: () => world,

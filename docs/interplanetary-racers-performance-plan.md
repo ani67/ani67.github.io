@@ -89,3 +89,11 @@ Validation: 38 automated tests, including preset-paced menu settling and bounded
 Route markers now have a forward-travelling brightness wave based on spline distance, with a larger visible footprint and cyan colour. Rings have a dark rim and luminous core, so their contrast survives daylight and Eco's disabled bloom. The next ring is highlighted and brightens on approach; boost rings are amber. Forward passage within a ring briefly lights it, while backward, outside and teleport crossings do not confirm. These cues do not change checkpoints, boost rules or collision behavior.
 
 The dot wave runs in the existing vertex shader. Only ring instance values are uploaded per drawn frame; no new particles, geometry counts, textures or render passes are added. Reduced motion uses steady dots/rings and suppresses crossing flashes. Browser checks passed all three presets without shader errors, retaining two Eco passes; 40 automated tests cover route wraparound and passage feedback alongside existing regressions.
+
+## Multiplayer map consistency fix (13 September)
+
+RCA: room start previously sent only planet and seed. A client joining from a custom link retained local overrides when the planet was unchanged, generating a Fourier route where the host had a lane route. Lobby world previews were not applied to clients either.
+
+The host now supplies a copied generated descriptor and explicit overrides, including null, to both lobby and race start. Both peers rebuild from that snapshot. Identical lobby messages do not repeatedly rebuild the preview. Large reliable events are split into bounded packets to avoid data-channel message-size limits. Client map controls defer to the host.
+
+Validation: real two-peer WebRTC comparisons matched every sampled route point and the complete descriptor for normal sessions, custom-client links, and custom-host maps. Lobby previews matched in all three cases; mixed-preset pause/resume passed. The 43-test suite includes repeated preview suppression, rejoin/reset, authoritative same-seed starts and packet assembly across peers.

@@ -61,12 +61,18 @@ const UI = (() => {
     A(a => { a.init(); a.race('menu'); a.sfx.step(); });
   }
   function goPlanet() {
+    if (mp() && MP.isClient() && MP.world().descriptor) {
+      seed = MP.world().seed;
+      sel.planet = Math.max(0, Planets.PLANETS.findIndex(p => p.id === MP.world().planetId));
+      Game.ui.select({ world: MP.world(), mode: 'gallery' });
+      show('planet'); return;
+    }
     const p = Planets.PLANETS[sel.planet];
     Game.ui.select({ planetId: p.id, seed, mode: 'gallery' });
     show('planet');
     A(a => a.sfx.step());
   }
-  function goRoom() { show('room'); A(a => a.sfx.step()); }
+  function goRoom() { if (mp() && MP.isHost()) MP.refreshWorld(); show('room'); A(a => a.sfx.step()); }
   function startRace() {
     const cc = currentCraft(), p = Planets.PLANETS[sel.planet];
     if (mp() && MP.connected()) {
@@ -262,7 +268,9 @@ const UI = (() => {
   }
   function renderPlanet() {
     const p = Planets.PLANETS[sel.planet];
-    $('planetName').textContent = p.name; $('planetSub').textContent = p.tagline;
+    const shared = mp() && MP.isClient() && !!MP.world().descriptor;
+    for (const id of ['seedField', 'seedRoll', 'planetPrev', 'planetNextTile']) $(id).disabled = shared;
+    $('planetName').textContent = p.name; $('planetSub').textContent = shared ? 'The host chooses the map for everyone in this room.' : p.tagline;
     $('planetTag').textContent = `${p.medium} · ${p.laneStyle || (p.mode === 'corridor' ? 'sky lane' : 'terrain lane')}`;
     const rail = $('planetRail'); rail.innerHTML = '';
     Planets.PLANETS.forEach((pl, i) => {
@@ -272,6 +280,7 @@ const UI = (() => {
       b.dataset.i = i;
       if (!url && TH()) b.requestThumb = () => Thumbs.planet(pl);
       if (!url) { const g = planetGlimpse(pl); const pic = b.querySelector('.pic'); pic.classList.remove('wait'); pic.appendChild(g); pic.classList.add('paint'); }
+      b.disabled = shared;
       b.onclick = () => { sel.planet = i; goPlanet(); };
       rail.appendChild(b);
     });
@@ -482,6 +491,8 @@ const UI = (() => {
       renderRoom();
     };
     if (mp()) MP.onChange(() => {
+      if (MP.isClient() && MP.world().descriptor) { seed = MP.world().seed; sel.planet = Math.max(0, Planets.PLANETS.findIndex(p => p.id === MP.world().planetId)); }
+      if (screen === 'planet') { renderPlanet(); $('seedField').value = seed; }
       if (screen === 'room') renderRoom();
       const paused = MP.paused();
       const message = 'Race paused while the host is away. It resumes when they return.';

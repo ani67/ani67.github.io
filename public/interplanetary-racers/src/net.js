@@ -125,6 +125,7 @@ const Net = (() => {
       counters.recv++; counters.bytesRecv += (e.data.byteLength || e.data.length || 0);
       if (label === 'evt') {
         let m; try { m = JSON.parse(e.data); } catch (err) { return; }
+        m = assembleEvent(p, m); if (!m) return;
         if (m.t === 'ping') { try { p.evt.send(JSON.stringify({ t: 'pong', ts: m.ts })); } catch (err) {} return; }
         if (m.t === 'pong') { p.ping = Math.round(performance.now() - m.ts); p.lastPong = performance.now(); return; }
         H('data', p.id, 'evt', m);
@@ -173,12 +174,32 @@ const Net = (() => {
     H('open', myId);
     return myId;
   }
+  // Keep complete map descriptors below data-channel message limits. Events are
+  // reliable/ordered; a peer has at most one bounded assembly in progress.
+  function eventPackets(data) {
+    const text = JSON.stringify(data), size = 8000;
+    if (text.length <= size) return [text];
+    const total = Math.ceil(text.length / size);
+    return Array.from({ length: total }, (_, index) => JSON.stringify({ t: '_chunk', index, total, text: text.slice(index * size, (index + 1) * size) }));
+  }
+  function assembleEvent(peer, message) {
+    if (message.t !== '_chunk') return message;
+    const { index, total, text } = message;
+    if (!Number.isInteger(index) || !Number.isInteger(total) || total < 1 || total > 512 || index < 0 || index >= total || typeof text !== 'string' || text.length > 8000) { peer.eventParts = null; return null; }
+    if (index === 0) peer.eventParts = { total, parts: [] };
+    const state = peer.eventParts;
+    if (!state || state.total !== total || state.parts.length !== index) { peer.eventParts = null; return null; }
+    state.parts.push(text);
+    if (state.parts.length !== total) return null;
+    peer.eventParts = null;
+    try { return JSON.parse(state.parts.join('')); } catch (_) { return null; }
+  }
   function send(to, channel, data) {
     const one = p => {
       const ch = channel === 'state' ? p.state : p.evt;
       if (!ch || ch.readyState !== 'open') return;
-      const payload = channel === 'evt' ? JSON.stringify(data) : data;
-      try { ch.send(payload); counters.sent++; counters.bytesSent += (payload.byteLength || payload.length || 0); } catch (e) {}
+      const packets = channel === 'evt' ? eventPackets(data) : [data];
+      try { for (const payload of packets) { ch.send(payload); counters.sent++; counters.bytesSent += (payload.byteLength || payload.length || 0); } } catch (e) { H('error', e); }
     };
     if (to === 'all') { for (const p of peers.values()) one(p); return; }
     const p = peers.get(to); if (p) one(p);
