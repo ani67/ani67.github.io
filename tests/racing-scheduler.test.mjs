@@ -49,14 +49,17 @@ for (const hz of [30, 60, 120, 144]) for (const quality of ['eco', 'balanced']) 
   });
 }
 
-for (const preset of ['eco', 'balanced']) test(`${preset} menus move at the preset frame rate then stop requesting frames`, () => {
+for (const preset of ['eco', 'balanced']) test(`${preset} menus keep orbiting at 30 FPS and suspend when hidden`, () => {
   const h = harness(60, preset, true); h.advance(5);
   assert.equal(h.updates.length, 0);
-  const expected = 1.6 * (preset === 'eco' ? 30 : 60);
-  assert(Math.abs(h.draws.length - expected) <= 1);
+  assert(Math.abs(h.draws.length - 150) <= 1);
+  assert.equal(h.pending, true);
+  const count = h.draws.length; h.hide(true); h.advance(3);
+  assert.equal(h.draws.length, count);
   assert.equal(h.pending, false);
-  const count = h.draws.length; h.invalidate(); h.advance(0.2);
-  assert(h.draws.length > count);
+  h.hide(false); h.advance(3);
+  assert(h.draws.length >= count + 88);
+  assert.equal(h.updates.length, 0);
 });
 
 for (const reason of ['hidden', 'solo settings', 'host paused']) {

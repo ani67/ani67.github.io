@@ -8,6 +8,8 @@ const Game = (() => {
   let input = { steer: 0, throttle: 0, brake: 0, drift: false, pitch: 0 };
   let cam = { pos: [0, 30, 0], look: [0, 0, 0], fov: 52, up: [0, 1, 0] };
   let camMode = 'chase';
+  const menuOrbit = { showcase: { yaw: 2.4, pitch: 0.22 }, gallery: { yaw: 0, pitch: 0.3 }, pointer: null, holdUntil: 0, speed: 1 };
+
   const camCfg = { back: 9, up: 3.6, ahead: 6 };
   let rs = { state: 'countdown', timer: 3.5, results: null, elapsed: 0 };
   let hud = {}, minimap, mmCtx, spCtx;
@@ -31,7 +33,7 @@ const Game = (() => {
     applyHash();
     let last = performance.now(), lastDraw = last, accumulator = 0;
     let sampleAt = last, sampleFrames = 0, slowFor = 0, healthyFor = 0;
-    let wasSuspended = false, pendingFrame = null, idleUntil = last + 1600, pausedDirty = false;
+    let wasSuspended = false, pendingFrame = null, pausedDirty = false;
     let sampleKey = `${rs.state}:${quality()}`;
     const requestFrame = () => {
       const netPaused = typeof MP !== 'undefined' && MP.paused && MP.paused();
@@ -41,7 +43,6 @@ const Game = (() => {
       last = lastDraw = sampleAt = performance.now(); accumulator = 0;
       sampleFrames = slowFor = healthyFor = 0; perf.fps = 0;
       sampleKey = `${rs.state}:${quality()}`;
-      idleUntil = last + 1600;
       requestFrame();
     };
     invalidate = () => {
@@ -63,7 +64,6 @@ const Game = (() => {
           return;
         }
       }
-      if (rs.state === 'idle' && now >= idleUntil) { perf.fps = 0; return; }
       requestFrame();
       const dt = Math.min(MAX_CATCHUP, wallDt);
       if (rs.state !== 'idle') {
@@ -75,8 +75,8 @@ const Game = (() => {
           update(STEP); accumulator -= STEP; perf.simulationSteps++;
         }
       } else accumulator = 0;
-      // Moving menu cameras need the same pacing as racing; settled menus still stop.
-      const fps = Gpu.qualitySettings?.fps || (quality() === 'eco' ? 30 : 60);
+      // Visible menus orbit continuously at 30 FPS, without running race simulation.
+      const fps = rs.state === 'idle' ? 30 : (Gpu.qualitySettings?.fps || (quality() === 'eco' ? 30 : 60));
       const nextSampleKey = `${rs.state}:${quality()}:${fps}`;
       if (nextSampleKey !== sampleKey) {
         sampleAt = now; sampleFrames = slowFor = healthyFor = 0;
@@ -459,6 +459,33 @@ const Game = (() => {
       if (['ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) e.preventDefault();
     });
     window.addEventListener('keyup', e => { keys[e.code] = false; });
+    // Drag the open preview area; buttons, paint controls and scrolling rails retain their gestures.
+    const orbitScreen = () => document.querySelector('#ship.on, #planet.on');
+    window.addEventListener('pointerdown', e => {
+      const screen = orbitScreen();
+      if (!screen || paused || e.button !== 0 || menuOrbit.pointer !== null || !screen.contains(e.target) || e.target.closest('button,a,input,select,label,.rail,.tile')) return;
+      menuOrbit.pointer = e.pointerId; menuOrbit.x = e.clientX; menuOrbit.y = e.clientY;
+      menuOrbit.speed = 0; screen.setPointerCapture(e.pointerId); screen.style.cursor = 'grabbing';
+    });
+    window.addEventListener('pointermove', e => {
+      if (menuOrbit.pointer !== e.pointerId) return;
+      if (rs.state !== 'idle' || !orbitScreen()) { menuOrbit.pointer = null; return; }
+      const orbit = menuOrbit[camMode];
+      if (!orbit) return;
+      orbit.yaw -= (e.clientX-menuOrbit.x)*0.007;
+      orbit.pitch = clamp(orbit.pitch+(e.clientY-menuOrbit.y)*0.005,-0.3,1.25);
+      menuOrbit.x=e.clientX; menuOrbit.y=e.clientY;
+      e.preventDefault();
+    });
+    const endOrbit = e => {
+      if (e && menuOrbit.pointer !== e.pointerId) return;
+      menuOrbit.pointer = null; menuOrbit.holdUntil = performance.now()+2200;
+      for (const screen of document.querySelectorAll('#ship, #planet')) screen.style.cursor = '';
+    };
+    window.addEventListener('pointerup',endOrbit);
+    window.addEventListener('pointercancel',endOrbit);
+    window.addEventListener('blur',()=>endOrbit());
+
     window.addEventListener('hashchange', () => { const q = parseHash(); if ((q.s || '') !== seedText || (q.p || '') !== (planet ? planet.id : '')) applyHash(); });
     const touches = new Map(), tc = hud.canvas;
     const clearInput = () => { for (const key of Object.keys(keys)) delete keys[key]; touches.clear(); readInput(); };
@@ -938,11 +965,17 @@ const Game = (() => {
     const k = 1 - Math.exp(-dt * 6);
     let target, lookT;
     const tNow = performance.now() / 1000;
+    if (rs.state === 'idle') {
+      const orbit = menuOrbit[camMode];
+      const moving = menuOrbit.pointer === null && performance.now() > menuOrbit.holdUntil;
+      menuOrbit.speed = mix(menuOrbit.speed,moving?1:0,1-Math.exp(-dt*2));
+      if (orbit) orbit.yaw += dt*(camMode==='showcase'?0.12:0.035)*menuOrbit.speed;
+    }
     if (camMode === 'showcase') {
       // Fit the entire rotating silhouette, including upright wings, above the selection rail.
       const aspect = innerWidth / Math.max(1, innerHeight);
       const halfFov = Math.atan(Math.tan(Math.PI / 12) * Math.min(1, aspect));
-      const az = tNow * 0.3 + 2.4, el = 0.22;
+      const az = menuOrbit.showcase.yaw, el = menuOrbit.showcase.pitch;
       const r = (c.previewRadius || c.extent || 4) / (Math.sin(halfFov) * 0.55);
       const cy = c.y + (c.vcen === undefined ? 0.8 : c.vcen);   // orbit the hull's middle, not the hover origin
       target = [c.x + Math.cos(az) * Math.cos(el) * r, cy + Math.sin(el) * r, c.z + Math.sin(az) * Math.cos(el) * r];
@@ -954,7 +987,7 @@ const Game = (() => {
     if (camMode === 'gallery') {
       // Wide scenic orbit on the cover and planet screens, tighter during a race.
       const wide = app.state !== 'race' && app.state !== 'results';
-      const az = tNow * (wide ? 0.07 : 0.12), el = wide ? 0.3 : 0.62, r = wide ? 120 : 42;
+      const az = wide ? menuOrbit.gallery.yaw : tNow * 0.12, el = wide ? menuOrbit.gallery.pitch : 0.62, r = wide ? 120 : 42;
       const ahead = wide ? World.sampleAt(tab, c.t + 0.03).p : [c.x, c.y, c.z];
       target = [ahead[0] + Math.cos(az) * Math.cos(el) * r, ahead[1] + Math.sin(el) * r, ahead[2] + Math.sin(az) * Math.cos(el) * r];
       lookT = [ahead[0], ahead[1] + 1, ahead[2]];

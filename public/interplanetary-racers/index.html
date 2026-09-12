@@ -109,6 +109,8 @@
   #minimap { right: 24px; bottom: 20px; width: 250px; height: 174px; }
 
   /* ---------- screens ---------- */
+  #ship, #planet { touch-action: none; cursor: grab; }
+  #ship .rail, #planet .rail { touch-action: pan-x; cursor: auto; }
   #ui { position: fixed; inset: 0; pointer-events: none; }
   .screen { position: absolute; inset: 0; display: none; pointer-events: auto; }
   .screen.on { display: block; }
@@ -421,38 +423,38 @@
   </div>
 </div>
 <div id="err"></div>
-<script src="src/math.js?v=fleet-20260913-4"></script>
-<script src="src/palettes.js?v=fleet-20260913-4"></script>
-<script src="src/planets.js?v=fleet-20260913-4"></script>
-<script src="src/craft.js?v=fleet-20260913-4"></script>
-<script src="src/kitbash.js?v=fleet-20260913-4"></script>
-<script src="src/stats.js?v=fleet-20260913-4"></script>
-<script src="src/tracks.js?v=fleet-20260913-4"></script>
-<script src="src/weapons.js?v=fleet-20260913-4"></script>
-<script src="src/particles.js?v=fleet-20260913-4"></script>
-<script src="src/biomes.js?v=fleet-20260913-4"></script>
-<script src="src/world.js?v=fleet-20260913-4"></script>
-<script src="ships/ship-01.js?v=fleet-20260913-4"></script>
-<script src="ships/ship-02.js?v=fleet-20260913-4"></script>
-<script src="ships/ship-03.js?v=fleet-20260913-4"></script>
-<script src="ships/ship-04.js?v=fleet-20260913-4"></script>
-<script src="ships/ship-05.js?v=fleet-20260913-4"></script>
-<script src="ships/ship-06.js?v=fleet-20260913-4"></script>
-<script src="src/fleet.js?v=fleet-20260913-4"></script>
-<script src="src/geometry.js?v=fleet-20260913-4"></script>
-<script src="src/flora.js?v=fleet-20260913-4"></script>
-<script src="src/propsets.js?v=fleet-20260913-4"></script>
-<script src="src/shaders.js?v=fleet-20260913-4"></script>
-<script src="src/gpu.js?v=fleet-20260913-4"></script>
-<script src="src/frame.js?v=fleet-20260913-4"></script>
-<script src="src/names.js?v=fleet-20260913-4"></script>
-<script src="src/radio.js?v=fleet-20260913-4"></script>
-<script src="src/audio.js?v=fleet-20260913-4"></script>
-<script src="src/net.js?v=fleet-20260913-4"></script>
-<script src="src/mp.js?v=fleet-20260913-4"></script>
-<script src="src/thumbs.js?v=fleet-20260913-4"></script>
-<script src="src/game.js?v=fleet-20260913-4"></script>
-<script src="src/ui.js?v=fleet-20260913-4"></script>
+<script src="src/math.js?v=fleet-20260913-5"></script>
+<script src="src/palettes.js?v=fleet-20260913-5"></script>
+<script src="src/planets.js?v=fleet-20260913-5"></script>
+<script src="src/craft.js?v=fleet-20260913-5"></script>
+<script src="src/kitbash.js?v=fleet-20260913-5"></script>
+<script src="src/stats.js?v=fleet-20260913-5"></script>
+<script src="src/tracks.js?v=fleet-20260913-5"></script>
+<script src="src/weapons.js?v=fleet-20260913-5"></script>
+<script src="src/particles.js?v=fleet-20260913-5"></script>
+<script src="src/biomes.js?v=fleet-20260913-5"></script>
+<script src="src/world.js?v=fleet-20260913-5"></script>
+<script src="ships/ship-01.js?v=fleet-20260913-5"></script>
+<script src="ships/ship-02.js?v=fleet-20260913-5"></script>
+<script src="ships/ship-03.js?v=fleet-20260913-5"></script>
+<script src="ships/ship-04.js?v=fleet-20260913-5"></script>
+<script src="ships/ship-05.js?v=fleet-20260913-5"></script>
+<script src="ships/ship-06.js?v=fleet-20260913-5"></script>
+<script src="src/fleet.js?v=fleet-20260913-5"></script>
+<script src="src/geometry.js?v=fleet-20260913-5"></script>
+<script src="src/flora.js?v=fleet-20260913-5"></script>
+<script src="src/propsets.js?v=fleet-20260913-5"></script>
+<script src="src/shaders.js?v=fleet-20260913-5"></script>
+<script src="src/gpu.js?v=fleet-20260913-5"></script>
+<script src="src/frame.js?v=fleet-20260913-5"></script>
+<script src="src/names.js?v=fleet-20260913-5"></script>
+<script src="src/radio.js?v=fleet-20260913-5"></script>
+<script src="src/audio.js?v=fleet-20260913-5"></script>
+<script src="src/net.js?v=fleet-20260913-5"></script>
+<script src="src/mp.js?v=fleet-20260913-5"></script>
+<script src="src/thumbs.js?v=fleet-20260913-5"></script>
+<script src="src/game.js?v=fleet-20260913-5"></script>
+<script src="src/ui.js?v=fleet-20260913-5"></script>
 <script>
   if (new URLSearchParams(location.search).get('preview') === '1') {
     document.querySelector('a[aria-label="Back to Ani Dalal’s portfolio"]')?.remove();
