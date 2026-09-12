@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { getGallery, readManifest } from '@/lib/gallery';
 import { Masthead } from '../layout/Masthead';
@@ -70,7 +69,6 @@ export function GalleryHome() {
         headline={<Headline />}
         below={
           <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
-            <Link href="/work/" className="text-sm underline text-ink-muted">Project stories</Link>
             <Suspense><GalleryFilter tags={tags} /></Suspense>
             {canEdit && <Suspense><EditToggle /></Suspense>}
           </div>
