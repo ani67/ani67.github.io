@@ -288,11 +288,11 @@ const Game = (() => {
     const ringCount = n;
     const m = Math.floor(length / MARK);
     for (let k = 0; k < m; k++) {
-      put(World.sampleAt(tab, k / m), 0.45, [0.06, 0.72, 1], 0.4);
+      put(World.sampleAt(tab, k / m), 0.65, [0.06, 0.72, 1], 0.4);
       data[o - Gpu.CAR_FLOATS + 15] = k / m * length / 112; // phase along the route, not world axes
     }
     const routeMesh = (mesh, part) => { for (let i = 9; i < mesh.verts.length; i += Geo.STRIDE) mesh.verts[i] = part; return mesh; };
-    const ring = Gpu.createMesh(routeMesh(Geo.buildRing(1, 0.018, 48, 6), 8)), cube = Gpu.createMesh(routeMesh(Geo.buildCube(), 9));
+    const ring = Gpu.createMesh(routeMesh(Geo.buildRing(1, 0.032, 48, 6), 8)), cube = Gpu.createMesh(routeMesh(Geo.buildCube(), 9));
     const ringData = data.slice(0, ringCount * Gpu.CAR_FLOATS);
     const buf = Gpu.createInstances(ringData);
     gateGroup = [
@@ -326,8 +326,11 @@ const Game = (() => {
       if (!active) ring.flash = 0;
       else ring.flash = Math.max(0, ring.flash - Math.min(dt, 0.1) * 1.8);
       const o = i * Gpu.CAR_FLOATS;
-      data[o + 20] = active && i === nearest ? 1.2 + 1.2 * (1 - smoothstep(20, 260, len(offset))) : 0.12;
-      data[o + 21] = active && i === nearest ? 1 : 0;
+      const target = active && i === nearest ? 1 : 0;
+      const ease = 1 - Math.exp(-Math.max(0, Math.min(dt, 0.1)) * 3);
+      ring.focus = (ring.focus || 0) + (target - (ring.focus || 0)) * ease;
+      data[o + 20] = 0.12 + ring.focus * (1.08 + 1.2 * (1 - smoothstep(20, 260, len(offset))));
+      data[o + 21] = ring.focus;
       data[o + 22] = reducedMotion.matches ? 0 : ring.flash;
     }
     Gpu.updateInstances(gateGroup[0].inst, data);
@@ -376,7 +379,7 @@ const Game = (() => {
     return mesh;
   }
   function setupCars() {
-    routePrevious = null; for (const ring of routeRings) ring.flash = 0;
+    routePrevious = null; for (const ring of routeRings) { ring.flash = 0; ring.focus = 0; }
     // The environment and gates survive craft changes, but craft and weapon buffers do not.
     Gpu.destroyGroups(carGroups);
     if (typeof Weapons !== 'undefined') Gpu.destroyGroups(Weapons.groups());

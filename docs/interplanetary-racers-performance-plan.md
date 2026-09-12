@@ -103,3 +103,9 @@ Validation: real two-peer WebRTC comparisons matched every sampled route point a
 The broad dark ring band is replaced with a continuous unlit hoop, 70% thinner. Circumference resolution increases from 36 to 48 segments while the tube uses six instead of eight sides, preserving the triangle count. Hoop pixels bypass ink outlines and chromatic channel offsets, preventing those filters from reintroducing internal dark bands. Future rings blend toward the sky; the next ring brightens on approach. Amber continues to identify boost gates.
 
 Forward passage produces a brief outward-and-return ripple using the same vertices. Ordinary route rings play a quiet sine chime; boost rings retain their existing boost sound. Reduced motion suppresses the ripple. Route/boost rules remain unchanged. The 43 tests passed, including one-shot passage audio. Browser checks covered all presets and the Embervale/Solar-Orbit-188 world from the reported screenshot, with no shader errors or extra render passes.
+
+## Softer ring handoff and route contrast (13 September)
+
+Hoop tube radius increases from 0.018 to 0.032, about 78% thicker, with the same mesh count. Next-ring focus now uses time-based exponential easing (roughly one second to reach 95%) instead of a binary switch. Both brightness and highlight mixing follow this eased value, including fade-out of the previous target.
+
+Route dots have a brighter steady core and narrow dark keyline, retain their forward-travelling pulse, and bypass the terrain's palette/ink filters. Their base size increases from 0.45 to 0.65 world units, with distance scaling capped at 3×. Fog still applies and scene depth still occludes them. No extra geometry or rendering passes are added. The 44-test suite includes matching highlight transitions at 30/60 FPS.

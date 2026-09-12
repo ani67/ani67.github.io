@@ -192,6 +192,10 @@ fn carWorld(v : CarIn) -> VOut {
   } else {
     p = p * v.ibody; n = normalize(n / v.ibody);
   }
+  if (part == 9.0) {
+    // Keep route dots readable farther ahead, without enlarging nearby markers.
+    p *= clamp(length(F.camPos.xyz - v.ipos) / 130.0, 1.0, 3.0);
+  }
   if (part == 8.0 && v.ishield > 0.0) {
     // Brief outward ripple and gentle return, reusing the hoop's own vertices.
     let ripple = sin((1.0 - v.ishield) * 3.14159265) * 0.12;
@@ -372,7 +376,18 @@ fn shadeScene(i : VOut) -> FsOut {
       hoop.nd = vec4f(normalize(i.n), distance);
       return hoop;
     }
-    else if (part == 9.0) { emis = col * glow; albedo = vec3f(0.015, 0.06, 0.08); }
+    else if (part == 9.0) {
+      // Bright centre + dark keyline works against both light ground and dark sky.
+      // A steady minimum brightness preserves the route between travelling pulses.
+      let edge = smoothstep(0.65, 0.85, max(abs(i.uv.x), abs(i.uv.y)));
+      let core = mix(vec3f(0.2, 0.8, 1.0), vec3f(0.85, 1.0, 1.0), clamp(glow / 2.25, 0.0, 1.0)) * (0.9 + glow * 0.4);
+      let light = mix(core, vec3f(0.012, 0.035, 0.05), edge);
+      let distance = length(F.camPos.xyz - i.wp);
+      var marker : FsOut;
+      marker.col = vec4f(mix(light, F.skyA.xyz, 1.0 - exp(-distance * F.skyA.w * 0.6)), -1.0);
+      marker.nd = vec4f(normalize(i.n), distance);
+      return marker;
+    }
     else if (part == 7.0) {
       // Shield ring / pickup / projectile: pure emissive in the instance colour, pulsing with glow.
       emis = col * (1.2 + glow * 1.5); albedo = vec3f(0.02);

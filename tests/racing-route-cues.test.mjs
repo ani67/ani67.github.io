@@ -24,10 +24,10 @@ test('forward passage inside a ring confirms and next-ring selection wraps at th
   assert(c.routeRings[0].flash > 0.9);
   assert.equal(c.sounds, 1);
   c.updateRouteCues(1 / 30); assert.equal(c.sounds, 1, 'no repeated chime while inside');
-  assert.equal(c.gateGroup[0].data[45], 1);
+  assert(c.gateGroup[0].data[45] > 0 && c.gateGroup[0].data[45] < 1);
   c.player.t = 0.99; c.updateRouteCues(1 / 30);
-  assert.equal(c.gateGroup[0].data[21], 1);
-  assert.equal(c.gateGroup[0].data[45], 0);
+  assert(c.gateGroup[0].data[21] > 0 && c.gateGroup[0].data[21] < 0.11);
+  assert(c.gateGroup[0].data[45] > 0, 'previous target fades rather than switching off');
 });
 test('outside, backward and teleport crossings do not confirm; reduced motion keeps guidance static', () => {
   for (const kind of ['outside', 'backward', 'teleport']) {
@@ -39,5 +39,18 @@ test('outside, backward and teleport crossings do not confirm; reduced motion ke
   }
   const c = scene(); c.reducedMotion.matches = true; c.updateRouteCues(1 / 30);
   assert.equal(c.gateGroup[0].data[22], 0);
-  assert.equal(c.gateGroup[0].data[45], 1);
+  assert(c.gateGroup[0].data[45] > 0 && c.gateGroup[0].data[45] < 1);
+});
+
+
+test('ring highlighting fades consistently at 30 and 60 FPS without snapping', () => {
+  const run = hz => {
+    const c = scene(); c.routePrevious = null;
+    c.updateRouteCues(1 / hz);
+    assert(c.gateGroup[0].data[45] < 0.11);
+    for (let i = 1; i < hz; i++) c.updateRouteCues(1 / hz);
+    assert(c.gateGroup[0].data[45] > 0.94);
+    return c.gateGroup[0].data[45];
+  };
+  assert(Math.abs(run(30) - run(60)) < 0.00001);
 });
