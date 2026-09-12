@@ -90,11 +90,10 @@ interface CollectionIterationsProps {
  * Resolves an entry's image.
  *
  * Three kinds of reference end up here. A bare IPFS CID belongs to an fxhash
- * collection and goes through fxhash's CDN, which resizes and serves WebP. A
- * Cloudinary URL is resized by Cloudinary. Anything else (the Versum, Tomorrow
- * and objkt series) is self-hosted under `/public`, already sized, and used
- * as-is — objkt's CDN offers no resized variants and fxhash's only serves its
- * own CIDs.
+ * collection and loads the original image from objkt's archive. A Cloudinary
+ * URL is resized by Cloudinary. Other paths/URLs are used as-is. The objkt
+ * artifact endpoint does not resize by width, so it must not get a fabricated
+ * srcset. Its token thumbnails require token IDs that these manifests don't store.
  *
  * Without the Cloudinary case a 2000px still was being served into a 64px rail
  * thumbnail, once per item.
@@ -107,7 +106,7 @@ const thumb = (ref: string, w: number) =>
     ? cldUrl(ref, w)
     : ref.startsWith('/') || ref.startsWith('http')
       ? ref
-      : `https://media.fxhash.xyz/w_${w}/${ref}`;
+      : `https://assets.objkt.media/file/assets-003/${ref}/artifact`;
 
 /**
  * The URL that runs one iteration live.
@@ -121,12 +120,12 @@ const liveUrl = (data: CollectionData, item: Iteration) =>
   item.e
     ? item.e
     : data.gen && item.h
-      ? `https://gateway.fxhash.xyz/ipfs/${data.gen}/?fxhash=${item.h}`
+      ? `https://assets.objkt.media/rewrite/file/assets-003/${data.gen}/artifact/index.html?fxhash=${encodeURIComponent(item.h)}`
       : undefined;
 
 /** True when the reference can actually be resized by a CDN. */
 const resizable = (ref: string) =>
-  isTransformable(ref) || !(ref.startsWith('/') || ref.startsWith('http'));
+  isTransformable(ref);
 
 /**
  * What to call the things in a collection, decided by what they actually are.
