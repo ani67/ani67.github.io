@@ -56,6 +56,14 @@
   /* ---------- in-race HUD ---------- */
   #hud { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s; }
   #hud.on { opacity: 1; }
+  /* Bow the peripheral instruments toward the edges; aiming and touch controls stay fixed. */
+  #hud { --speed-warp: 0; }
+  #brand, #board, #dash, #minimap { --hud-scale: 1; }
+  #brand { transform-origin: left top; transform: perspective(650px) rotateY(calc(var(--speed-warp) * -9deg)) rotateX(calc(var(--speed-warp) * -5deg)) scale(calc(1 + var(--speed-warp) * .025)); }
+  #board { transform-origin: right top; transform: perspective(650px) rotateY(calc(var(--speed-warp) * 9deg)) rotateX(calc(var(--speed-warp) * -5deg)) scale(calc(1 + var(--speed-warp) * .025)); }
+  #dash { transform-origin: left bottom; transform: perspective(650px) rotateY(calc(var(--speed-warp) * -12deg)) rotateX(calc(var(--speed-warp) * 7deg)) scale(calc(var(--hud-scale) * (1 + var(--speed-warp) * .035))); }
+  #minimap { transform-origin: right bottom; transform: perspective(650px) rotateY(calc(var(--speed-warp) * 12deg)) rotateX(calc(var(--speed-warp) * 7deg)) scale(calc(1 + var(--speed-warp) * .035)); }
+  @media (prefers-reduced-motion: reduce) { #hud { --speed-warp: 0 !important; } }
   #hud > * { position: absolute; }
   #hud, #ui .head, #ui .steps, #cover .where, #cover .foot, #ui .tools .label { text-shadow: 0 1px 2px rgba(0,0,0,.5), 0 2px 18px rgba(0,0,0,.35); }
   #brand { left: 0; top: 0; padding: 24px 80px 40px 28px; background: radial-gradient(120% 100% at 0% 0%, rgba(0,0,0,.42), rgba(0,0,0,0) 70%); }
@@ -243,7 +251,7 @@
     #brand .name { display: none; }
     #brand .where { max-width: 135px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #legend, #board { display: none; }
-    #dash { bottom: 168px; transform: scale(.52); transform-origin: left bottom; }
+    #dash { bottom: 168px; --hud-scale: .52; }
     #minimap { bottom: 178px; right: 10px; width: 110px; height: 77px; }
   }
   @media (max-width: 600px) {
@@ -270,7 +278,7 @@
   }
   @media (any-pointer: coarse) and (max-height: 500px) {
     .touch-bank { grid-template-columns: repeat(3, 54px); }
-    #dash { bottom: 104px; transform: scale(.4); }
+    #dash { bottom: 104px; --hud-scale: .4; }
     #minimap { bottom: 112px; width: 90px; height: 63px; }
   }
 </style>

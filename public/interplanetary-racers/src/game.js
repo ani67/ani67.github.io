@@ -16,11 +16,14 @@ const Game = (() => {
   const frame = new Float32Array(Gpu.FRAME_FLOATS);
   const A = fn => { try { if (typeof Audio !== 'undefined' && Audio && Audio.sfx) return fn(Audio); } catch (e) {} };
   let lastCount = -1;
+  let speedWarp = 0, warpSpeed = 0, warpValue = '';
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let resetClock = () => {};
 
   // ---------------------------------------------------------------- setup
   async function start(canvasEl) {
     hud.canvas = canvasEl;
+    hud.root = document.getElementById('hud');
     for (const id of ['lap', 'pos', 'msg', 'life', 'item', 'hitmark', 'vignette', 'hudPlanet', 'hudWhere', 'speedo', 'laneArrow']) hud[id] = document.getElementById(id);
     minimap = document.getElementById('minimap'); mmCtx = minimap.getContext('2d'); spCtx = hud.speedo.getContext('2d');
     await Gpu.init(canvasEl);
@@ -943,6 +946,19 @@ const Game = (() => {
     drawMinimap();
   }
 
+  // A small peripheral lens effect, driven by speed and a brief acceleration push.
+  // Update with rendered frames only; no extra canvas, shader pass or animation loop.
+  function updateSpeedWarp(dt) {
+    const speed = Math.abs(player.speed || 0), h = Math.min(Math.max(dt, 0), 0.1);
+    const racing = rs.state === 'racing' && !reducedMotion.matches && player.wrecked <= 0;
+    const acceleration = h > 0 ? clamp((speed - warpSpeed) / (h * 80 * SPD), 0, 1) : 0;
+    warpSpeed = speed;
+    const target = racing ? clamp(smoothstep(0.08, 0.95, speed / (80 * SPD)) * 0.65 + acceleration * 0.2 + (player.boost > 0 ? 0.15 : 0), 0, 1) : 0;
+    speedWarp = racing ? mix(speedWarp, target, 1 - Math.exp(-h * (target > speedWarp ? 7 : 4))) : 0;
+    const value = speedWarp.toFixed(3);
+    if (value !== warpValue) { hud.root.style.setProperty('--speed-warp', value); warpValue = value; }
+  }
+
   // ---------------------------------------------------------------- speedometer
   function drawSpeedo(c) {
     // Quarter-circle "slice" anchored at the bottom-left corner: the arc centre is the corner itself.
@@ -1125,6 +1141,7 @@ const Game = (() => {
     return { right, up: upB, fwd, pos: [c.x + upB[0] * bob, c.y + upB[1] * bob, c.z + upB[2] * bob] };
   }
   function draw(dt) {
+    updateSpeedWarp(dt);
     const t = performance.now() / 1000;
     for (const g of carGroups) {
       g.ids.forEach((ci, k) => {
