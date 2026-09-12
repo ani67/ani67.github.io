@@ -17,6 +17,7 @@ interface BlogLayoutProps {
   navContent?: ReactNode;
   /** Headline for the masthead. Post pages carry their own title instead. */
   headline?: ReactNode;
+  headlineAs?: 'h1' | 'p';
   /** Row under the headline — the tag filter on /blog. */
   belowHeadline?: ReactNode;
 }
@@ -25,7 +26,7 @@ interface BlogLayoutProps {
  * Main blog layout with responsive navigation (server component)
  * Combines mobile header, mobile menu, and desktop sidebar
  */
-export function BlogLayout({ children, selectedTag, onTagSelect, editorPosts, onPostSelect, onNewPost, useLinks, rightSidebar, navContent, headline, belowHeadline }: BlogLayoutProps) {
+export function BlogLayout({ children, selectedTag, onTagSelect, editorPosts, onPostSelect, onNewPost, useLinks, rightSidebar, navContent, headline, headlineAs, belowHeadline }: BlogLayoutProps) {
   // The markdown editor is the one caller that still needs the old rail.
   const isEditor = Boolean(editorPosts);
 
@@ -50,7 +51,7 @@ export function BlogLayout({ children, selectedTag, onTagSelect, editorPosts, on
           useLinks={!useLinks && !onTagSelect}
         />
       ) : (
-        <Masthead headline={headline} below={belowHeadline} />
+        <Masthead headline={headline} headlineAs={headlineAs} below={belowHeadline} />
       )}
 
       {/* Desktop Layout with max-width container and 12-column grid.

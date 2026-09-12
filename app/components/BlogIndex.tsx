@@ -4,7 +4,6 @@ import { BlogLayout } from './layout/BlogLayout';
 import { PostCard } from './PostCard';
 import { TagFilter } from './TagFilter';
 import { TagFilterBar } from './TagFilterBar';
-import { Headline } from './layout/headline';
 import { EditorLink } from './layout/EditorLink';
 
 /**
@@ -22,7 +21,11 @@ export function BlogIndex() {
 
   return (
     <BlogLayout
-      headline={<Headline />}
+      headlineAs="h1"
+      headline={<>
+        <span className="block">Notes from making things.</span>
+        <span className="block">On design, generative art, and what I learn building tools.</span>
+      </>}
       belowHeadline={
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
           <Suspense><TagFilterBar /></Suspense>
@@ -31,7 +34,6 @@ export function BlogIndex() {
       }
     >
       <main className="flex-1 px-6 pt-16 pb-24 md:px-0 md:pt-10 md:pb-32">
-        <h1 className="mb-8 text-3xl font-[family-name:var(--font-mondwest)]">Writing on design, AI & art</h1>
         <Suspense fallback={
           <div className="space-y-10 md:space-y-12">
             {posts.map((post) => (

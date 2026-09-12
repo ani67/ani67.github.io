@@ -1,7 +1,7 @@
 /**
  * The site's headline, in one place.
  *
- * It appears on the homepage, /blog, /about and in three kinds of metadata, so
+ * It appears on the homepage and in three kinds of metadata, so
  * it lived in five files and drifted. Two exports keep them in step: `Headline`
  * for the rendered version, where the break between the identity and the role
  * is deliberate rather than left to the wrap; `HEADLINE_TEXT` for the flat
