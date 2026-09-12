@@ -18,7 +18,7 @@ const Game = (() => {
   let lastCount = -1;
   let speedWarp = 0, warpSpeed = 0, warpValue = '';
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let resetClock = () => {};
+  let resetClock = () => {}, invalidate = () => {};
 
   // ---------------------------------------------------------------- setup
   async function start(canvasEl) {
@@ -31,16 +31,26 @@ const Game = (() => {
     applyHash();
     let last = performance.now(), lastDraw = last, accumulator = 0;
     let sampleAt = last, sampleFrames = 0, slowFor = 0, healthyFor = 0;
-    let wasSuspended = false;
+    let wasSuspended = false, pendingFrame = null, idleUntil = last + 1600, pausedDirty = false;
     let sampleKey = `${rs.state}:${quality()}`;
+    const requestFrame = () => {
+      const netPaused = typeof MP !== 'undefined' && MP.paused && MP.paused();
+      if (pendingFrame === null && !document.hidden && ((!paused && !netPaused) || pausedDirty)) pendingFrame = requestAnimationFrame(loop);
+    };
     resetClock = () => {
       last = lastDraw = sampleAt = performance.now(); accumulator = 0;
       sampleFrames = slowFor = healthyFor = 0; perf.fps = 0;
       sampleKey = `${rs.state}:${quality()}`;
+      idleUntil = last + 1600;
+      requestFrame();
+    };
+    invalidate = () => {
+      if (paused || (typeof MP !== 'undefined' && MP.paused && MP.paused())) pausedDirty = true;
+      if (rs.state === 'idle') resetClock(); else requestFrame();
     };
     const STEP = 1 / 60, MAX_CATCHUP = 0.1;
     const loop = now => {
-      requestAnimationFrame(loop);
+      pendingFrame = null;
       const wallDt = Math.max(0, (now - last) / 1000); last = now;
       const netPaused = typeof MP !== 'undefined' && MP.paused && MP.paused();
       const suspended = document.hidden || paused || netPaused;
@@ -48,8 +58,13 @@ const Game = (() => {
         accumulator = 0; lastDraw = now; sampleAt = now; sampleFrames = 0;
         slowFor = healthyFor = 0;
         wasSuspended = suspended;
-        if (suspended) return;
+        if (suspended) {
+          if (pausedDirty && !document.hidden) { draw(0); perf.renderedFrames++; pausedDirty = false; }
+          return;
+        }
       }
+      if (rs.state === 'idle' && now >= idleUntil) { perf.fps = 0; return; }
+      requestFrame();
       const dt = Math.min(MAX_CATCHUP, wallDt);
       if (rs.state !== 'idle') {
         perf.droppedSeconds += Math.max(0, wallDt - MAX_CATCHUP);
@@ -89,7 +104,7 @@ const Game = (() => {
           const scale = Gpu.renderScale || 1;
           if (slowFor >= 3 && scale > 0.5 && Gpu.setRenderScale) {
             Gpu.setRenderScale(Math.max(0.5, scale - 0.1)); slowFor = healthyFor = 0;
-          } else if (healthyFor >= 30 && scale < 1 && Gpu.setRenderScale) {
+          } else if (healthyFor >= 30 && quality() !== 'eco' && scale < 1 && Gpu.setRenderScale) {
             Gpu.setRenderScale(Math.min(1, scale + 0.05)); healthyFor = 0;
           }
         }
@@ -100,7 +115,10 @@ const Game = (() => {
       resetClock();
       emit('visibility', { hidden: document.hidden, multiplayer: typeof MP !== 'undefined' && MP.active() });
     });
-    requestAnimationFrame(loop);
+    window.addEventListener('resize', () => invalidate());
+    window.addEventListener('pointerdown', () => { if (rs.state === 'idle') invalidate(); });
+    if (typeof MP !== 'undefined' && MP.onChange) MP.onChange(() => resetClock());
+    requestFrame();
   }
   let paused = false;
   const perf = { renderedFrames: 0, simulationSteps: 0, droppedSeconds: 0, fps: 0, targetFps: 12 };
@@ -176,9 +194,9 @@ const Game = (() => {
     scene = { frame, statics, props: null, carGroups: [], propGroups: [], water: null };
     const addVisibleProps = (mesh, instances) => {
       if (!instances.length) return;
-      const gpuMesh = Gpu.createMesh(mesh);
+      const gpuMesh = Gpu.createMesh(Geo.withLods(mesh));
       for (const chunk of Geo.instanceChunks(mesh, instances)) {
-        scene.propGroups.push({ mesh: gpuMesh, inst: Gpu.createInstances(chunk.data), count: chunk.data.length / 8, bounds: chunk.bounds });
+        scene.propGroups.push({ mesh: gpuMesh, inst: Gpu.createInstances(chunk.data), count: chunk.data.length / 8, bounds: chunk.bounds, lodThresholds: [220, 500] });
       }
     };
     addVisibleProps(propMesh, propInst);
@@ -347,7 +365,7 @@ const Game = (() => {
       for (let k = 0; k < raw.verts.length; k += Geo.STRIDE) { ext = Math.max(ext, Math.hypot(raw.verts[k], raw.verts[k + 2])); const y = raw.verts[k + 1]; if (y < ylo) ylo = y; if (y > yhi) yhi = y; }
       const vcen = ylo < yhi ? (ylo + yhi) / 2 : 0.8;   // hull mid-height, so the showcase camera can centre the craft
       for (const ci of g.ids) { cars[ci].extent = ext; cars[ci].vcen = vcen; }
-      const mesh = Gpu.createMesh(raw);
+      const mesh = Gpu.createMesh(Geo.withLods(raw));
       const data = new Float32Array(Gpu.CAR_FLOATS * g.ids.length);
       carGroups.push({ mesh, inst: Gpu.createInstances(data), data, count: g.ids.length, ids: g.ids });
     }
@@ -427,10 +445,12 @@ const Game = (() => {
     if (c.life <= 0) wreck(c);
   }
   function wreck(c) {
+    c.botDecision = null; c.botDecisionAge = 0;
     c.life = 0; c.dmg = 1; c.wrecked = 1.5; c.wrecks = (c.wrecks || 0) + 1; c.stun = 1.7; c.item = null;
     c.yaw += (Math.random() < 0.5 ? -1 : 1) * 10; c.flash = 1; c.shake = 1.5; c.stunEvents = (c.stunEvents || 0) + 1;
   }
   function respawn(c) {
+    c.botDecision = null; c.botDecisionAge = 0;
     const s = World.sampleAt(tab, c.t);
     c.x = s.p[0]; c.z = s.p[2]; c.y = s.p[1]; c.vx = c.vz = c.vy = 0; c.yaw = 0; c.pitch = 0; c.air = false; c.onRoad = true; c.offTime = 0; c.outTime = 0; c.outLane = 0; c.stun = 0.4;
     c.heading = Math.atan2(s.tan[0], s.tan[2]); c.flash = 1;
@@ -582,9 +602,21 @@ const Game = (() => {
     c.sample = s; c.lat = lat; c.speed = vf;
   }
 
-  function botControl(c, dt) {
-    const look = 0.012 + clamp(Math.abs(c.speed) / (60 * SPD), 0, 1) * 0.02;
+  // Steering plans are reused for 1/15 s; flight, lane phase and collision
+  // integration retain their fixed 180 Hz cadence. Recovery invalidates the plan.
+  function botInput(c, dt) {
     c.laneT += dt * 0.15;
+    c.botDecisionAge = (c.botDecisionAge || 0) + dt;
+    const state = `${c.wrecked > 0}:${c.stun > 0}:${!!c.offLane}:${c.alt < 4 && c.jumpCd <= 0}`;
+    if (!c.botDecision || c.botDecisionState !== state || c.botDecisionAge >= 1 / 15 - 1e-9) {
+      c.botDecision = botControl(c);
+      c.botDecisionAge = 0; c.botDecisionState = state;
+      perf.botDecisions = (perf.botDecisions || 0) + 1;
+    }
+    return c.botDecision;
+  }
+  function botControl(c) {
+    const look = 0.012 + clamp(Math.abs(c.speed) / (60 * SPD), 0, 1) * 0.02;
     const s = World.sampleAt(tab, c.t + look);
     const R = desc.corridor.radius, up = norm(cross(s.tan, s.right));
     // Personal lane offset, pulled toward the centre when the bot has drifted out.
@@ -767,7 +799,7 @@ const Game = (() => {
     for (let k = 0; k < sub; k++) {
       for (const c of cars) {
         if (net && MP.skip(c)) { MP.interpolate(c); continue; }   // a client plays remote craft back from snapshots
-        let ctl = (net && MP.control(c)) || ((c.isBot || camCfg.autopilot) ? botControl(c, h) : input);
+        let ctl = (net && MP.control(c)) || ((c.isBot || camCfg.autopilot) ? botInput(c, h) : input);
         if (c === player) localCtl = ctl;
         if (rs.state === 'countdown') { ctl = { steer: 0, throttle: 0, brake: 0, drift: false, pitch: 0, jump: false }; c.vx = c.vz = 0; c.vy = 0; const s0 = World.sampleAt(tab, c.t); c.y = Math.max(c.y, s0.p[1] - 2); }
         if (c.finished && c.isBot) ctl = { ...ctl, throttle: 0.4 };
@@ -1144,6 +1176,14 @@ const Game = (() => {
     updateSpeedWarp(dt);
     const t = performance.now() / 1000;
     for (const g of carGroups) {
+      // A shared craft group retains detail if any instance is nearby. Keep the
+      // player's craft full quality, including cockpit and selection views.
+      let distance = Infinity;
+      for (const ci of g.ids) {
+        const c = cars[ci];
+        distance = Math.min(distance, c.isPlayer ? 0 : Math.max(0, Math.hypot(c.x - cam.pos[0], c.y - cam.pos[1], c.z - cam.pos[2]) - c.extent * 2));
+      }
+      g.lodDistance = distance; g.lodThresholds = [100, 240];
       g.ids.forEach((ci, k) => {
         const c = cars[ci], b = craftBasis(c, t), o = k * Gpu.CAR_FLOATS;
         g.data.set(b.right, o); g.data.set(b.up, o + 3); g.data.set(b.fwd, o + 6); g.data.set(b.pos, o + 9); g.data.set(c.color, o + 12);
@@ -1172,7 +1212,7 @@ const Game = (() => {
     if (app.state === 'race') emit('race');
   }
   const ui = {
-    quality, setQuality, setPaused, paused: () => paused,
+    invalidate: () => invalidate(), quality, setQuality, setPaused, paused: () => paused,
     performance: () => ({ ...perf, quality: quality(), renderScale: Gpu.renderScale || 1, renderer: Gpu.metrics || null }),
     on: (ev, f) => { (listeners[ev] = listeners[ev] || []).push(f); },
     state: () => app.state, planet: () => planet, desc: () => desc, seed: () => seedText, race: () => raceDef,
@@ -1181,7 +1221,7 @@ const Game = (() => {
     order: () => [...cars].sort((a, b) => b.prog - a.prog), finalOrder, trackLength: () => tab.length || 2000,
     select, restart: () => { app.state = 'race'; setupCars(); beginPhase(); writeHash(); emit('race'); },
     home: () => { app.state = 'cover'; beginPhase(); writeHash(); },
-    setLook: o => { if (desc && desc.look) Object.assign(desc.look, o); },
+    setLook: o => { if (desc && desc.look) Object.assign(desc.look, o); invalidate(); },
     // Thumbnails borrow the canvas for one render; this puts the real scene back in the same task.
     redraw: () => { if (document.hidden || paused) return; try { draw(0); } catch (e) {} },
   };

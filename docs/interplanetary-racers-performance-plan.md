@@ -8,7 +8,7 @@ Renderer, simulation and mobile UI work ran in parallel. Geometry batching, mult
 
 - [x] Add Eco (30 FPS), Balanced (60 FPS) and High (60 FPS), persisted in `ir.quality`. Default to Eco for coarse primary pointers, Balanced otherwise.
 - [x] Cap internal pixel counts at 1280×720, 1600×900 and 2560×1440 equivalents; preserve aspect ratio and native-resolution HTML UI. Apply adaptive scale after the pixel cap.
-- [x] Render menus at 12 FPS; pause solo races in settings. Suspend hidden rendering/simulation and reset the clock on return.
+- [x] Render menus at 12 FPS while settling, then stop their frame loop; pause solo races in settings. Suspend hidden rendering/simulation and reset the clock on return.
 - [x] Keep simulation at 60 updates/second with the existing three physics substeps, independent of display/render FPS. Bound catch-up and reset clocks after loading. Make visual banking time-based.
 - [x] Skip shadow and bloom passes in Eco, using shader variants that omit their sampling. Balanced uses 1024 shadows, High 2048. Keep shadow math synchronized with map size.
 - [x] Chunk terrain and scenery, independently reject invisible camera/light batches, and use distant terrain LODs with seam skirts. Retain the original height field for physics and full collision instances.
@@ -22,7 +22,7 @@ Renderer, simulation and mobile UI work ran in parallel. Geometry batching, mult
 - [x] Explicitly pause the multiplayer room while the host's tab is hidden. Send authoritative pause/resume snapshots, reject stale packets, and notify clients. Expire remote controls after 500 ms without input so background clients cannot leave throttle/steering stuck.
 - [x] Validate core simulation, scene batching, mobile UI, all planets and two-peer networking; complete production checks.
 
-## Measured workload comparison
+## First-pass workload comparison (before the follow-up below)
 
 Local headless Chrome on the same Apple Metal adapter, 1440×900 CSS viewport, deviceScaleFactor 2. Baseline scripts were loaded from commit 6ef1b6b. Each version selected Halcyon with seed `performance-review`; the camera and shader time were fixed. Samples lasted four seconds after settling. Craft selection can vary between fresh sessions, contributing a small difference in total source triangle counts. Counts are submissions before GPU clipping, not visible triangles or fragment work.
 
@@ -41,17 +41,34 @@ Separate short autopilot checks held about 30 FPS in Eco and 60 FPS in Balanced/
 
 ## Validation
 
-- 33 automated tests passed, including simulated 30/60/120/144 Hz displays, preset changes, bounded catch-up, menu-to-race timing, hidden/pause/resume, visual banking, geometry/collision preservation, stale pause packets and stale remote input.
+- 36 automated tests passed, including simulated 30/60/120/144 Hz displays, preset changes, bounded catch-up, menu-to-race timing, hidden/pause/resume, visual banking, geometry/collision preservation, stale pause packets and stale remote input.
 - Two local browser peers connected through the real manual WebRTC path, raced, paused/resumed with the host's visibility, and continued with Balanced host/Eco client. No browser errors.
 - Chrome mobile emulation checked 390×844 portrait and 844×390 landscape: setup navigation, visible controls, simultaneous touches, cancellation/blur release, quality selection, pause/resume and recovery UI. This is not physical Android/iPhone testing.
 - Lint, TypeScript, production build and static export checks passed.
+
+## Follow-up: avoid unnecessary work
+
+All five follow-up changes are implemented:
+
+- Eco now writes one HDR colour attachment instead of two. The unused normal/depth colour texture is a 1×1 placeholder for the shared binding layout, and a dedicated composite uses one scene sample. Palette, tone mapping, speed lens and impact brightness remain; optional edge/noise filters are omitted in Eco.
+- Menus settle for 1.6 seconds at 12 FPS, then stop requesting animation frames. Selection, resize and settings changes wake rendering. Paused settings redraw without advancing physics. The UI also stops its timer when neither race information nor thumbnails need updating.
+- Distant scenery and opponent craft use reduced visual meshes. Material boundaries and opposing faces are retained, the player's craft stays at full detail, and High uses original meshes. Collision data remains unchanged.
+- Bot steering plans run at 15 Hz, with immediate refresh on recovery/state changes. Flight and collisions still use the original 180 Hz substeps.
+- Eco can reduce resolution under sustained load but no longer raises it automatically when spare capacity appears. Balanced and High retain slow recovery.
+
+Follow-up verification in local headless Chrome:
+
+- Settled cover and selector screens requested zero animation frames during a 700 ms observation. Scrolling still generated newly visible thumbnails; paused quality/look changes and resizing updated the canvas.
+- Eco reported one colour attachment and one placeholder normal-target pixel; Balanced/High retained two attachments. Preset switching, water, both particle blend modes and offscreen captures passed without GPU errors.
+- A deterministic before/after comparison simulated 30 seconds on Halcyon, Nullsector and Vitrine with eight autopilot racers. About 3,600 steering decisions per world replaced 43,200 evaluations. Both versions had zero wrecks; recorded hits were 4 before and 2 after across the three worlds. Progress remained comparable, with the largest individual difference about 2.2 percentage points of a lap. This short comparison is a regression check, not a difficulty or long-run balance guarantee.
+- All 14 planets rendered in Eco, and real manual WebRTC host/client pause/resume passed with mixed presets. The full 36-test suite, lint, TypeScript, production build and static export passed.
 
 ## Remaining hardware validation and optional follow-ups
 
 - [ ] Run matched 15–20 minute sessions on the actual laptop and physical midrange Android/iPhone devices. Record energy/battery, thermal state or temperature where available, p95/p99 frame times, input feel and late-session throttling. Keep brightness, charging state, room conditions, seed and radio state comparable. Hardware measurements are unavailable in this session, so no cooling guarantee is made.
 - [ ] Measure demanding biomes and multiplayer hosting on those devices before tuning preset/LOD thresholds further.
-- [ ] If GPU profiling still identifies bandwidth as a bottleneck, remove the extra normal/depth colour target in Eco and evaluate narrower formats. The current change retains it to avoid mixing a render-target rewrite with initial optimizations.
-- [ ] If geometry remains limiting, add verified per-material backface culling and authored distant craft/flora LODs. Global backface culling is intentionally not enabled because sails and foliage can be two-sided.
+- [ ] If GPU profiling still identifies bandwidth as a bottleneck after the Eco target removal, evaluate narrower colour formats.
+- [ ] If geometry remains limiting after distance simplification, evaluate authored LODs and per-material backface culling. Global backface culling remains disabled because sails and foliage can be two-sided.
 - [ ] If CPU/HUD work becomes limiting, cache static speedometer artwork and profile further allocations. World-generation workers would address loading stalls, not continuous race rendering.
 - [ ] If support for older non-WebGPU browsers is required, implement and validate a separate WebGL2 fallback. This is a separate renderer project; lower quality cannot supply a missing graphics API.
 

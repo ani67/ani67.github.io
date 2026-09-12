@@ -201,7 +201,9 @@ fn carWorld(v : CarIn) -> VOut {
 @vertex fn vsCar(v : CarIn) -> VOut { var o = carWorld(v); o.pos = F.viewProj * vec4f(o.wp, 1.0); return o; }
 @vertex fn vsCarShadow(v : CarIn) -> @builtin(position) vec4f { let o = carWorld(v); return F.lightVP * vec4f(o.wp, 1.0); }
 
-@fragment fn fsScene(i : VOut) -> FsOut {
+@fragment fn fsScene(i : VOut) -> FsOut { return shadeScene(i); }
+@fragment fn fsSceneEco(i : VOut) -> @location(0) vec4f { return shadeScene(i).col; }
+fn shadeScene(i : VOut) -> FsOut {
   let mat = i.ex.x;
   var albedo = vec3f(0.5);
   var emis = vec3f(0.0);
@@ -371,7 +373,9 @@ fn carWorld(v : CarIn) -> VOut {
 }
 
 // Water (or lava) plane: alpha blended over the scene, own normal for outlines.
-@fragment fn fsWater(i : VOut) -> FsOut {
+@fragment fn fsWater(i : VOut) -> FsOut { return shadeWater(i); }
+@fragment fn fsWaterEco(i : VOut) -> @location(0) vec4f { return shadeWater(i).col; }
+fn shadeWater(i : VOut) -> FsOut {
   let t = F.camPos.w; let uv = i.uv;
   let flags = u32(F.env.w + 0.5);
   let dist = length(F.camPos.xyz - i.wp);
@@ -422,7 +426,9 @@ struct FOut { @builtin(position) pos : vec4f, @location(0) uv : vec2f };
 
   const sky = common + fullscreen + /* wgsl */`
 fn hash3(p : vec3f) -> f32 { return fract(sin(dot(p, vec3f(12.9898, 78.233, 37.719))) * 43758.5453); }
-@fragment fn fsSky(i : FOut) -> FsOut {
+@fragment fn fsSky(i : FOut) -> FsOut { return shadeSky(i); }
+@fragment fn fsSkyEco(i : FOut) -> @location(0) vec4f { return shadeSky(i).col; }
+fn shadeSky(i : FOut) -> FsOut {
   let ndc = (i.uv * 2.0 - 1.0) * vec2f(1.0, -1.0);
   let d = normalize(F.camFwd.xyz + F.camRight.xyz * ndc.x * F.camRight.w * F.camUp.w + F.camUp.xyz * ndc.y * F.camRight.w);
   let t = F.camPos.w;
@@ -511,6 +517,25 @@ fn hash3(p : vec3f) -> f32 { return fract(sin(dot(p, vec3f(12.9898, 78.233, 37.7
 fn aces(x : vec3f) -> vec3f {
   return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), vec3f(0.0), vec3f(1.0));
 }
+// Eco reads one HDR sample. Preserve the world's palette, posterization, exposure,
+// hit feedback and speed lens while omitting screen-space noise, outlines and bloom.
+@fragment fn fsCompositeEco(i : FOut) -> @location(0) vec4f {
+  let c = i.uv - 0.5;
+  let r2 = dot(c, c);
+  let uv = 0.5 + c * (1.0 - (0.03 + F.camFwd.w * 0.06) * r2);
+  let sample = textureSample(sceneTex, samp, uv);
+  var col = sample.xyz;
+  let mask = (sample.w - 1.5 * floor(sample.w / 1.5)) / 0.9;
+  if (F.look.x > 0.0) {
+    let l = luma(col);
+    col = mix(col, palette(clamp(l, 0.0, 1.0)), F.look.x * (1.0 - smoothstep(0.9, 1.8, l)) * mask);
+  }
+  if (F.look.w > 0.5) { col = mix(col, floor(col * F.look.w + 0.5) / F.look.w, 0.7); }
+  col = aces(col * (1.0 + F.res.w * 0.35));
+  col *= mix(0.55, 1.0, 1.0 - smoothstep(0.35, 1.1, r2 * 1.6));
+  return vec4f(col, 1.0);
+}
+
 override WITH_EFFECTS: bool = true;
 override WITH_BLOOM: bool = true;
 @fragment fn fsComposite(i : FOut) -> @location(0) vec4f {
@@ -643,7 +668,9 @@ fn pshape(uv : vec2f, ptype : f32, life : f32, rot : f32) -> f32 {
   else { m = pow(smoothstep(1.0, 0.0, r), 2.5) * (1.0 - life); }
   return m;
 }
-@fragment fn fsParticleAdd(i : POut) -> FsOut {
+@fragment fn fsParticleAdd(i : POut) -> FsOut { return shadeParticleAdd(i); }
+@fragment fn fsParticleAddEco(i : POut) -> @location(0) vec4f { return shadeParticleAdd(i).col; }
+fn shadeParticleAdd(i : POut) -> FsOut {
   let m = pshape(i.uv, i.misc.y, i.misc.z, i.misc.w);
   let dist = length(F.camPos.xyz - i.wp);
   let fog = 1.0 - exp(-dist * F.skyA.w);
@@ -654,7 +681,9 @@ fn pshape(uv : vec2f, ptype : f32, life : f32, rot : f32) -> f32 {
   o.nd = vec4f(0.0);
   return o;
 }
-@fragment fn fsParticleAlpha(i : POut) -> FsOut {
+@fragment fn fsParticleAlpha(i : POut) -> FsOut { return shadeParticleAlpha(i); }
+@fragment fn fsParticleAlphaEco(i : POut) -> @location(0) vec4f { return shadeParticleAlpha(i).col; }
+fn shadeParticleAlpha(i : POut) -> FsOut {
   let m = pshape(i.uv, i.misc.y, i.misc.z, i.misc.w);
   let dist = length(F.camPos.xyz - i.wp);
   let fog = 1.0 - exp(-dist * F.skyA.w);

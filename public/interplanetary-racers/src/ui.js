@@ -28,6 +28,8 @@ const UI = (() => {
     if (name === 'planet') { renderPlanet(); $('seedField').value = seed; }
     if (name === 'room') renderRoom();
     if (name === 'settings') syncSettings();
+    Game.ui.invalidate();
+    scheduleUi();
   }
   function makeCode() { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; let s = ''; for (let i = 0; i < 6; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
   function updateCoverLine() {
@@ -443,9 +445,9 @@ const UI = (() => {
     $('btnStart').onclick = () => { A(a => a.init()); goShip(); };   // first user gesture: start the audio context here
     $('btnSettings').onclick = () => { A(a => { a.init(); a.sfx.click(); }); openSettings(); };
     for (const b of document.querySelectorAll('[data-back]')) b.onclick = () => { A(a => a.sfx.click()); back(); };
-    $('setQuality').onchange = () => { Game.ui.setQuality($('setQuality').value); updateQualityNote(); };
+    $('setQuality').onchange = () => { Game.ui.setQuality($('setQuality').value); updateQualityNote(); Game.ui.invalidate(); };
     bindFlight();
-    const look = (id, key, out) => { $(id).oninput = () => { Game.ui.setLook({ [key]: +$(id).value }); $(out).textContent = (+$(id).value).toFixed(2); }; };
+    const look = (id, key, out) => { $(id).oninput = () => { Game.ui.setLook({ [key]: +$(id).value }); Game.ui.invalidate(); $(out).textContent = (+$(id).value).toFixed(2); }; };
     look('setEdge', 'edge', 'setEdgeV'); look('setDither', 'dither', 'setDitherV'); look('setMap', 'colormap', 'setMapV');
     $('setName').onchange = () => { Game.ui.setPlayerName($('setName').value.trim()); };
     $('setMusic').oninput = () => { const v = +$('setMusic').value; $('setMusicV').textContent = v.toFixed(2); A(a => a.setMusic(v)); };
@@ -486,6 +488,7 @@ const UI = (() => {
       if (paused) notice(message);
       else if ($('raceNotice').querySelector('span').textContent === message) $('raceNotice').hidden = true;
       $('raceNotice').querySelector('button').hidden = paused;
+      scheduleUi();
     });
     $('resRestart').onclick = () => Game.ui.restart();
     $('resNew').onclick = () => { Game.ui.home(); goShip(); };
@@ -502,14 +505,36 @@ const UI = (() => {
       show('cover');
     }
     if (q.settings) openSettings();
-    if (TH()) { Thumbs.init(document.getElementById('gl')); Thumbs.onReady(fillThumb); }
-    // Thumbnails borrow the canvas for a frame, so only build them while a selector is open.
-    const loop = now => {
-      if (!document.hidden) tickBoard(now);
-      if (!document.hidden && TH()) Thumbs.pump(screen === 'ship' || screen === 'planet');
-      requestAnimationFrame(loop);
-    };
-    requestAnimationFrame(loop);
+    if (TH()) {
+      Thumbs.init(document.getElementById('gl'));
+      Thumbs.onReady(fillThumb);
+      Thumbs.onPending(scheduleUi);
+    }
+    Game.ui.on('pause', scheduleUi);
+    window.addEventListener('resize', () => Game.ui.invalidate());
+    document.addEventListener('visibilitychange', scheduleUi);
+    scheduleUi();
   }
+  // UI work has its own small budget. Static menus never need an animation loop;
+  // a new thumbnail request, screen change or race transition wakes this timer.
+  let uiTimer = null;
+  const selectorOpen = () => screen === 'ship' || screen === 'planet';
+  const boardActive = () => screen === null && Game.ui.state() === 'race' && !Game.ui.paused() && !(mp() && MP.paused());
+  function uiWorkPending() {
+    return !document.hidden && (boardActive() || (selectorOpen() && TH() && Thumbs.hasPending()));
+  }
+  function scheduleUi() {
+    if (!uiWorkPending()) { clearTimeout(uiTimer); uiTimer = null; return; }
+    if (uiTimer !== null) return;
+    uiTimer = setTimeout(runUi, 100);
+  }
+  function runUi() {
+    uiTimer = null;
+    if (!uiWorkPending()) return;
+    if (boardActive()) tickBoard(performance.now());
+    if (selectorOpen() && TH() && Thumbs.hasPending()) Thumbs.pump(true);
+    scheduleUi();
+  }
+
   return { start, show, showResults, settings, notice };
 })();

@@ -13,25 +13,28 @@ assert(from > 0 && to > from, 'game scheduler boundaries exist');
 const schedule = source.slice(from, to).replace(/\n  }\s*$/, '');
 
 function harness(hz, quality = 'balanced', idle = false) {
-  let callback, now = 0, netPaused = false;
+  let callback, now = 0, netPaused = false, requestId = 0;
   const updates = [], draws = [], listeners = {};
   const context = {
-    performance: { now: () => now }, requestAnimationFrame: f => { callback = f; },
+    performance: { now: () => now }, requestAnimationFrame: f => { callback = f; return ++requestId; },
+    window: { addEventListener: (event, fn) => { listeners[`window:${event}`] = fn; } },
     rs: { state: idle ? 'idle' : 'racing' },
     document: { hidden: false, addEventListener: (event, fn) => { listeners[event] = fn; } },
     paused: false, perf: { renderedFrames: 0, simulationSteps: 0, droppedSeconds: 0 },
-    MP: { paused: () => netPaused, active: () => true },
+    MP: { paused: () => netPaused, active: () => true, onChange: fn => { listeners.mp = fn; } },
     Gpu: { qualitySettings: { fps: quality === 'eco' ? 30 : 60 }, renderScale: 1,
       setRenderScale: value => { context.Gpu.renderScale = value; } },
     quality: () => quality, update: dt => updates.push(dt), updateCamera: () => {},
     updateHud: () => {}, draw: () => draws.push(now), emit: () => {},
   };
   vm.runInNewContext(schedule, context);
-  const advance = seconds => { for (let i = 0; i < Math.round(seconds * hz); i++) { now += 1000 / hz; callback(now); } };
+  const advance = seconds => { for (let i = 0; i < Math.round(seconds * hz); i++) { now += 1000 / hz; const next = callback; callback = null; if (next) next(now); } };
   return { context, updates, draws, advance,
     hide(value) { context.document.hidden = value; listeners.visibilitychange(); },
-    netPause(value) { netPaused = value; },
-    quality(value) { quality = value; context.Gpu.qualitySettings.fps = value === 'eco' ? 30 : 60; },
+    netPause(value) { netPaused = value; listeners.mp(); },
+    quality(value) { quality = value; context.Gpu.qualitySettings.fps = value === 'eco' ? 30 : 60; context.resetClock(); },
+    invalidate() { context.invalidate(); },
+    get pending() { return !!callback; },
     stall(seconds) { now += seconds * 1000; callback(now); },
     load(seconds) { now += seconds * 1000; context.resetClock(); },
   };
@@ -46,15 +49,18 @@ for (const hz of [30, 60, 120, 144]) for (const quality of ['eco', 'balanced']) 
   });
 }
 
-test('menus render at 12 FPS without racing simulation', () => {
+test('menus settle at 12 FPS then stop requesting frames', () => {
   const h = harness(60, 'balanced', true); h.advance(5);
-  assert.equal(h.updates.length, 0); assert.equal(h.draws.length, 60);
+  assert.equal(h.updates.length, 0); assert(h.draws.length >= 18 && h.draws.length <= 20);
+  assert.equal(h.pending, false);
+  const count = h.draws.length; h.invalidate(); h.advance(0.2);
+  assert(h.draws.length > count);
 });
 
 for (const reason of ['hidden', 'solo settings', 'host paused']) {
   test(`${reason} suspends and resumes without catching up paused time`, () => {
     const h = harness(60); h.advance(1);
-    const pause = value => reason === 'hidden' ? h.hide(value) : reason === 'host paused' ? h.netPause(value) : (h.context.paused = value);
+    const pause = value => reason === 'hidden' ? h.hide(value) : reason === 'host paused' ? h.netPause(value) : (h.context.paused = value, h.context.resetClock());
     const updates = h.updates.length, draws = h.draws.length;
     pause(true); h.advance(2);
     assert.equal(h.updates.length, updates); assert.equal(h.draws.length, draws);
@@ -84,7 +90,9 @@ test('sustained missed frames reduce scale, recovery is slower and capped', () =
   const reduced = h.context.Gpu.renderScale;
   h.quality('eco'); h.advance(20);
   assert.equal(h.context.Gpu.renderScale, reduced);
-  h.advance(20); assert(h.context.Gpu.renderScale > reduced);
+  h.advance(20); assert.equal(h.context.Gpu.renderScale, reduced);
+  h.quality('balanced'); h.context.Gpu.qualitySettings.fps = 30; h.advance(34);
+  assert(h.context.Gpu.renderScale > reduced);
   assert(h.context.Gpu.renderScale <= 1);
 });
 
@@ -110,7 +118,7 @@ test('visual banking has equal response at 30/60 FPS and repeated basis lookups 
 for (const quality of ['eco', 'balanced']) {
   test(`${quality} starts a race without treating menu frames as missed race frames`, () => {
     const h = harness(60, quality, true);
-    h.advance(2.8); h.context.rs.state = 'countdown'; h.advance(3.2);
+    h.advance(2.8); h.context.rs.state = 'countdown'; h.context.resetClock(); h.advance(3.2);
     assert.equal(h.context.Gpu.renderScale, 1);
     h.context.rs.state = 'racing'; h.advance(4);
     assert.equal(h.context.Gpu.renderScale, 1);
@@ -124,4 +132,34 @@ test('world-load reset excludes generation time from catch-up and adaptive sampl
   assert.equal(h.updates.length - before, 60);
   assert.equal(h.context.perf.droppedSeconds, 0);
   assert.equal(h.context.Gpu.renderScale, 1);
+});
+
+test('paused quality/look invalidation redraws once without running simulation', () => {
+  const h = harness(60); h.advance(1); h.context.paused = true; h.context.resetClock(); h.advance(0.1);
+  const frames = h.draws.length, ticks = h.updates.length;
+  h.invalidate(); h.advance(1);
+  assert.equal(h.draws.length, frames + 1); assert.equal(h.updates.length, ticks);
+  assert.equal(h.pending, false);
+});
+
+test('bot plans run at 15 Hz while lane phase integrates at flight rate', () => {
+  const from = source.indexOf('  function botInput('), to = source.indexOf('  function botControl(', from);
+  const context = { c: { laneT: 0, wrecked: 0, stun: 0, offLane: false, alt: 10, jumpCd: 0 }, perf: {}, botControl: () => ({ steer: 0.5 }) };
+  vm.runInNewContext(source.slice(from, to), context);
+  for (let i = 0; i < 180; i++) context.botInput(context.c, 1 / 180);
+  assert.equal(context.perf.botDecisions, 15);
+  assert(Math.abs(context.c.laneT - 0.15) < 1e-10);
+  const before = context.perf.botDecisions;
+  context.c.stun = 1; context.botInput(context.c, 1 / 180);
+  context.c.stun = 0; context.botInput(context.c, 1 / 180);
+  context.c.wrecked = 1; context.botInput(context.c, 1 / 180);
+  context.c.wrecked = 0; context.botInput(context.c, 1 / 180);
+  context.c.offLane = true; context.botInput(context.c, 1 / 180);
+  assert.equal(context.perf.botDecisions, before + 5);
+  // Respawn and wreck explicitly discard plans even if the boolean state matches.
+  assert.match(source, /function respawn\(c\) \{\s*c\.botDecision = null/);
+  assert.match(source, /function wreck\(c\) \{\s*c\.botDecision = null/);
+  context.c.botDecision = null; context.c.botDecisionAge = 0;
+  context.botInput(context.c, 1 / 180);
+  assert.equal(context.perf.botDecisions, before + 6);
 });

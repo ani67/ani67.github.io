@@ -39,3 +39,19 @@ test('instance spatial batches preserve every instance and contain transformed v
     }
   }
 });
+
+test('distant mesh simplification reduces geometry without changing source or material tags', () => {
+  const raw = Geo.buildRing(3, .5, 64, 16);
+  const source = Array.from(raw.verts), originalIndices = Array.from(raw.idx);
+  const far = Geo.simplifyMesh(raw, 8);
+  assert(far.idx.length < raw.idx.length * .8);
+  assert(far.idx.length > 0);
+  assert(Math.max(...far.idx) < far.verts.length / Geo.STRIDE);
+  assert([...far.verts].every(Number.isFinite));
+  assert.deepEqual(Array.from(raw.verts), source);
+  assert.deepEqual(Array.from(raw.idx), originalIndices);
+  for (let o=0;o<far.verts.length;o+=12) {
+    assert.equal(far.verts[o+8],3);assert.equal(far.verts[o+9],6);
+    assert(Math.abs(far.verts[o])<=3.5 && Math.abs(far.verts[o+1])<=3.5 && Math.abs(far.verts[o+2])<=.5);
+  }
+});

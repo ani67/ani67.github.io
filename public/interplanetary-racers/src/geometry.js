@@ -309,6 +309,48 @@ const Geo = (() => {
     return chunks;
   }
 
+  // Vertex clustering is used only for distant visual meshes. Material boundaries
+  // and opposing face normals remain separate; collision meshes never use this.
+  function simplifyMesh(mesh, divisions = 12) {
+    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+    for (let o = 0; o < mesh.verts.length; o += STRIDE) for (let k = 0; k < 3; k++) {
+      lo[k] = Math.min(lo[k], mesh.verts[o + k]); hi[k] = Math.max(hi[k], mesh.verts[o + k]);
+    }
+    const cell = Math.max(...hi.map((n, k) => n - lo[k])) / divisions;
+    if (!(cell > 0)) return { verts: mesh.verts.slice(), idx: mesh.idx.slice() };
+    const buckets = new Map(), remap = new Uint32Array(mesh.verts.length / STRIDE), sums = [], counts = [];
+    for (let o = 0; o < mesh.verts.length; o += STRIDE) {
+      const v = mesh.verts;
+      const normalAxis = Math.abs(v[o + 3]) > Math.abs(v[o + 4]) ? (Math.abs(v[o + 3]) > Math.abs(v[o + 5]) ? 0 : 2) : (Math.abs(v[o + 4]) > Math.abs(v[o + 5]) ? 1 : 2);
+      const face = normalAxis * 2 + (v[o + 3 + normalAxis] < 0 ? 1 : 0);
+      const key = `${Math.round((v[o] - lo[0]) / cell)},${Math.round((v[o + 1] - lo[1]) / cell)},${Math.round((v[o + 2] - lo[2]) / cell)}:${face}:${v[o + 8]},${v[o + 9]},${v[o + 10]},${v[o + 11]}`;
+      if (!buckets.has(key)) { buckets.set(key, counts.length); counts.push(0); sums.push(new Float64Array(STRIDE)); }
+      const id = buckets.get(key); remap[o / STRIDE] = id; counts[id]++;
+      for (let k = 0; k < STRIDE; k++) sums[id][k] += v[o + k];
+    }
+    const verts = new Float32Array(counts.length * STRIDE), indices = [], seen = new Set();
+    for (let i = 0; i < counts.length; i++) {
+      for (let k = 0; k < STRIDE; k++) verts[i * STRIDE + k] = sums[i][k] / counts[i];
+      const n = norm(Array.from(verts.subarray(i * STRIDE + 3, i * STRIDE + 6)));
+      verts.set(n, i * STRIDE + 3);
+    }
+    for (let i = 0; i < mesh.idx.length; i += 3) {
+      const a = remap[mesh.idx[i]], b = remap[mesh.idx[i + 1]], c = remap[mesh.idx[i + 2]];
+      if (a === b || a === c || b === c) continue;
+      // Rotation preserves winding; keep opposite faces for two-sided foliage.
+      const key = a < b && a < c ? `${a},${b},${c}` : b < c ? `${b},${c},${a}` : `${c},${a},${b}`;
+      if (seen.has(key)) continue; seen.add(key); indices.push(a, b, c);
+    }
+    // Keep tiny meshes intact if clustering would erase their silhouette entirely.
+    return indices.length ? { verts, idx: new Uint32Array(indices) } : { verts: mesh.verts.slice(), idx: mesh.idx.slice() };
+  }
+  function withLods(mesh) {
+    if (mesh.idx.length < 180) return mesh;
+    const medium = simplifyMesh(mesh, 16), far = simplifyMesh(mesh, 8);
+    mesh.lods = [medium.idx.length < mesh.idx.length ? medium : { verts: mesh.verts, idx: mesh.idx }, far.idx.length < medium.idx.length ? far : medium];
+    return mesh;
+  }
+
   // Spatial batches keep instancing while allowing whole invisible batches to be skipped.
   // Conservative bounds include shader twist, breathing, sway and quantization.
   function instanceChunks(mesh, data, cellSize = 160) {
@@ -517,5 +559,5 @@ const Geo = (() => {
     return new Float32Array(out);
   }
 
-  return { STRIDE, terrainChunks, instanceChunks, buildTrack, buildTerrain, buildPropMesh, buildPropInstances, buildCar, buildCraft, buildRing, buildCube, buildVolumeProps };
+  return { STRIDE, simplifyMesh, withLods, terrainChunks, instanceChunks, buildTrack, buildTerrain, buildPropMesh, buildPropInstances, buildCar, buildCraft, buildRing, buildCube, buildVolumeProps };
 })();

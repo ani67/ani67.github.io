@@ -5,10 +5,12 @@ const Thumbs = (() => {
   const queued = new Set();                 // keys already in the queue
   const jobs = [];                          // pending work, cheapest first
   const listeners = [];
+  const pendingListeners = [];
   let canvas = null, lastRun = 0, budgetMs = 0;
 
   function init(cv) { canvas = cv; }
   function onReady(fn) { listeners.push(fn); }
+  function onPending(fn) { pendingListeners.push(fn); }
   function ready(key) { for (const f of listeners) { try { f(key); } catch (e) {} } }
   function get(key) { return cache.get(key) || null; }
   function has(key) { return cache.has(key); }
@@ -147,6 +149,7 @@ const Thumbs = (() => {
     queued.add(key);
     jobs.push({ key, fn, cost: cost || 1 });
     jobs.sort((a, b) => a.cost - b.cost);
+    for (const fn of pendingListeners) fn();
     return null;
   }
   function craft(key, recipe, seedN, hue) { return request(key, () => craftJob(key, recipe, seedN, hue), 1); }
@@ -167,5 +170,5 @@ const Thumbs = (() => {
     lastRun = performance.now();
   }
 
-  return { init, craft, planet, get, has, onReady, pump, size: TW + 'x' + TH, stats: () => ({ cached: cache.size, pending: jobs.length, lastMs: +budgetMs.toFixed(0) }) };
+  return { init, craft, planet, get, has, onReady, onPending, hasPending: () => jobs.length > 0, pump, size: TW + 'x' + TH, stats: () => ({ cached: cache.size, pending: jobs.length, lastMs: +budgetMs.toFixed(0) }) };
 })();

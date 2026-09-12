@@ -110,7 +110,7 @@ const Gpu = (() => {
     const scenePipe = (vs, buffers, shadows = true, write = true, compare = 'less') => device.createRenderPipeline({
       layout: sceneLayout,
       vertex: { module: sceneMod, entryPoint: vs, buffers },
-      fragment: { module: sceneMod, entryPoint: 'fsScene', constants: { WITH_SHADOWS: shadows }, targets },
+      fragment: { module: sceneMod, entryPoint: shadows ? 'fsScene' : 'fsSceneEco', constants: { WITH_SHADOWS: shadows }, targets: shadows ? targets : targets.slice(0, 1) },
       primitive: { topology: 'triangle-list', cullMode: 'none' },
       depthStencil: depth(write, compare),
     });
@@ -120,29 +120,31 @@ const Gpu = (() => {
       primitive: { topology: 'triangle-list', cullMode: 'none' },
       depthStencil: { format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less', depthBias: 2, depthBiasSlopeScale: 2.5 },
     });
-    pipes.sky = device.createRenderPipeline({
+    const skyPipe = eco => device.createRenderPipeline({
       layout: sceneLayout,
       vertex: { module: skyMod, entryPoint: 'vsFull' },
-      fragment: { module: skyMod, entryPoint: 'fsSky', targets },
+      fragment: { module: skyMod, entryPoint: eco ? 'fsSkyEco' : 'fsSky', targets: eco ? targets.slice(0, 1) : targets },
       primitive: { topology: 'triangle-list' },
       depthStencil: depth(false, 'always'),
     });
+    pipes.sky = skyPipe(false); pipes.skyEco = skyPipe(true);
     pipes.static = scenePipe('vsStatic', [vertLayout]);
     pipes.prop = scenePipe('vsProp', [vertLayout, propInstLayout]);
     pipes.car = scenePipe('vsCar', [vertLayout, carInstLayout]);
     pipes.staticEco = scenePipe('vsStatic', [vertLayout], false);
     pipes.propEco = scenePipe('vsProp', [vertLayout, propInstLayout], false);
     pipes.carEco = scenePipe('vsCar', [vertLayout, carInstLayout], false);
-    pipes.water = device.createRenderPipeline({
+    const waterPipe = eco => device.createRenderPipeline({
       layout: sceneLayout,
       vertex: { module: sceneMod, entryPoint: 'vsStatic', buffers: [vertLayout] },
-      fragment: { module: sceneMod, entryPoint: 'fsWater', targets: [
+      fragment: { module: sceneMod, entryPoint: eco ? 'fsWaterEco' : 'fsWater', targets: [
         { format: 'rgba16float', blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'zero', dstFactor: 'one', operation: 'add' } } },
-        { format: 'rgba16float' },
+        ...(eco ? [] : [{ format: 'rgba16float' }]),
       ] },
       primitive: { topology: 'triangle-list', cullMode: 'none' },
       depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less' },
     });
+    pipes.water = waterPipe(false); pipes.waterEco = waterPipe(true);
     // Particles: instance-only quads, two blend modes, depth tested, no depth or normal writes.
     const partMod = mkModule('particles', Shaders.particles);
     const partLayout = { arrayStride: 64, stepMode: 'instance', attributes: [
@@ -153,18 +155,20 @@ const Gpu = (() => {
     ] };
     const keepAlpha = { srcFactor: 'zero', dstFactor: 'one', operation: 'add' };
     const keepAll = { color: keepAlpha, alpha: keepAlpha };
-    const partPipe = (fs, blendColor) => device.createRenderPipeline({
+    const partPipe = (fs, blendColor, eco = false) => device.createRenderPipeline({
       layout: sceneLayout,
       vertex: { module: partMod, entryPoint: 'vsParticle', buffers: [partLayout] },
-      fragment: { module: partMod, entryPoint: fs, targets: [
+      fragment: { module: partMod, entryPoint: eco ? fs + 'Eco' : fs, targets: [
         { format: 'rgba16float', blend: { color: blendColor, alpha: keepAlpha } },
-        { format: 'rgba16float', blend: keepAll },
+        ...(eco ? [] : [{ format: 'rgba16float', blend: keepAll }]),
       ] },
       primitive: { topology: 'triangle-list', cullMode: 'none' },
       depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less' },
     });
     pipes.partAdd = partPipe('fsParticleAdd', { srcFactor: 'one', dstFactor: 'one', operation: 'add' });
     pipes.partAlpha = partPipe('fsParticleAlpha', { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' });
+    pipes.partAddEco = partPipe('fsParticleAdd', { srcFactor: 'one', dstFactor: 'one', operation: 'add' }, true);
+    pipes.partAlphaEco = partPipe('fsParticleAlpha', { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, true);
     pipes.staticShadow = shadowPipe('vsStaticShadow', [vertLayout]);
     pipes.propShadow = shadowPipe('vsPropShadow', [vertLayout, propInstLayout]);
     pipes.carShadow = shadowPipe('vsCarShadow', [vertLayout, carInstLayout]);
@@ -177,7 +181,7 @@ const Gpu = (() => {
     const compositePipe = effects => device.createRenderPipeline({
       layout: postLayout,
       vertex: { module: postMod, entryPoint: 'vsFull' },
-      fragment: { module: postMod, entryPoint: 'fsComposite', constants: { WITH_EFFECTS: effects, WITH_BLOOM: effects }, targets: [{ format }] },
+      fragment: { module: postMod, entryPoint: effects ? 'fsComposite' : 'fsCompositeEco', constants: effects ? { WITH_EFFECTS: true, WITH_BLOOM: true } : {}, targets: [{ format }] },
       primitive: { topology: 'triangle-list' },
     });
     pipes.composite = compositePipe(true);
@@ -201,7 +205,7 @@ const Gpu = (() => {
     const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING;
     sceneTex?.destroy(); ndTex?.destroy(); depthTex?.destroy(); bloomTex?.destroy();
     sceneTex = device.createTexture({ size: [w, h], format: 'rgba16float', usage });
-    ndTex = device.createTexture({ size: [w, h], format: 'rgba16float', usage });
+    ndTex = device.createTexture({ size: presets[quality].effects ? [w, h] : [1, 1], format: 'rgba16float', usage });
     depthTex = device.createTexture({ size: [w, h], format: 'depth24plus', usage: GPUTextureUsage.RENDER_ATTACHMENT });
     bloomTex = device.createTexture({ size: presets[quality].bloom ? [Math.max(1, w >> 2), Math.max(1, h >> 2)] : [1, 1], format: 'rgba16float', usage });
     const mk = (a, b) => device.createBindGroup({ layout: pipes.postBGL, entries: [
@@ -302,6 +306,23 @@ const Gpu = (() => {
     return distanceSquared > far * far ? (mesh.lods[1] || mesh.lods[0]) : distanceSquared > near * near ? mesh.lods[0] : mesh;
   }
 
+  function groupLod(group, frame) {
+    if (!group.mesh.lods?.length || quality === 'high') return group;
+    let distance = group.lodDistance;
+    const bounds = group.worldBounds || group.bounds;
+    if (!Number.isFinite(distance) && bounds) {
+      let squared = 0;
+      for (let axis = 0; axis < 3; axis++) {
+        const p = frame[16 + axis], d = Math.max(bounds.min[axis] - p, 0, p - bounds.max[axis]); squared += d * d;
+      }
+      distance = Math.sqrt(squared);
+    }
+    if (!Number.isFinite(distance)) return group;
+    const [near, far] = group.lodThresholds || (quality === 'eco' ? [150, 450] : [300, 750]);
+    const mesh = distance > far ? (group.mesh.lods[1] || group.mesh.lods[0]) : distance > near ? group.mesh.lods[0] : group.mesh;
+    return mesh === group.mesh ? group : { ...group, mesh };
+  }
+
   // scene = { frame: Float32Array(FRAME_FLOATS), statics: [mesh], propGroups: [{mesh, inst, count, bounds}], carGroups: [...] }
   function render(scene) {
     if (lost) return;
@@ -315,14 +336,16 @@ const Gpu = (() => {
     const propList = [...(scene.props && scene.props.count ? [scene.props] : []), ...(scene.propGroups || [])];
     const cameraStatics = scene.statics.filter(m => visible(m.bounds, scene.frame)).map(m => chooseLod(m, scene.frame));
     const lightStatics = settings.shadowSize ? scene.statics.filter(m => visible(m.bounds, scene.frame, 84)).map(m => chooseLod(m, scene.frame)) : [];
-    const cameraProps = propList.filter(g => g.count && visible(g.bounds, scene.frame));
-    const lightProps = settings.shadowSize ? propList.filter(g => g.count && visible(g.bounds, scene.frame, 84)) : [];
-    const cars = (scene.carGroups || []).filter(g => g.count);
+    const cameraProps = propList.filter(g => g.count && visible(g.worldBounds || g.bounds, scene.frame)).map(g => groupLod(g, scene.frame));
+    const lightProps = settings.shadowSize ? propList.filter(g => g.count && visible(g.worldBounds || g.bounds, scene.frame, 84)).map(g => groupLod(g, scene.frame)) : [];
+    const cars = (scene.carGroups || []).filter(g => g.count).map(g => groupLod(g, scene.frame));
     const triangles = (statics, props) => statics.reduce((n, m) => n + m.count / 3, 0) + [...props, ...cars].reduce((n, g) => n + g.mesh.count / 3 * g.count, 0);
     metrics.sceneTriangles = triangles(cameraStatics, cameraProps) + (scene.water?.count || 0) / 3;
     metrics.shadowTriangles = settings.shadowSize ? triangles(lightStatics, lightProps) : 0;
     metrics.drawCalls = cameraStatics.length + cameraProps.length + cars.length + 2 + (scene.water ? 1 : 0) + (settings.bloom ? 1 : 0) + (settings.shadowSize ? lightStatics.length + lightProps.length + cars.length : 0);
     metrics.culledGroups = scene.statics.length + propList.length - cameraStatics.length - cameraProps.length;
+    metrics.colorAttachments = settings.effects ? 2 : 1;
+    metrics.normalTargetPixels = settings.effects ? W * H : 1;
     metrics.passes = 2 + (settings.shadowSize ? 1 : 0) + (settings.bloom ? 1 : 0);
     // Shadow pass is entirely omitted in Eco; its pipelines also omit sampling.
     if (settings.shadowSize) {
@@ -336,7 +359,7 @@ const Gpu = (() => {
       }
       if (scene.carGroups) {
         p0.setPipeline(pipes.carShadow);
-        for (const g of scene.carGroups) {
+        for (const g of cars) {
           if (!g.count) continue;
           p0.setVertexBuffer(0, g.mesh.vb); p0.setVertexBuffer(1, g.inst);
           p0.setIndexBuffer(g.mesh.ib, 'uint32'); p0.drawIndexed(g.mesh.count, g.count);
@@ -348,12 +371,12 @@ const Gpu = (() => {
       timestampWrites: stamps(1),
       colorAttachments: [
         { view: sceneTex.createView(), loadOp: 'clear', clearValue: [0, 0, 0, 1], storeOp: 'store' },
-        { view: ndTex.createView(), loadOp: 'clear', clearValue: [0, 0, 0, 100000], storeOp: 'store' },
+        ...(settings.effects ? [{ view: ndTex.createView(), loadOp: 'clear', clearValue: [0, 0, 0, 100000], storeOp: 'store' }] : []),
       ],
       depthStencilAttachment: { view: depthTex.createView(), depthClearValue: 1, depthLoadOp: 'clear', depthStoreOp: 'store' },
     });
     p1.setBindGroup(0, sceneBG);
-    p1.setPipeline(pipes.sky); p1.draw(3);
+    p1.setPipeline(settings.effects ? pipes.sky : pipes.skyEco); p1.draw(3);
     p1.setPipeline(settings.shadowSize ? pipes.static : pipes.staticEco);
     for (const m of cameraStatics) { p1.setVertexBuffer(0, m.vb); p1.setIndexBuffer(m.ib, 'uint32'); p1.drawIndexed(m.count); }
     if (propList.length) {
@@ -362,20 +385,20 @@ const Gpu = (() => {
     }
     if (scene.carGroups) {
       p1.setPipeline(settings.shadowSize ? pipes.car : pipes.carEco);
-      for (const g of scene.carGroups) {
+      for (const g of cars) {
         if (!g.count) continue;
         p1.setVertexBuffer(0, g.mesh.vb); p1.setVertexBuffer(1, g.inst);
         p1.setIndexBuffer(g.mesh.ib, 'uint32'); p1.drawIndexed(g.mesh.count, g.count);
       }
     }
     if (scene.water) {
-      p1.setPipeline(pipes.water);
+      p1.setPipeline(settings.effects ? pipes.water : pipes.waterEco);
       p1.setVertexBuffer(0, scene.water.vb); p1.setIndexBuffer(scene.water.ib, 'uint32'); p1.drawIndexed(scene.water.count);
     }
     if (typeof Particles !== 'undefined' && Particles.fill && scene.particles !== false) {
       const pg = Particles.fill(scene.frame);
-      if (pg.alpha.count) { p1.setPipeline(pipes.partAlpha); p1.setVertexBuffer(0, pg.alpha.inst); p1.draw(6, pg.alpha.count); metrics.drawCalls++; metrics.sceneTriangles += pg.alpha.count * 2; }
-      if (pg.add.count) { p1.setPipeline(pipes.partAdd); p1.setVertexBuffer(0, pg.add.inst); p1.draw(6, pg.add.count); metrics.drawCalls++; metrics.sceneTriangles += pg.add.count * 2; }
+      if (pg.alpha.count) { p1.setPipeline(settings.effects ? pipes.partAlpha : pipes.partAlphaEco); p1.setVertexBuffer(0, pg.alpha.inst); p1.draw(6, pg.alpha.count); metrics.drawCalls++; metrics.sceneTriangles += pg.alpha.count * 2; }
+      if (pg.add.count) { p1.setPipeline(settings.effects ? pipes.partAdd : pipes.partAddEco); p1.setVertexBuffer(0, pg.add.inst); p1.draw(6, pg.add.count); metrics.drawCalls++; metrics.sceneTriangles += pg.add.count * 2; }
     }
     p1.end();
     if (settings.bloom) {
