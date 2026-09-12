@@ -22,7 +22,8 @@ const Frame = (() => {
     f.set([d.bandFreq, d.bandPow, d.bandAmt, d.bright ? 1 : 0], 80);
     // Directional light: orthographic box of half-size S around a centre snapped to the shadow texel grid.
     const L = norm(d.sunDir), S = cam.shadowSize || 200, c0 = cam.shadowCenter || cam.look;
-    const texel = (2 * S / 2048) * 4;
+    const shadowResolution = Math.max(1, Gpu.qualitySettings.shadowSize);
+    const texel = (2 * S / shadowResolution) * 4;
     const c = c0.map(v => Math.round(v / texel) * texel);
     const eye = add(c, scale(L, S * 2));
     const lview = lookAt(eye, c, Math.abs(L[1]) > 0.95 ? [0, 0, 1] : [0, 1, 0]);

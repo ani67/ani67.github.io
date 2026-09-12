@@ -16,6 +16,7 @@ const MP = (() => {
   let local = { name: '', raceId: null, archSeed: 1, kitSeed: 1, kit: false, ready: true };
   let world = { planetId: null, seed: null };
   let statusText = 'offline', errorText = '';
+  let hostPaused = false, lastSnapshotTick = null;
   const listeners = [];
   const onChange = () => listeners.forEach(f => { try { f(); } catch (e) {} });
 
@@ -110,6 +111,13 @@ const MP = (() => {
     else if (m.t === 'full') { errorText = 'that room is full'; statusText = 'error'; onChange(); }
     else if (m.t === 'started') { errorText = 'that race is already in progress'; statusText = 'error'; onChange(); }
     else if (m.t === 'start') applyStart(m);
+    else if (m.t === 'pause' && pid === Net.hostId()) {
+      if (!Array.isArray(m.snapshot)) return;
+      if (!onState(pid, new Uint8Array(m.snapshot).buffer)) return;
+      hist = []; sendAcc = 0;
+      if (G()) syncRace(G().mp.race());
+      onChange();
+    }
     else if (m.t === 'use') { const c = cars && cars[m.slot]; if (c) { c.item = m.item; c.useItem = true; } }
     else if (m.t === 'fin') { const c = cars && cars[m.slot]; if (c) { c.finished = true; c.finishTime = m.time; } }
     else if (m.t === 'bye') { statusText = 'closed'; errorText = 'the host ended the room'; onChange(); }
@@ -129,7 +137,7 @@ const MP = (() => {
     roster = makeRoster();
     localSlot = roster.findIndex(r => r.pid === myPid);
     if (localSlot < 0) localSlot = 0;
-    started = true;
+    started = true; hostPaused = false; lastSnapshotTick = null;
     sendStart();
     onChange();
     G().ui.select({ planetId, seed, mode: 'race' });
@@ -138,7 +146,7 @@ const MP = (() => {
     roster = m.roster; world = { planetId: m.planetId, seed: m.seed };
     localSlot = roster.findIndex(r => r.pid === myPid);
     if (localSlot < 0) localSlot = 0;
-    started = true; buf = []; hist = []; seq = 0; ackSeq = 0;
+    started = true; hostPaused = false; lastSnapshotTick = null; buf = []; hist = []; seq = 0; ackSeq = 0;
     statusText = 'racing';
     onChange();
     G().ui.select({ planetId: m.planetId, seed: m.seed, mode: 'race' });
@@ -155,7 +163,7 @@ const MP = (() => {
     d.setFloat32(8, rs.timer, true);
     d.setUint8(12, ST[rs.state] === undefined ? 0 : ST[rs.state]);
     d.setUint8(13, n);
-    d.setUint8(14, 0); d.setUint8(15, 0);
+    d.setUint8(14, hostPaused ? 1 : 0); d.setUint8(15, 0);
     let o = HDR;
     for (let i = 0; i < n; i++) {
       const c = cars[i];
@@ -179,7 +187,7 @@ const MP = (() => {
   function decodeSnapshot(ab) {
     const d = new DataView(ab);
     const n = d.getUint8(13);
-    const snap = { tick: d.getUint32(0, true), elapsed: d.getFloat32(4, true), timer: d.getFloat32(8, true), state: STN[d.getUint8(12)] || 'racing', states: new Map(), ack: 0 };
+    const snap = { tick: d.getUint32(0, true), elapsed: d.getFloat32(4, true), timer: d.getFloat32(8, true), state: STN[d.getUint8(12)] || 'racing', states: new Map(), ack: 0, paused: !!d.getUint8(14) };
     let o = HDR;
     for (let i = 0; i < n; i++) {
       const f = d.getUint8(o + 3);
@@ -224,12 +232,19 @@ const MP = (() => {
       if (prev && ((m.seq - prev.seq) & 0xffff) > 0x8000) return;   // stale packet, unreliable channel
       inputs.set(e.slot, { seq: m.seq, ctl: m.ctl, at: performance.now() });
     } else {
+      if (pid !== Net.hostId()) return;
       const snap = decodeSnapshot(ab);
+      // The state channel is unordered; late pre-pause packets must not resume a room.
+      if (lastSnapshotTick !== null && ((snap.tick - lastSnapshotTick) >>> 0) >= 0x80000000) return;
+      if (snap.tick === lastSnapshotTick) return;
+      lastSnapshotTick = snap.tick;
+      if (hostPaused !== snap.paused) { hostPaused = snap.paused; onChange(); }
       stats.snapBytes = ab.byteLength; stats.snapCount++; stats.lastSnap = performance.now();
       buf.push({ at: performance.now(), snap });
       if (buf.length > 30) buf.shift();
       ackSeq = snap.ack;
       reconcile(snap);
+      return true;
     }
   }
 
@@ -311,7 +326,7 @@ const MP = (() => {
     if (!e || e.bot) return null;
     if (c.id === localSlot) return null;                        // the host drives its own craft from the keyboard
     const inp = inputs.get(c.id);
-    if (!inp) return { steer: 0, throttle: 0, brake: 0, drift: false, pitch: 0, jump: false };
+    if (!inp || performance.now() - inp.at > 500) return { steer: 0, throttle: 0, brake: 0, drift: false, pitch: 0, jump: false };
     if (inp.ctl.useItem) { c.useItem = true; inp.ctl = { ...inp.ctl, useItem: false }; }
     return inp.ctl;
   }
@@ -382,7 +397,7 @@ const MP = (() => {
     if (mode === 'host') Net.send('all', 'evt', { t: 'bye' });
     try { Net.close(); } catch (e) {}
     mode = null; roster = null; started = false; players = []; buf = []; hist = []; cars = null; myPid = null;
-    statusText = 'offline'; errorText = '';
+    statusText = 'offline'; errorText = ''; hostPaused = false; lastSnapshotTick = null;
     onChange();
   }
   function setLocal(o) {
@@ -390,6 +405,16 @@ const MP = (() => {
     if (mode === 'host') { const p = players.find(x => x.pid === myPid) || players[0]; if (p) Object.assign(p, o); broadcastLobby(); }
     else if (mode === 'client' && Net.hostId()) Net.send(Net.hostId(), 'evt', { t: 'pick', raceId: local.raceId, archSeed: local.archSeed, kitSeed: local.kitSeed, kit: local.kit });
   }
+
+  // A browser cannot keep an authoritative race reliably ticking in the background.
+  // Pause the room explicitly rather than letting clients predict while the host sleeps.
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => {
+    if (mode !== 'host' || !active() || !cars) return;
+    hostPaused = document.hidden;
+    inputs.clear(); snapAcc = 0;
+    Net.send('all', 'evt', { t: 'pause', paused: hostPaused, snapshot: Array.from(new Uint8Array(encodeSnapshot())) });
+    onChange();
+  });
 
   if (typeof window !== 'undefined') window.addEventListener('pagehide', () => { try { if (mode) Net.send('all', 'evt', { t: 'bye' }); } catch (e) {} });
 
@@ -400,7 +425,7 @@ const MP = (() => {
     status: () => statusText, error: () => errorText, code: () => code, isHost: () => mode === 'host', isClient: () => mode === 'client',
     connected: () => mode !== null, started: () => started, world: () => world,
     // game hooks
-    active, roster: () => (active() ? roster : null), localSlot: () => localSlot,
+    active, paused: () => active() && hostPaused, roster: () => (active() ? roster : null), localSlot: () => localSlot,
     assignCars, skip, control, interpolate, syncRace, beforeUpdate, afterUpdate, fired, finished,
     useItem: () => { const c = cars && cars[localSlot]; if (c) c.mpUsed = true; },
     stats: () => ({

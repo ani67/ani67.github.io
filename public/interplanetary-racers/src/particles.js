@@ -13,11 +13,16 @@ const Particles = (() => {
   let ground = null, waterLevel = -1e4, lastRun = 0, acc = 0;
   const stats = { live: 0, updateMs: 0, fillMs: 0, spawned: 0 };
   let rng = Math.random;
+  const visualTier = () => Gpu.getQuality ? Gpu.getQuality() : 'high';
+  const limits = { eco: 1500, balanced: 5000, high: MAX };
   const r1 = () => rng() * 2 - 1;
   function randDir() { const z = r1(), a = rng() * 6.2832, r = Math.sqrt(1 - z * z); return [r * Math.cos(a), z, r * Math.sin(a)]; }
 
   // p: { pos, vel, life, size0, size1, color, alpha, type, blend, rot, rotVel, drag, gravity, fadeIn }
   function spawn(p) {
+    // Keep brief hit/weapon cues even when cosmetic exhaust reaches its budget.
+    const limit = limits[visualTier()], important = p.type === 1 || p.type === 5;
+    if (count >= limit && !important) return -1;
     let i;
     if (count < MAX) i = count++;
     else { i = Math.floor(rng() * MAX); } // overwrite a random one when full
@@ -70,8 +75,10 @@ const Particles = (() => {
     const cx = frame[16], cy = frame[17], cz = frame[18];
     addCount = 0; alphaCount = 0;
     let na = 0;
+    const tier = visualTier(), range = tier === 'eco' ? 220 : tier === 'balanced' ? 450 : Infinity;
+    const visible = i => type[i] === 1 || type[i] === 5 || (px[i * 3] - cx) ** 2 + (px[i * 3 + 1] - cy) ** 2 + (px[i * 3 + 2] - cz) ** 2 < range * range;
     for (let i = 0; i < count; i++) {
-      if (blend[i] === 1) { order[na] = i; depthKeys[na] = -((px[i * 3] - cx) ** 2 + (px[i * 3 + 1] - cy) ** 2 + (px[i * 3 + 2] - cz) ** 2); na++; }
+      if (blend[i] === 1 && visible(i)) { order[na] = i; depthKeys[na] = -((px[i * 3] - cx) ** 2 + (px[i * 3 + 1] - cy) ** 2 + (px[i * 3 + 2] - cz) ** 2); na++; }
     }
     const put = (data, k, i) => {
       const o = k * F, l = 1 - life[i] / maxLife[i]; // 0 at birth, 1 at death
@@ -83,7 +90,7 @@ const Particles = (() => {
       data[o + 8] = pv[i * 3]; data[o + 9] = pv[i * 3 + 1]; data[o + 10] = pv[i * 3 + 2];
       data[o + 11] = rot[i]; data[o + 12] = type[i]; data[o + 13] = l; data[o + 14] = 0; data[o + 15] = 0;
     };
-    for (let i = 0; i < count; i++) if (blend[i] === 0) put(addData, addCount++, i);
+    for (let i = 0; i < count; i++) if (blend[i] === 0 && visible(i)) put(addData, addCount++, i);
     // Alpha particles far to near (keys are negative squared distance).
     alphaCount = 0;
     if (na) {

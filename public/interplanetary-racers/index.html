@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Interplanetary Racers — Play the Game | Ani Dalal</title>
 <meta name="description" content="Play Interplanetary Racers, a procedural hover racing game by Ani Dalal. Choose a craft, explore ten planets, and race solo against bots or with friends.">
 <link rel="canonical" href="https://anidalal.com/interplanetary-racers/">
@@ -139,7 +139,7 @@
   .setup .statrow .st .v { font-size: 13px; color: var(--ink); }
   .setup .statrow .st i { grid-column: 1 / span 2; display: block; height: 3px; background: rgba(255,255,255,.14); border-radius: 2px; overflow: hidden; }
   .setup .statrow .st i::after { content: ""; display: block; height: 100%; width: calc(var(--v) * 100%); background: var(--accent); transition: width .25s; }
-  .railwrap { position: absolute; left: 32px; right: 32px; bottom: 84px; display: grid; grid-template-columns: 36px 1fr 36px; align-items: center; gap: 8px; }
+  .railwrap { position: absolute; left: 32px; right: 32px; bottom: 84px; display: grid; grid-template-columns: 36px minmax(0, 1fr) 36px; align-items: center; gap: 8px; }
   .railbtn { width: 36px; height: 36px; border-radius: 999px; display: grid; place-items: center; color: var(--muted); border: 1px solid var(--line); background: rgba(0,0,0,.3); font-size: 18px; }
   .railbtn:hover { color: var(--ink); background: rgba(255,255,255,.1); }
   .rail { display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; scrollbar-width: none; padding: 8px 4px; }
@@ -223,6 +223,56 @@
     .rail .tile .pic { height: 80px; }
   }
   @media (max-width: 900px) { #board { display: none; } #legend { display: none; } .setup .hero { display: none; } .setup .statrow { grid-template-columns: repeat(3, 1fr); } }
+  #settings .panel { max-height: calc(100dvh - 100px); overflow-y: auto; }
+  #raceTools { position: fixed; top: max(50px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 3; }
+  #raceTools .btn { min-height: 44px; padding: 7px 10px; background: rgba(12,12,16,.7); }
+  #touchControls { position: fixed; bottom: max(10px, env(safe-area-inset-bottom)); left: max(10px, env(safe-area-inset-left)); right: max(10px, env(safe-area-inset-right)); display: none; justify-content: space-between; gap: 12px; pointer-events: none; z-index: 3; }
+  .touch-bank { display: grid; grid-template-columns: repeat(2, 60px); gap: 6px; }
+  .touch-bank button { min-height: 44px; padding: 6px 2px; font: 12px var(--sans); color: var(--ink); background: rgba(12,12,16,.65); border: 1px solid var(--line); border-radius: 12px; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .touch-bank button.held { background: var(--accent); color: #101014; }
+  #raceNotice { position: fixed; z-index: 5; top: 105px; left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 32px)); padding: 14px; background: #18181d; border: 1px solid var(--line); border-radius: 12px; font-size: 13px; }
+  #raceNotice button { float: right; color: inherit; background: transparent; border: 0; font-size: 22px; }
+  #gpuRecovery { position: fixed; inset: 0; z-index: 1001; background: #101014; color: var(--ink); padding: 15vh 8vw; text-align: center; }
+  #raceTools[hidden], #touchControls[hidden], #raceNotice[hidden], #gpuRecovery[hidden] { display: none; }
+  .touch-note { display: none; }
+  @media (any-pointer: coarse) {
+    #raceTools { left: auto; right: max(12px, env(safe-area-inset-right)); transform: none; }
+    #touchControls:not([hidden]) { display: flex; }
+    .touch-note { display: block; }
+    #brand { top: max(12px, env(safe-area-inset-top)); left: 12px; }
+    #brand .name { display: none; }
+    #brand .where { max-width: 135px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #legend, #board { display: none; }
+    #dash { bottom: 168px; transform: scale(.52); transform-origin: left bottom; }
+    #minimap { bottom: 178px; right: 10px; width: 110px; height: 77px; }
+  }
+  @media (max-width: 600px) {
+    .setup .head.top { top: 58px; left: 18px; right: 18px; align-items: flex-start; flex-direction: column; gap: 12px; }
+    .setup .head.top h2 { font-size: 30px; }
+    .setup .tools.bottom { left: 18px; right: 18px; bottom: max(12px, env(safe-area-inset-bottom)); }
+    .tools { flex-wrap: wrap; }
+    .tools .left, .tools .right { flex-wrap: wrap; }
+    .setup .tools .right { width: 100%; justify-content: space-between; }
+    .setup .tools .left { width: 100%; }
+    .setup .tools .field { width: 100%; min-width: 0; }
+    .setup .tools .field input { width: 100%; min-width: 0; }
+    .setup .arch .name { min-width: 100px; font-size: 20px; }
+    #archHint { display: none; }
+    .railwrap { bottom: 132px; left: 12px; right: 12px; }
+    .setup .statrow { bottom: 300px; left: 18px; right: 18px; }
+    #room .panel, #results .panel { width: calc(100vw - 24px) !important; padding: 18px; max-height: calc(100dvh - 100px); overflow-y: auto; }
+    #room .head { align-items: flex-start; flex-direction: column; gap: 8px; }
+
+    #settings .grid { grid-template-columns: 1fr; gap: 24px; }
+    #settings .panel { width: calc(100vw - 24px) !important; padding: 18px; }
+    #settings .row { grid-template-columns: 95px minmax(0, 1fr) 34px; gap: 8px; }
+    #settings select { min-width: 0; width: 100%; }
+  }
+  @media (any-pointer: coarse) and (max-height: 500px) {
+    .touch-bank { grid-template-columns: repeat(3, 54px); }
+    #dash { bottom: 104px; transform: scale(.4); }
+    #minimap { bottom: 112px; width: 90px; height: 63px; }
+  }
 </style>
 </head>
 <body>
@@ -250,6 +300,13 @@
   <canvas id="minimap" width="500" height="348"></canvas>
 </div>
 
+<div id="raceTools" hidden><button class="btn" id="raceSettings">Settings</button><button class="btn" id="raceRestart">Restart</button><button class="btn" id="raceHome">Home</button></div>
+<div id="touchControls" hidden aria-label="Flight controls">
+  <div class="touch-bank"><button data-flight="ArrowLeft" aria-label="Steer left">←</button><button data-flight="ArrowRight" aria-label="Steer right">→</button><button data-flight="ArrowUp" aria-label="Pitch up">Pitch ↑</button><button data-flight="ArrowDown" aria-label="Pitch down">Pitch ↓</button><button data-flight="Space">Rise</button><button data-flight="KeyC">Camera</button></div>
+  <div class="touch-bank"><button data-flight="KeyW">Go</button><button data-flight="KeyS">Brake</button><button data-flight="ShiftLeft">Drift</button><button data-flight="KeyE">Item</button><button data-flight="KeyR">To lane</button><button data-flight="KeyM">Mute</button></div>
+</div>
+<div id="raceNotice" hidden role="status"><span></span><button type="button" aria-label="Dismiss notice">×</button></div>
+<div id="gpuRecovery" hidden role="alert"><h2>Graphics connection interrupted</h2><p>Reload to reconnect to your graphics device. You may need to rejoin your room.</p><button class="btn" onclick="location.reload()">Reload game</button></div>
 <div id="ui">
   <div class="screen" id="cover">
     <div class="scrim"></div>
@@ -266,7 +323,8 @@
       <div class="grid">
         <div>
           <div class="label">Rendering</div>
-          <div class="row"><span>Render scale</span><select id="setScale"><option value="0.5">Low</option><option value="0.75">Medium</option><option value="1" selected>High</option><option value="1.35">Ultra</option></select><span></span></div>
+          <div class="row"><label for="setQuality">Graphics</label><select id="setQuality" aria-describedby="qualityNote"><option value="eco">Eco</option><option value="balanced">Balanced</option><option value="high">High</option></select><span></span></div>
+          <p class="note" id="qualityNote"></p><p class="note" id="settingsRaceNote"></p>
           <div class="label" style="margin-top:22px">Look</div>
           <div class="row"><span>Ink lines</span><input type="range" id="setEdge" min="0" max="0.8" step="0.01"><span class="num" id="setEdgeV"></span></div>
           <div class="row"><span>Dither</span><input type="range" id="setDither" min="0" max="0.4" step="0.01"><span class="num" id="setDitherV"></span></div>
@@ -279,7 +337,7 @@
         </div>
         <div>
           <div class="label" style="margin-bottom:12px">Controls</div>
-          <div class="ctl" id="setControls"></div>
+          <p class="note touch-note">Use the on-screen flight buttons. Hold Go to accelerate, steer with the arrows, and hold Drift then release to boost. Landscape gives you more room.</p><div class="ctl" id="setControls"></div>
         </div>
       </div>
     </div>

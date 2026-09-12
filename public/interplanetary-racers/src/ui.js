@@ -2,9 +2,8 @@
 const UI = (() => {
   const $ = id => document.getElementById(id);
   let screen = null, sel = { race: 0, planet: 0, archSeed: 1, kit: false, kitSeed: 1 }, seed = '', roomCode = '', boardTimer = 0, legendTimer = null;
-  const settings = { scale: 1, name: null };
+  const settings = { name: null };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('ir.settings') || '{}')); } catch (e) {}
-  const save = () => { try { localStorage.setItem('ir.settings', JSON.stringify(settings)); } catch (e) {} };
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
   const A = fn => { try { if (typeof Audio !== 'undefined' && Audio && Audio.sfx) fn(Audio); } catch (e) {} };
   // Browsers only allow audio after a user gesture. The cover's Start button is one, but deep links
@@ -19,6 +18,9 @@ const UI = (() => {
   // ---------------------------------------------------------------- screens
   function show(name) {
     screen = name;
+    releaseFlight();
+    $('touchControls').hidden = name !== null;
+    $('raceTools').hidden = name !== null;
     for (const el of document.querySelectorAll('#ui .screen')) el.classList.toggle('on', el.id === name);
     $('hud').classList.toggle('on', name === null || name === 'results');
     if (name === 'cover') updateCoverLine();
@@ -166,6 +168,17 @@ const UI = (() => {
   }
   // A stable key per craft so a render is cached and reused across rail rebuilds.
   function craftKey(race, kit, seedN) { return 'c:' + (kit ? 'kit' : race.vehicle) + ':' + race.id + ':' + seedN; }
+  let thumbObserver = null;
+  function observeThumbs(rail) {
+    if (thumbObserver) thumbObserver.disconnect();
+    thumbObserver = new IntersectionObserver(entries => {
+      for (const entry of entries) if (entry.isIntersecting) {
+        entry.target.requestThumb?.();
+        thumbObserver.unobserve(entry.target);
+      }
+    }, { root: rail, rootMargin: '0px 100px' });
+    for (const tile of rail.children) if (tile.requestThumb) thumbObserver.observe(tile);
+  }
   function renderShip() {
     const cc = currentCraft(), r = cc.race, home = Planets.planet(r.planet);
     const st = Stats.compute(cc.recipe, cc.seed);
@@ -179,20 +192,25 @@ const UI = (() => {
     const rail = $('shipRail'); rail.innerHTML = '';
     Planets.RACES.forEach((race, i) => {
       const key = craftKey(race, false, sel.archSeed);
-      const url = TH() ? Thumbs.craft(key, Planets.RECIPES[race.vehicle], sel.archSeed, race.hue) : null;
+      const seedN = sel.archSeed;
+      const url = TH() ? Thumbs.get(key) : null;
       const b = tile(i === sel.race && !sel.kit ? 'on' : '', url, key, Planets.VEHICLES[race.vehicle].name, race.name);
+      if (!url && TH()) b.requestThumb = () => Thumbs.craft(key, Planets.RECIPES[race.vehicle], seedN, race.hue);
       b.dataset.i = i;
       b.onclick = () => { sel.race = i; sel.kit = false; goShip(); };
       rail.appendChild(b);
     });
     const kitKey = craftKey(r, true, sel.kitSeed);
-    const kitUrl = cc.craft && TH() ? Thumbs.craft(kitKey, cc.craft, sel.kitSeed, r.hue) : null;
+    const kitSeedN = sel.kitSeed;
+    const kitUrl = cc.craft && TH() ? Thumbs.get(kitKey) : null;
     const kb = tile('kit' + (sel.kit ? ' on' : ''), kitUrl, cc.craft ? kitKey : '', 'Kitbash', sel.kit ? 'reroll ›' : 'generate one');
+    if (!kitUrl && cc.craft && TH()) kb.requestThumb = () => Thumbs.craft(kitKey, cc.craft, kitSeedN, r.hue);
     kb.onclick = () => { if (sel.kit) sel.kitSeed = Math.floor(Math.random() * 9000) + 1; sel.kit = true; goShip(); };
     rail.appendChild(kb);
     scrollToOn(rail);
+    observeThumbs(rail);
   }
-  function scrollToOn(rail) { const on = rail.querySelector('.tile.on'); if (on) on.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); }
+  function scrollToOn(rail) { const on = rail.querySelector('.tile.on'); if (on) on.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' }); }
 
   // ---------------------------------------------------------------- planet screen: hero + rail with painted glimpses
   const glimpseCache = new Map();
@@ -247,21 +265,25 @@ const UI = (() => {
     const rail = $('planetRail'); rail.innerHTML = '';
     Planets.PLANETS.forEach((pl, i) => {
       const key = 'p:' + pl.id;
-      const url = TH() ? (Thumbs.get(key) || Thumbs.planet(pl)) : null;
+      const url = TH() ? Thumbs.get(key) : null;
       const b = tile(i === sel.planet ? 'on' : '', url, key, pl.name, (pl.laneStyle || (pl.mode === 'corridor' ? 'sky' : 'terrain')) + ' lane');
       b.dataset.i = i;
+      if (!url && TH()) b.requestThumb = () => Thumbs.planet(pl);
       if (!url) { const g = planetGlimpse(pl); const pic = b.querySelector('.pic'); pic.classList.remove('wait'); pic.appendChild(g); pic.classList.add('paint'); }
       b.onclick = () => { sel.planet = i; goPlanet(); };
       rail.appendChild(b);
     });
     scrollToOn(rail);
+    observeThumbs(rail);
   }
 
   // ---------------------------------------------------------------- settings
   function syncSettings() {
     // The look sliders need a loaded world; the rest of the panel works without one (deep link, cover).
     let look = null; try { look = Game.ui.desc().look; } catch (e) {}
-    $('setScale').value = String(settings.scale);
+    $('setQuality').value = Game.ui.quality();
+    updateQualityNote();
+    $('settingsRaceNote').textContent = lastBefore === null && Game.ui.state() === 'race' ? (Game.ui.paused() ? 'Race paused. Back to continue.' : 'Your multiplayer race continues while settings are open.') : '';
     for (const id of ['setEdge', 'setDither', 'setMap']) $(id).disabled = !look;
     if (look) {
       $('setEdge').value = look.edge; $('setEdgeV').textContent = (+look.edge).toFixed(2);
@@ -345,7 +367,7 @@ const UI = (() => {
     else if (screen === 'settings') back();
   }
   function back() {
-    if (screen === 'settings') show(lastBefore || 'cover');
+    if (screen === 'settings') { Game.ui.setPaused(false); show(lastBefore); }
     else if (screen === 'ship') goCover();
     else if (screen === 'planet') goShip();
     else if (screen === 'room') goPlanet();
@@ -353,10 +375,60 @@ const UI = (() => {
   }
   let lastBefore = null;
 
-  // Render scale: the renderer sizes its targets from devicePixelRatio, so scale that.
-  const baseDpr = window.devicePixelRatio || 1;
-  // Never delete the global; always redefine it so `devicePixelRatio` stays a valid identifier.
-  function setScale(sc) { try { Object.defineProperty(window, 'devicePixelRatio', { configurable: true, get: () => baseDpr * sc }); } catch (e) {} }
+  const QUALITY_NOTES = {
+    eco: '30 FPS limit. Lower resolution, no dynamic shadows or bloom. Uses less graphics power.',
+    balanced: '60 FPS limit. Reduced shadows and adaptive resolution for smoother play.',
+    high: '60 FPS limit. Sharper rendering and full effects, with a higher graphics workload.',
+  };
+  function updateQualityNote() { $('qualityNote').textContent = QUALITY_NOTES[Game.ui.quality()]; }
+  function openSettings() {
+    lastBefore = screen;
+    Game.ui.setPaused(true);
+    show('settings');
+  }
+  const heldFlight = new Map();
+  const flightEvent = (type, code) => window.dispatchEvent(new KeyboardEvent(type, { code, key: code, bubbles: true, cancelable: true }));
+  function releaseFlight() {
+    for (const button of heldFlight.values()) {
+      flightEvent('keyup', button.dataset.flight);
+      button.classList.remove('held');
+    }
+    heldFlight.clear();
+  }
+  function bindFlight() {
+    for (const button of document.querySelectorAll('[data-flight]')) {
+      button.addEventListener('pointerdown', e => {
+        if (screen !== null || heldFlight.has(e.pointerId)) return;
+        e.preventDefault(); e.stopPropagation();
+        button.setPointerCapture(e.pointerId);
+        heldFlight.set(e.pointerId, button);
+        button.classList.add('held');
+        flightEvent('keydown', button.dataset.flight);
+      });
+      const end = e => {
+        const held = heldFlight.get(e.pointerId);
+        if (!held) return;
+        heldFlight.delete(e.pointerId);
+        if (![...heldFlight.values()].includes(held)) {
+          held.classList.remove('held');
+          flightEvent('keyup', held.dataset.flight);
+        }
+      };
+      for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(type, end);
+      button.addEventListener('contextmenu', e => e.preventDefault());
+    }
+    window.addEventListener('blur', releaseFlight);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) releaseFlight(); });
+    $('raceSettings').onclick = openSettings;
+    $('raceRestart').onclick = () => {
+      if (mp() && MP.active()) { notice('Use To lane (R) to recover during a multiplayer race. Start a new race together from the room.'); return; }
+      Game.ui.restart();
+    };
+    $('raceHome').onclick = () => { if (mp() && MP.connected()) MP.leave(); Game.ui.setPaused(false); Game.ui.home(); goCover(); };
+    $('raceNotice').querySelector('button').onclick = () => { $('raceNotice').hidden = true; };
+    window.addEventListener('ir:device-lost', () => { releaseFlight(); Game.ui.setPaused(true); $('gpuRecovery').hidden = false; });
+  }
+  function notice(message) { $('raceNotice').querySelector('span').textContent = message; $('raceNotice').hidden = false; }
   function bindRail(id, prev, next, onStep) {
     const rail = $(id);
     $(prev).onclick = () => onStep(-1); $(next).onclick = () => onStep(1);
@@ -369,9 +441,10 @@ const UI = (() => {
   }
   function start() {
     $('btnStart').onclick = () => { A(a => a.init()); goShip(); };   // first user gesture: start the audio context here
-    $('btnSettings').onclick = () => { A(a => { a.init(); a.sfx.click(); }); lastBefore = screen; show('settings'); };
+    $('btnSettings').onclick = () => { A(a => { a.init(); a.sfx.click(); }); openSettings(); };
     for (const b of document.querySelectorAll('[data-back]')) b.onclick = () => { A(a => a.sfx.click()); back(); };
-    $('setScale').onchange = () => { settings.scale = +$('setScale').value; save(); setScale(settings.scale); };
+    $('setQuality').onchange = () => { Game.ui.setQuality($('setQuality').value); updateQualityNote(); };
+    bindFlight();
     const look = (id, key, out) => { $(id).oninput = () => { Game.ui.setLook({ [key]: +$(id).value }); $(out).textContent = (+$(id).value).toFixed(2); }; };
     look('setEdge', 'edge', 'setEdgeV'); look('setDither', 'dither', 'setDitherV'); look('setMap', 'colormap', 'setMapV');
     $('setName').onchange = () => { Game.ui.setPlayerName($('setName').value.trim()); };
@@ -406,14 +479,21 @@ const UI = (() => {
       } catch (e) { $('manOut').value = 'failed: ' + e.message; }
       renderRoom();
     };
-    if (mp()) MP.onChange(() => { if (screen === 'room') renderRoom(); });
+    if (mp()) MP.onChange(() => {
+      if (screen === 'room') renderRoom();
+      const paused = MP.paused();
+      const message = 'Race paused while the host is away. It resumes when they return.';
+      if (paused) notice(message);
+      else if ($('raceNotice').querySelector('span').textContent === message) $('raceNotice').hidden = true;
+      $('raceNotice').querySelector('button').hidden = paused;
+    });
     $('resRestart').onclick = () => Game.ui.restart();
     $('resNew').onclick = () => { Game.ui.home(); goShip(); };
     $('resHome').onclick = () => { Game.ui.home(); goCover(); };
     window.addEventListener('keydown', onKey);
     Game.ui.on('finished', showResults);
     Game.ui.on('race', () => { show(null); showLegend(); });
-    setScale(settings.scale);
+
     const q = Game.ui.hashQuery();
     if (Game.ui.state() === 'race') { show(null); showLegend(); }
     else {
@@ -421,15 +501,15 @@ const UI = (() => {
       sel.planet = Math.max(0, Planets.PLANETS.indexOf(p)); sel.race = Math.max(0, Planets.RACES.indexOf(Game.ui.race()));
       show('cover');
     }
-    if (q.settings) show('settings');
+    if (q.settings) openSettings();
     if (TH()) { Thumbs.init(document.getElementById('gl')); Thumbs.onReady(fillThumb); }
     // Thumbnails borrow the canvas for a frame, so only build them while a selector is open.
     const loop = now => {
-      tickBoard(now);
-      if (TH()) Thumbs.pump(screen === 'ship' || screen === 'planet');
+      if (!document.hidden) tickBoard(now);
+      if (!document.hidden && TH()) Thumbs.pump(screen === 'ship' || screen === 'planet');
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
   }
-  return { start, show, showResults, settings };
+  return { start, show, showResults, settings, notice };
 })();

@@ -79,9 +79,11 @@ struct VOut {
 @group(0) @binding(1) var shadowTex : texture_depth_2d;
 @group(0) @binding(2) var shadowSamp : sampler_comparison;
 
+override WITH_SHADOWS: bool = true;
 // Cel shading with a shadow map: three bands (lit, half, shadow) and a hard terminator.
 fn shadowFactor(wp : vec3f, n : vec3f, ndl : f32) -> f32 {
-  let texel = 2.0 / 2048.0;
+  if (!WITH_SHADOWS) { return 1.0; }
+  let texel = 2.0 / f32(textureDimensions(shadowTex).x);
   let lp = F.lightVP * vec4f(wp + n * (0.35 + 0.6 * (1.0 - ndl)), 1.0);
   let uv = vec2f(lp.x * 0.5 + 0.5, 0.5 - lp.y * 0.5);
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0 || lp.z > 1.0) { return 1.0; }
@@ -509,6 +511,8 @@ fn hash3(p : vec3f) -> f32 { return fract(sin(dot(p, vec3f(12.9898, 78.233, 37.7
 fn aces(x : vec3f) -> vec3f {
   return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), vec3f(0.0), vec3f(1.0));
 }
+override WITH_EFFECTS: bool = true;
+override WITH_BLOOM: bool = true;
 @fragment fn fsComposite(i : FOut) -> @location(0) vec4f {
   let speed = F.camFwd.w; let drift = F.params.w; let t = F.camPos.w; let flash = F.res.w;
   var uv = i.uv;
@@ -523,17 +527,20 @@ fn aces(x : vec3f) -> vec3f {
   // Chromatic aberration grows with speed and drift.
   let ca = (0.0012 + speed * 0.004 + drift * 0.004 + flash * 0.012) * length(c) * 2.0;
   let dir = normalize(c + vec2f(1e-5));
-  let cr = textureSample(sceneTex, samp, uv + dir * ca).x;
+
   let c4 = textureSample(sceneTex, samp, uv);
-  let cg = c4.y;
+
   let band = floor(c4.w / 1.5) * 0.5;
   let mask = (c4.w - 1.5 * floor(c4.w / 1.5)) / 0.9;
-  let cb = textureSample(sceneTex, samp, uv - dir * ca).z;
-  var col = vec3f(cr, cg, cb);
+  var col = c4.xyz;
+  if (WITH_EFFECTS) {
+    col.r = textureSample(sceneTex, samp, uv + dir * ca).r;
+    col.b = textureSample(sceneTex, samp, uv - dir * ca).b;
+  }
   // Ink outlines from depth and normal discontinuities.
   let px = vec2i(uv * F.res.xy);
   let inkCol = select(F.pal0.xyz * 0.35, F.ramp1.xyz * 0.22, (u32(F.env.w + 0.5) & 1u) != 0u);
-  if (F.look.z > 0.0) {
+  if (WITH_EFFECTS && F.look.z > 0.0) {
     let nd0 = textureLoad(ndTex, px, 0);
     var dd = 0.0; var nn = 0.0;
     let offs = array<vec2i, 4>(vec2i(1, 0), vec2i(-1, 0), vec2i(0, 1), vec2i(0, -1));
@@ -547,10 +554,12 @@ fn aces(x : vec3f) -> vec3f {
   }
   // Hatching inside the shadow bands: diagonal strokes in screen space, plus a cross hatch in full shadow.
   let hp = vec2f(px);
-  let h1 = step(0.55, fract((hp.x + hp.y) / 7.0 + vnoise(hp * 0.08) * 0.4));
-  let h2 = step(0.6, fract((hp.x - hp.y) / 9.0 + vnoise(hp * 0.05) * 0.4));
-  let hatch = (h1 * select(0.0, 1.0, band < 0.75) + h2 * select(0.0, 1.0, band < 0.25)) * step(0.05, mask);
-  col = mix(col, inkCol, hatch * 0.13);
+  if (WITH_EFFECTS) {
+    let h1 = step(0.55, fract((hp.x + hp.y) / 7.0 + vnoise(hp * 0.08) * 0.4));
+    let h2 = step(0.6, fract((hp.x - hp.y) / 9.0 + vnoise(hp * 0.05) * 0.4));
+    let hatch = (h1 * select(0.0, 1.0, band < 0.75) + h2 * select(0.0, 1.0, band < 0.25)) * step(0.05, mask);
+    col = mix(col, inkCol, hatch * 0.13);
+  }
   // Ordered dither on luminance, then map luminance through the five-colour palette (ColorMap / LUT look).
   if (F.look.x > 0.0) {
     let l = luma(col);
@@ -564,13 +573,15 @@ fn aces(x : vec3f) -> vec3f {
     col = mix(col, floor(col * lv + 0.5) / lv, 0.7);
   }
   // Bloom (quarter res, bilinear) with a small extra spread.
-  let bpx = 4.0 / F.res.xy;
-  var bl = textureSample(bloomTex, samp, uv).xyz * 0.4;
-  bl += textureSample(bloomTex, samp, uv + vec2f(bpx.x, 0.0)).xyz * 0.15;
-  bl += textureSample(bloomTex, samp, uv - vec2f(bpx.x, 0.0)).xyz * 0.15;
-  bl += textureSample(bloomTex, samp, uv + vec2f(0.0, bpx.y)).xyz * 0.15;
-  bl += textureSample(bloomTex, samp, uv - vec2f(0.0, bpx.y)).xyz * 0.15;
-  col += bl * (1.1 + F.res.z * 0.8);
+  if (WITH_BLOOM) {
+    let bpx = 4.0 / F.res.xy;
+    var bl = textureSample(bloomTex, samp, uv).xyz * 0.4;
+    bl += textureSample(bloomTex, samp, uv + vec2f(bpx.x, 0.0)).xyz * 0.15;
+    bl += textureSample(bloomTex, samp, uv - vec2f(bpx.x, 0.0)).xyz * 0.15;
+    bl += textureSample(bloomTex, samp, uv + vec2f(0.0, bpx.y)).xyz * 0.15;
+    bl += textureSample(bloomTex, samp, uv - vec2f(0.0, bpx.y)).xyz * 0.15;
+    col += bl * (1.1 + F.res.z * 0.8);
+  }
   // Speed streaks near the edges.
   let ang = atan2(c.y, c.x);
   let streak = pow(max(vnoise(vec2f(ang * 40.0, t * 30.0)) - 0.55, 0.0) * 2.0, 2.0) * smoothstep(0.1, 0.5, r2) * speed * 1.5;
@@ -581,7 +592,7 @@ fn aces(x : vec3f) -> vec3f {
   col *= mix(0.55, 1.0, vig);
   col += (hash21(i.uv * F.res.xy + t) - 0.5) * 0.03;
   // Paper grain: low-frequency fibre noise.
-  col *= 0.96 + 0.08 * vnoise(hp * 0.35) * vnoise(hp * 0.11 + 5.0);
+  if (WITH_EFFECTS) { col *= 0.96 + 0.08 * vnoise(hp * 0.35) * vnoise(hp * 0.11 + 5.0); }
   return vec4f(col, 1.0);
 }
 `;

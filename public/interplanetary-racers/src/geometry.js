@@ -260,7 +260,78 @@ const Geo = (() => {
       return mix(mix(h00, h10, ux), mix(h01, h11, ux), uz);
     };
     mesh.ext = ext;
+    mesh.gridSize = G;
     return mesh;
+  }
+
+  // Keep collision sampling at full resolution; these chunks only change drawing.
+  function terrainChunks(terrain, cells = 30) {
+    const G = terrain.gridSize;
+    if (!G) return [terrain];
+    const chunks = [], row = G + 1;
+    const tile = (x0, z0, x1, z1, stride) => {
+      const xs = [], zs = [];
+      for (let x = x0; x < x1; x += stride) xs.push(x);
+      for (let z = z0; z < z1; z += stride) zs.push(z);
+      xs.push(x1); zs.push(z1);
+      const verts = [], idx = [];
+      for (const z of zs) for (const x of xs) {
+        const off = (z * row + x) * STRIDE;
+        for (let k = 0; k < STRIDE; k++) verts.push(terrain.verts[off + k]);
+      }
+      const w = xs.length, h = zs.length;
+      for (let z = 0; z < h - 1; z++) for (let x = 0; x < w - 1; x++) {
+        const a = z * w + x;
+        idx.push(a, a + w, a + w + 1, a, a + w + 1, a + 1);
+      }
+      // Skirts hide cracks where neighboring tiles choose different detail levels.
+      const edge = [];
+      for (let x = 0; x < w; x++) edge.push(x);
+      for (let z = 1; z < h; z++) edge.push(z * w + w - 1);
+      for (let x = w - 2; x >= 0; x--) edge.push((h - 1) * w + x);
+      for (let z = h - 2; z > 0; z--) edge.push(z * w);
+      const base = verts.length / STRIDE;
+      for (const i of edge) {
+        for (let k = 0; k < STRIDE; k++) verts.push(verts[i * STRIDE + k] - (k === 1 ? 80 : 0));
+      }
+      for (let i = 0; i < edge.length; i++) {
+        const j = (i + 1) % edge.length;
+        idx.push(edge[i], base + i, base + j, edge[i], base + j, edge[j]);
+      }
+      return { verts: new Float32Array(verts), idx: new Uint32Array(idx) };
+    };
+    for (let z = 0; z < G; z += cells) for (let x = 0; x < G; x += cells) {
+      const x1 = Math.min(G, x + cells), z1 = Math.min(G, z + cells);
+      const mesh = tile(x, z, x1, z1, 1);
+      mesh.lods = [tile(x, z, x1, z1, 2), tile(x, z, x1, z1, 5)];
+      chunks.push(mesh);
+    }
+    return chunks;
+  }
+
+  // Spatial batches keep instancing while allowing whole invisible batches to be skipped.
+  // Conservative bounds include shader twist, breathing, sway and quantization.
+  function instanceChunks(mesh, data, cellSize = 160) {
+    const buckets = new Map();
+    let radial = 0, minY = Infinity, maxY = -Infinity, absY = 0;
+    for (let o = 0; o < mesh.verts.length; o += STRIDE) {
+      radial = Math.max(radial, Math.hypot(mesh.verts[o], mesh.verts[o + 2]));
+      minY = Math.min(minY, mesh.verts[o + 1]); maxY = Math.max(maxY, mesh.verts[o + 1]);
+      absY = Math.max(absY, Math.abs(mesh.verts[o + 1]));
+    }
+    for (let o = 0; o < data.length; o += 8) {
+      const key = `${Math.floor(data[o] / cellSize)},${Math.floor(data[o + 2] / cellSize)}`;
+      if (!buckets.has(key)) buckets.set(key, { values: [], bounds: { min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] } });
+      const b = buckets.get(key), scaleXZ = Math.max(Math.abs(data[o + 3]), Math.abs(data[o + 5]));
+      const radius = (radial * (1 + 0.04 * absY) + 0.05 * absY * absY) * scaleXZ + 8;
+      const y0 = Math.min(minY * data[o + 4], maxY * data[o + 4]) - 9;
+      const y1 = Math.max(minY * data[o + 4], maxY * data[o + 4]) + 9;
+      const lo = [data[o] - radius, data[o + 1] + y0, data[o + 2] - radius];
+      const hi = [data[o] + radius, data[o + 1] + y1, data[o + 2] + radius];
+      for (let k = 0; k < 3; k++) { b.bounds.min[k] = Math.min(b.bounds.min[k], lo[k]); b.bounds.max[k] = Math.max(b.bounds.max[k], hi[k]); }
+      for (let k = 0; k < 8; k++) b.values.push(data[o + k]);
+    }
+    return [...buckets.values()].map(b => ({ data: new Float32Array(b.values), bounds: b.bounds }));
   }
 
   // --- Props: one base mesh per vocabulary, many instances -------------------
@@ -446,5 +517,5 @@ const Geo = (() => {
     return new Float32Array(out);
   }
 
-  return { STRIDE, buildTrack, buildTerrain, buildPropMesh, buildPropInstances, buildCar, buildCraft, buildRing, buildCube, buildVolumeProps };
+  return { STRIDE, terrainChunks, instanceChunks, buildTrack, buildTerrain, buildPropMesh, buildPropInstances, buildCar, buildCraft, buildRing, buildCube, buildVolumeProps };
 })();

@@ -3,7 +3,7 @@ const Game = (() => {
   const { TAU, clamp, mix, smoothstep, mulberry32, norm, cross, sub, add, scale, dot, len } = M;
   const SPD = (typeof Planets !== 'undefined' && Planets.SPD) || 1; // global speed scale; speed-relative thresholds derive from it
   const NUM_CARS = Planets.MAX_RACERS; let LAPS = 3;
-  let desc, tab, terrain, cars = [], player, scene, propBuf, planet = null, raceDef = null, seedText, overrides = null, craftOverride = null;
+  let desc, tab, terrain, cars = [], player, scene, planet = null, raceDef = null, seedText, overrides = null, craftOverride = null;
   let carGroups = [], gateGroup = null, boostGates = [];
   let input = { steer: 0, throttle: 0, brake: 0, drift: false, pitch: 0 };
   let cam = { pos: [0, 30, 0], look: [0, 0, 0], fov: 52, up: [0, 1, 0] };
@@ -16,6 +16,7 @@ const Game = (() => {
   const frame = new Float32Array(Gpu.FRAME_FLOATS);
   const A = fn => { try { if (typeof Audio !== 'undefined' && Audio && Audio.sfx) return fn(Audio); } catch (e) {} };
   let lastCount = -1;
+  let resetClock = () => {};
 
   // ---------------------------------------------------------------- setup
   async function start(canvasEl) {
@@ -25,14 +26,94 @@ const Game = (() => {
     await Gpu.init(canvasEl);
     bindInput();
     applyHash();
-    let last = performance.now();
-    const loop = now => {
-      const dt = Math.min(0.05, (now - last) / 1000); last = now;
-      update(dt); draw(dt);
-      requestAnimationFrame(loop);
+    let last = performance.now(), lastDraw = last, accumulator = 0;
+    let sampleAt = last, sampleFrames = 0, slowFor = 0, healthyFor = 0;
+    let wasSuspended = false;
+    let sampleKey = `${rs.state}:${quality()}`;
+    resetClock = () => {
+      last = lastDraw = sampleAt = performance.now(); accumulator = 0;
+      sampleFrames = slowFor = healthyFor = 0; perf.fps = 0;
+      sampleKey = `${rs.state}:${quality()}`;
     };
+    const STEP = 1 / 60, MAX_CATCHUP = 0.1;
+    const loop = now => {
+      requestAnimationFrame(loop);
+      const wallDt = Math.max(0, (now - last) / 1000); last = now;
+      const netPaused = typeof MP !== 'undefined' && MP.paused && MP.paused();
+      const suspended = document.hidden || paused || netPaused;
+      if (suspended || wasSuspended) {
+        accumulator = 0; lastDraw = now; sampleAt = now; sampleFrames = 0;
+        slowFor = healthyFor = 0;
+        wasSuspended = suspended;
+        if (suspended) return;
+      }
+      const dt = Math.min(MAX_CATCHUP, wallDt);
+      if (rs.state !== 'idle') {
+        perf.droppedSeconds += Math.max(0, wallDt - MAX_CATCHUP);
+        accumulator += dt;
+        // Keep the original 60 Hz update and its three 1/180 s flight/collision
+        // substeps, independently of display refresh rate or graphics preset.
+        while (accumulator + 1e-9 >= STEP) {
+          update(STEP); accumulator -= STEP; perf.simulationSteps++;
+        }
+      } else accumulator = 0;
+      const fps = rs.state === 'idle' ? 12 : (Gpu.qualitySettings?.fps || (quality() === 'eco' ? 30 : 60));
+      const nextSampleKey = `${rs.state}:${quality()}:${fps}`;
+      if (nextSampleKey !== sampleKey) {
+        sampleAt = now; sampleFrames = slowFor = healthyFor = 0;
+        sampleKey = nextSampleKey; perf.fps = 0;
+      }
+      const interval = 1000 / fps, elapsed = now - lastDraw;
+      if (elapsed < interval - 0.5) return;
+      // Retain the fractional frame remainder without trying to render missed frames.
+      lastDraw = now - (elapsed % interval);
+      if (elapsed < interval) lastDraw = now;
+      const drawDt = Math.min(0.1, elapsed / 1000);
+      if (rs.state === 'idle') updateCamera(drawDt);
+      else { updateHud(); }
+      draw(drawDt);
+      perf.renderedFrames++; sampleFrames++;
+      perf.targetFps = fps;
+      if (now - sampleAt >= 3000) {
+        const seconds = (now - sampleAt) / 1000;
+        perf.fps = sampleFrames / seconds;
+        if (rs.state !== 'idle') {
+          // Frame pacing is a load signal, not a temperature measurement. Lower
+          // resolution after sustained misses; recover slowly below preset ceiling.
+          const ratio = perf.fps / fps;
+          slowFor = ratio < 0.88 ? slowFor + seconds : 0;
+          healthyFor = ratio > 0.97 ? healthyFor + seconds : 0;
+          const scale = Gpu.renderScale || 1;
+          if (slowFor >= 3 && scale > 0.5 && Gpu.setRenderScale) {
+            Gpu.setRenderScale(Math.max(0.5, scale - 0.1)); slowFor = healthyFor = 0;
+          } else if (healthyFor >= 30 && scale < 1 && Gpu.setRenderScale) {
+            Gpu.setRenderScale(Math.min(1, scale + 0.05)); healthyFor = 0;
+          }
+        }
+        sampleAt = now; sampleFrames = 0;
+      }
+    };
+    document.addEventListener('visibilitychange', () => {
+      resetClock();
+      emit('visibility', { hidden: document.hidden, multiplayer: typeof MP !== 'undefined' && MP.active() });
+    });
     requestAnimationFrame(loop);
   }
+  let paused = false;
+  const perf = { renderedFrames: 0, simulationSteps: 0, droppedSeconds: 0, fps: 0, targetFps: 12 };
+  const quality = () => Gpu.getQuality ? Gpu.getQuality() : 'balanced';
+  function setQuality(name) {
+    if (!['eco', 'balanced', 'high'].includes(name)) return;
+    if (Gpu.setQuality) Gpu.setQuality(name);
+    resetClock();
+    emit('quality', quality());
+  }
+  function setPaused(value) {
+    paused = !!value && !(typeof MP !== 'undefined' && MP.active());
+    resetClock();
+    emit('pause', paused);
+  }
+
   function randomSeedName() { return World.nameFor((Math.random() * 4294967296) >>> 0).replace(' ', '-') + '-' + Math.floor(Math.random() * 900 + 100); }
 
   // Hash: #p=planet&r=race&s=seed&o=<b64 json world overrides>&v=<b64 json craft>. A bare hash is a seed.
@@ -82,22 +163,29 @@ const Game = (() => {
     if (desc.noTerrain) terrain = { heightAt: () => -600, ext: tab.maxR * 2 };
     else {
       terrain = Geo.buildTerrain(desc, tab, 300, { flatten: false }); // flight only: no road deck, no shoulders
-      statics.push(Gpu.createMesh(terrain));
+      for (const chunk of Geo.terrainChunks(terrain)) statics.push(Gpu.createMesh(chunk));
     }
     const propMesh = Geo.buildPropMesh(desc.propType);
     const propInst = clearLane(terrainLane ? Geo.buildPropInstances(desc, tab, terrain) : Geo.buildVolumeProps(desc, tab), 0.5, 1);
-    propBuf = Gpu.createInstances(propInst);
     propGrid = new Map();
     const pt = desc.propType;
     addPropGrid(propInst, pt === 2 ? 0.25 : pt === 3 ? 0.3 : 0.5, 1, pt === 3);
-    scene = { frame, statics, props: { mesh: Gpu.createMesh(propMesh), inst: propBuf, count: propInst.length / 8 }, carGroups: [], propGroups: [], water: null };
+    scene = { frame, statics, props: null, carGroups: [], propGroups: [], water: null };
+    const addVisibleProps = (mesh, instances) => {
+      if (!instances.length) return;
+      const gpuMesh = Gpu.createMesh(mesh);
+      for (const chunk of Geo.instanceChunks(mesh, instances)) {
+        scene.propGroups.push({ mesh: gpuMesh, inst: Gpu.createInstances(chunk.data), count: chunk.data.length / 8, bounds: chunk.bounds });
+      }
+    };
+    addVisibleProps(propMesh, propInst);
     const t0 = performance.now();
     const env = Flora.buildScene(desc, tab, terrain);
     let floraCount = 0;
     for (const g of env.groups) {
       const inst = g.collide ? clearLane(g.inst, g.r || 0.5, g.h || 1) : g.inst;
       if (!inst.length) continue;
-      scene.propGroups.push({ mesh: Gpu.createMesh(g.mesh), inst: Gpu.createInstances(inst), count: inst.length / 8 });
+      addVisibleProps(g.mesh, inst);
       if (g.collide) addPropGrid(inst, g.r, g.h, g.soft);
       floraCount += inst.length / 8;
     }
@@ -112,11 +200,14 @@ const Game = (() => {
     drawMinimapBase();
     A(a => a.planet(desc));   // retune the generative music to this world
     cam.pos = [player.x, player.y + 24, player.z - 36]; cam.look = [player.x, player.y, player.z];
+    resetClock();
   }
   // Race state and camera for the current app state (cover, showcase, gallery, race).
   function beginPhase() {
+    paused = false;
     if (app.state === 'race') { rs = { state: 'countdown', timer: 3.5, results: null, elapsed: 0 }; camMode = 'chase'; lastCount = -1; A(a => { a.init(); a.race('countdown'); }); }
     else { rs = { state: 'idle', timer: 0, results: null, elapsed: 0 }; camMode = app.state === 'showcase' ? 'showcase' : 'gallery'; A(a => { a.engineStopAll(); a.wind(0); a.race('menu'); }); }
+    resetClock();
   }
 
   // Remove prop instances whose footprint intersects the lane tube (plus a margin) so lanes never pass through scenery.
@@ -275,7 +366,8 @@ const Game = (() => {
   const keys = {};
   function bindInput() {
     window.addEventListener('keydown', e => {
-      if (app.state !== 'race') return; // menus own the keyboard elsewhere
+      if (app.state !== 'race' || paused) return; // menus own the keyboard elsewhere
+      if (e.target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
       keys[e.code] = true;
       if (e.code === 'KeyN') loadWorld(randomSeedName());
       if (e.code === 'KeyR') respawn(player);
@@ -289,6 +381,9 @@ const Game = (() => {
     window.addEventListener('keyup', e => { keys[e.code] = false; });
     window.addEventListener('hashchange', () => { const q = parseHash(); if ((q.s || '') !== seedText || (q.p || '') !== (planet ? planet.id : '')) applyHash(); });
     const touches = new Map(), tc = hud.canvas;
+    const clearInput = () => { for (const key of Object.keys(keys)) delete keys[key]; touches.clear(); readInput(); };
+    window.addEventListener('blur', clearInput);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) clearInput(); });
     const upd = () => {
       let steer = 0, gas = 0, drift = false;
       for (const [, t] of touches) { const fx = t.x / window.innerWidth; if (fx < 0.3) steer -= 1; else if (fx > 0.7) steer += 1; gas = 1; }
@@ -696,7 +791,6 @@ const Game = (() => {
     if (rs.state === 'finished') { spectate.timer += dt; if (spectate.timer > 4.5) { spectate = { idx: pickSpectate(), timer: 0 }; } }
     updateCamera(dt);
     audioFrame(dt);
-    updateHud();
   }
 
   // Engine, wind and event sounds. The player's craft is full volume and centred; others are quieter and panned by
@@ -1019,7 +1113,11 @@ const Game = (() => {
     let upB = norm(sub([0, 1, 0], scale(fwd, fwd[1])));
     // Roll: lean into steering and drift, clamped to about 35 degrees.
     const targetRoll = clamp(c.steer * ph.bank * 1.6 + (c.drifting ? c.steer * 0.6 : 0), -0.61, 0.61);
-    c.roll = mix(c.roll, targetRoll, 0.1);
+    // A visual smoothing constant should not change with the graphics FPS cap.
+    // Weapons may request this basis again in the same frame; do not smooth twice.
+    const rollDt = Math.min(0.1, Math.max(0, t - (c.rollAt ?? t - 1 / 60)));
+    c.roll = mix(c.roll, targetRoll, 1 - Math.exp(-rollDt * 6.32163));
+    c.rollAt = t;
     upB = rotAround(upB, fwd, c.roll);
     const right = norm(cross(upB, fwd));
     if (c.wrecked > 0) { const w = (1.5 - c.wrecked) * 6; upB = rotAround(upB, fwd, w * 0.7); fwd = rotAround(fwd, right0(upB, fwd), Math.sin(w) * 0.5); }
@@ -1057,6 +1155,8 @@ const Game = (() => {
     if (app.state === 'race') emit('race');
   }
   const ui = {
+    quality, setQuality, setPaused, paused: () => paused,
+    performance: () => ({ ...perf, quality: quality(), renderScale: Gpu.renderScale || 1, renderer: Gpu.metrics || null }),
     on: (ev, f) => { (listeners[ev] = listeners[ev] || []).push(f); },
     state: () => app.state, planet: () => planet, desc: () => desc, seed: () => seedText, race: () => raceDef,
     randomSeed: randomSeedName, hashQuery: parseHash, playerName: getPlayerName,
@@ -1066,7 +1166,7 @@ const Game = (() => {
     home: () => { app.state = 'cover'; beginPhase(); writeHash(); },
     setLook: o => { if (desc && desc.look) Object.assign(desc.look, o); },
     // Thumbnails borrow the canvas for one render; this puts the real scene back in the same task.
-    redraw: () => { try { draw(0); } catch (e) {} },
+    redraw: () => { if (document.hidden || paused) return; try { draw(0); } catch (e) {} },
   };
   return {
     start, loadWorld, ui,

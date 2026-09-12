@@ -1,7 +1,4 @@
-// Real rendered thumbnails for the selector rails.
-// The renderer draws into the one main canvas, and a WebGPU canvas loses its contents once the task ends,
-// so a thumbnail is taken by rendering a private scene and copying the pixels out in the SAME task,
-// then asking the game to redraw so the player never sees the borrowed frame.
+// Small offscreen thumbnails share the GPU device without redrawing the game canvas.
 const Thumbs = (() => {
   const TW = 336, TH = 180;                 // thumbnail pixels, matching the tile's picture area
   const cache = new Map();                  // key -> dataURL
@@ -15,17 +12,6 @@ const Thumbs = (() => {
   function ready(key) { for (const f of listeners) { try { f(key); } catch (e) {} } }
   function get(key) { return cache.get(key) || null; }
   function has(key) { return cache.has(key); }
-
-  // Copy the freshly rendered frame out of the WebGPU canvas, centre cropped to the tile aspect.
-  function grab() {
-    const out = document.createElement('canvas'); out.width = TW; out.height = TH;
-    const g = out.getContext('2d');
-    const sw = canvas.width, sh = canvas.height, ar = TW / TH;
-    let cw = sw, ch = sw / ar;
-    if (ch > sh) { ch = sh; cw = sh * ar; }
-    try { g.drawImage(canvas, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, TW, TH); } catch (e) { return null; }
-    try { return out.toDataURL('image/png'); } catch (e) { return null; }
-  }
 
   // A neutral studio descriptor: dark backdrop, no fog, no palette mapping, so the craft reads as itself.
   function studioDesc() {
@@ -53,12 +39,6 @@ const Thumbs = (() => {
     return { c, r };
   }
 
-  // The capture is a centre crop of the canvas, so the usable field is narrower than the canvas field.
-  function cropField(fovV) {
-    const ar = canvas.clientWidth / canvas.clientHeight, want = TW / TH;
-    const eff = ar >= want ? fovV : 2 * Math.atan(Math.tan(fovV * Math.PI / 360) * ar / want) * 180 / Math.PI;
-    return { fov: eff, aspect: want };
-  }
   // Distance that just fits the mesh in frame from a given direction, so every craft fills its tile equally.
   function fitDistance(mesh, centre, dir, fovV, aspect) {
     const right = M.norm(M.cross([0, 1, 0], dir)), up = M.cross(dir, right);
@@ -74,16 +54,13 @@ const Thumbs = (() => {
     return Math.max(maxV / tv, maxU / (tv * aspect)) * 1.07 + near;
   }
 
-  // Render one scene and capture it. Restores the game's own frame straight afterwards.
   function shoot(scene, desc, cam) {
     const frame = new Float32Array(Gpu.FRAME_FLOATS);
-    Frame.fill(frame, desc, cam, { speed01: 0 });
+    Frame.fill(frame, desc, { ...cam, aspect: TW / TH }, { speed01: 0 });
     scene.frame = frame;
     scene.particles = false;
-    Gpu.render(scene);
-    const url = grab();
-    try { Game.ui.redraw(); } catch (e) {}   // put the real scene back before the compositor sees this frame
-    return url;
+    try { return Gpu.capture(scene, { width: TW, height: TH }).toDataURL('image/png'); }
+    catch (e) { console.warn('thumbnail capture failed', e); return null; }
   }
 
   function freeScene(scene) {
@@ -107,9 +84,9 @@ const Thumbs = (() => {
     data.set(col, 12);
     data[15] = 0; data[16] = 0; data.set([1, 1, 1], 17); data[20] = 0.75; data[21] = 0; data[22] = 0;
     const scene = { statics: [], props: null, propGroups: [], carGroups: [{ mesh: gpuMesh, inst: Gpu.createInstances(data), count: 1 }], water: null };
-    const fov = 26, az = 0.95, el = 0.30, f = cropField(fov);
+    const fov = 26, az = 0.95, el = 0.30;
     const dir = [Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)];
-    const D = fitDistance(mesh, b.c, dir, f.fov, f.aspect);
+    const D = fitDistance(mesh, b.c, dir, fov, TW / TH);
     const pos = [dir[0] * D, dir[1] * D, dir[2] * D];
     const url = shoot(scene, studioDesc(), { pos, look: [0, 0, 0], fov, aspect: canvas.clientWidth / canvas.clientHeight, time: 0, shadowCenter: [0, 0, 0], shadowSize: Math.max(6, b.r * 2.2) });
     freeScene(scene);
@@ -175,10 +152,10 @@ const Thumbs = (() => {
   function craft(key, recipe, seedN, hue) { return request(key, () => craftJob(key, recipe, seedN, hue), 1); }
   function planet(p) { const key = 'p:' + p.id; return request(key, () => planetJob(key, p), 5); }
 
-  // Called from the UI loop. Runs at most one job per frame, and only while a selector is on screen,
+  // Runs at most one small offscreen job per frame, only while a selector is on screen,
   // so a race never pays for thumbnail work.
   function pump(active) {
-    if (!active || !jobs.length || !canvas) return;
+    if (document.hidden || !active || !jobs.length || !canvas) return;
     const now = performance.now();
     if (now - lastRun < 90) return;          // leave the UI room to breathe between builds
     const job = jobs.shift();
