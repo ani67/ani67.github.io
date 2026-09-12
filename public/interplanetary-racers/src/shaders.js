@@ -196,6 +196,11 @@ fn carWorld(v : CarIn) -> VOut {
   let wn = v.iright * n.x + v.iup * n.y + v.ifwd * n.z;
   o.wp = wp; o.n = wn; o.uv = v.uv; o.ex = v.ex; o.tint = vec4f(v.icol, v.iglow);
   o.extra = vec4f(v.idmg, v.ishield, 0.0, 0.0);
+  if (part == 9.0) {
+    // A forward-moving wave follows spline distance, even around bends/climbs.
+    let wave = pow(0.5 + 0.5 * cos(6.2831853 * (v.ispin - F.pal0.w * 2.0)), 4.0);
+    o.tint.w = select(0.8, 0.25 + wave * 2.0, F.pal0.w > 0.0);
+  }
   return o;
 }
 @vertex fn vsCar(v : CarIn) -> VOut { var o = carWorld(v); o.pos = F.viewProj * vec4f(o.wp, 1.0); return o; }
@@ -350,12 +355,21 @@ fn shadeScene(i : VOut) -> FsOut {
     }
     else if (part == 4.0) { albedo = vec3f(0.02, 0.03, 0.05); gloss = 0.5; }
     else if (part == 6.0) { emis = mix(F.emis.xyz, col, 0.4) * (0.25 + glow * 0.7) * (1.0 - i.extra.x * 0.8); albedo = vec3f(0.05); }
+    else if (part == 8.0) {
+      // Dark rim + luminous core stays legible in daylight and with Eco bloom off.
+      let core = smoothstep(0.25, 0.65, abs(cos(i.uv.x * 6.2831853)));
+      let sweep = pow(0.5 + 0.5 * cos(6.2831853 * (i.uv.y - F.pal0.w * 0.3)), 6.0);
+      let motion = select(0.0, sweep, F.pal0.w > 0.0);
+      emis = mix(col, vec3f(0.8, 1.0, 0.9), i.extra.y) * core * (0.35 + glow + motion * (0.35 + i.extra.x) + i.extra.y * 2.0);
+      albedo = vec3f(0.015, 0.035, 0.045);
+    }
+    else if (part == 9.0) { emis = col * glow; albedo = vec3f(0.015, 0.06, 0.08); }
     else if (part == 7.0) {
       // Shield ring / pickup / projectile: pure emissive in the instance colour, pulsing with glow.
       emis = col * (1.2 + glow * 1.5); albedo = vec3f(0.02);
     }
     else { albedo = col * 0.25; gloss = 0.4; }
-    if (i.extra.y > 0.5) {
+    if (i.extra.y > 0.5 && part != 8.0 && part != 9.0) {
       // Active shield: cool fresnel sheen over the whole craft.
       let V = normalize(F.camPos.xyz - i.wp);
       let fr = pow(1.0 - max(dot(normalize(i.n), V), 0.0), 2.5);

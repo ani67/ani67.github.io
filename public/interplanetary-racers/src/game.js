@@ -4,7 +4,7 @@ const Game = (() => {
   const SPD = (typeof Planets !== 'undefined' && Planets.SPD) || 1; // global speed scale; speed-relative thresholds derive from it
   const NUM_CARS = Planets.MAX_RACERS; let LAPS = 3;
   let desc, tab, terrain, cars = [], player, scene, planet = null, raceDef = null, seedText, overrides = null, craftOverride = null;
-  let carGroups = [], gateGroup = null, boostGates = [];
+  let carGroups = [], gateGroup = null, boostGates = [], routeRings = [], routePrevious = null;
   let input = { steer: 0, throttle: 0, brake: 0, drift: false, pitch: 0 };
   let cam = { pos: [0, 30, 0], look: [0, 0, 0], fov: 52, up: [0, 1, 0] };
   let camMode = 'chase';
@@ -252,7 +252,7 @@ const Game = (() => {
 
   // Corridor gates: rings along the spline, every 6th is a boost gate. Uses the craft instance layout.
   function buildGates() {
-    gateGroup = null; boostGates = [];
+    gateGroup = null; boostGates = []; routeRings = []; routePrevious = null;
     const { S, N } = tab, R = desc.corridor.radius;
     let length = 0; for (let i = 0; i < N; i++) length += len(sub(S[(i + 1) % N].p, S[i].p));
     // Rings at the entries of interesting pieces, filled so no gap exceeds the planet's gate spacing.
@@ -281,18 +281,54 @@ const Game = (() => {
       const t = ts[k], s = World.sampleAt(tab, t);
       const boost = designed ? designed.some(g => { let e = t - g; e -= Math.round(e); return Math.abs(e) < gap * 0.5; }) : k % 3 === 1;
       if (boost) boostGates.push(t);
-      put(s, R, boost ? desc.emis.map(v => v * 0.8) : (desc.bright ? desc.pal5[1] : desc.pal5[3]), boost ? (desc.bright ? 0.5 : 1.2) : (desc.bright ? 0.05 : 0.35));
+      put(s, R, boost ? [1, 0.48, 0.06] : [0.04, 0.65, 0.95], 0.35);
+      routeRings.push({ t, p: s.p, tan: s.tan, radius: R, flash: 0 });
     }
     if (!boostGates.length) boostGates.push(1 / n);
     const ringCount = n;
     const m = Math.floor(length / MARK);
-    for (let k = 0; k < m; k++) put(World.sampleAt(tab, k / m), 0.28, desc.bright ? desc.pal5[0] : desc.pal5[4], desc.bright ? 0.0 : 0.22);
-    const ring = Gpu.createMesh(Geo.buildRing(1, 0.06, 36, 8)), cube = Gpu.createMesh(Geo.buildCube());
-    const buf = Gpu.createInstances(data);
+    for (let k = 0; k < m; k++) {
+      put(World.sampleAt(tab, k / m), 0.45, [0.06, 0.72, 1], 0.4);
+      data[o - Gpu.CAR_FLOATS + 15] = k / m * length / 112; // phase along the route, not world axes
+    }
+    const routeMesh = (mesh, part) => { for (let i = 9; i < mesh.verts.length; i += Geo.STRIDE) mesh.verts[i] = part; return mesh; };
+    const ring = Gpu.createMesh(routeMesh(Geo.buildRing(1, 0.06, 36, 8), 8)), cube = Gpu.createMesh(routeMesh(Geo.buildCube(), 9));
+    const ringData = data.slice(0, ringCount * Gpu.CAR_FLOATS);
+    const buf = Gpu.createInstances(ringData);
     gateGroup = [
-      { mesh: ring, inst: buf, count: ringCount, offset: 0 },
+      { mesh: ring, inst: buf, count: ringCount, data: ringData },
       { mesh: cube, inst: Gpu.createInstances(data.subarray(ringCount * Gpu.CAR_FLOATS)), count: m },
     ];
+  }
+
+  // Only the small ring buffer changes on the CPU. The travelling dot wave is
+  // evaluated in the existing vertex shader, with no particles or extra passes.
+  function updateRouteCues(dt) {
+    if (!gateGroup || !player) return;
+    const active = rs.state === 'racing' || rs.state === 'countdown';
+    const position = [player.x, player.y, player.z];
+    let nearest = -1, ahead = Infinity;
+    for (let i = 0; i < routeRings.length; i++) {
+      const distance = (routeRings[i].t - player.t + 1) % 1;
+      if (distance < ahead) { ahead = distance; nearest = i; }
+    }
+    const moved = routePrevious && len(sub(position, routePrevious)) < 100;
+    const data = gateGroup[0].data;
+    for (let i = 0; i < routeRings.length; i++) {
+      const ring = routeRings[i], offset = sub(position, ring.p), along = dot(offset, ring.tan);
+      if (active && moved && player.wrecked <= 0 && dot(sub(routePrevious, ring.p), ring.tan) < 0 && along >= 0 && along < 100) {
+        const radial = len(sub(offset, scale(ring.tan, along)));
+        if (radial < ring.radius * 0.94) ring.flash = 1;
+      }
+      if (!active) ring.flash = 0;
+      else ring.flash = Math.max(0, ring.flash - Math.min(dt, 0.1) * 1.8);
+      const o = i * Gpu.CAR_FLOATS;
+      data[o + 20] = active && i === nearest ? 0.8 + 0.9 * (1 - smoothstep(20, 260, len(offset))) : 0.35;
+      data[o + 21] = active && i === nearest ? 1 : 0;
+      data[o + 22] = reducedMotion.matches ? 0 : ring.flash;
+    }
+    Gpu.updateInstances(gateGroup[0].inst, data);
+    routePrevious = active ? position : null;
   }
 
   function craftParams(race) {
@@ -337,6 +373,7 @@ const Game = (() => {
     return mesh;
   }
   function setupCars() {
+    routePrevious = null; for (const ring of routeRings) ring.flash = 0;
     // The environment and gates survive craft changes, but craft and weapon buffers do not.
     Gpu.destroyGroups(carGroups);
     if (typeof Weapons !== 'undefined') Gpu.destroyGroups(Weapons.groups());
@@ -1194,6 +1231,7 @@ const Game = (() => {
   }
   function draw(dt) {
     updateSpeedWarp(dt);
+    updateRouteCues(dt);
     const t = performance.now() / 1000;
     for (const g of carGroups) {
       // A shared craft group retains detail if any instance is nearby. Keep the
@@ -1214,7 +1252,7 @@ const Game = (() => {
     Weapons.fill(t, c => craftBasis(c, t));
     const aspect = hud.canvas.clientWidth / hud.canvas.clientHeight;
     Frame.fill(frame, desc, { pos: cam.pos, look: cam.look, fov: cam.fov, aspect, time: t, shadowCenter: [player.x, player.y, player.z], shadowSize: 180 },
-      { speed01: speedWarp, drift: player.drifting, glow: player.glow, flash: player.flash });
+      { routeTime: reducedMotion.matches ? 0 : t, speed01: speedWarp, drift: player.drifting, glow: player.glow, flash: player.flash });
     Gpu.render(scene);
   }
 

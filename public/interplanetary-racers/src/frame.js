@@ -15,6 +15,7 @@ const Frame = (() => {
     f.set([d.sky[0][0], d.sky[0][1], d.sky[0][2], d.fog], 36);
     f.set([d.sky[1][0], d.sky[1][1], d.sky[1][2], d.stars], 40);
     for (let k = 0; k < 5; k++) f.set([d.pal5[k][0], d.pal5[k][1], d.pal5[k][2], 0], 44 + k * 4);
+    f[47] = fx.routeTime || 0; // spare palette component: route animation clock
     f.set([d.emis[0], d.emis[1], d.emis[2], d.groundPattern], 64);
     f.set([d.twist, d.quantize, d.propType, fx.drift ? 1 : 0], 68);
     f[74] = fx.glow || 0; f[75] = fx.flash || 0;

@@ -83,3 +83,9 @@ Setup also rebuilt and simplified the same craft on each screen. A CPU mesh cach
 The acceleration response starts earlier and drives both stronger peripheral HUD perspective and the existing scene composite's barrel distortion. No extra render pass or texture sample is added. Short CSS interpolation smooths the HUD between Eco frames; aiming/touch controls remain fixed. Reduced motion disables the dynamic lens response.
 
 Validation: 38 automated tests, including preset-paced menu settling and bounded craft-cache reuse/eviction; local browser acceleration/reduced-motion and multiplayer startup/pause/resume checks; lint, TypeScript, production build and export verification.
+
+## Follow-up: route direction and ring feedback
+
+Route markers now have a forward-travelling brightness wave based on spline distance, with a larger visible footprint and cyan colour. Rings have a dark rim and luminous core, so their contrast survives daylight and Eco's disabled bloom. The next ring is highlighted and brightens on approach; boost rings are amber. Forward passage within a ring briefly lights it, while backward, outside and teleport crossings do not confirm. These cues do not change checkpoints, boost rules or collision behavior.
+
+The dot wave runs in the existing vertex shader. Only ring instance values are uploaded per drawn frame; no new particles, geometry counts, textures or render passes are added. Reduced motion uses steady dots/rings and suppresses crossing flashes. Browser checks passed all three presets without shader errors, retaining two Eco passes; 40 automated tests cover route wraparound and passage feedback alongside existing regressions.
