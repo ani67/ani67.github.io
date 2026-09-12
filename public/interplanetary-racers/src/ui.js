@@ -2,6 +2,17 @@
 const UI = (() => {
   const $ = id => document.getElementById(id);
   let screen = null, sel = { race: 0, planet: 0, archSeed: 1, kit: false, kitSeed: 1 }, seed = '', roomCode = '', boardTimer = 0, legendTimer = null;
+  const shipPaints = Object.fromEntries(Fleet.entries.map(e=>[e.id,e.defaultPaint]));
+  try {
+    const saved=JSON.parse(localStorage.getItem('ir.shipPaints')||'{}');
+    for(const e of Fleet.entries)if(saved?.[e.id]!==undefined)shipPaints[e.id]=Fleet.paintId(saved[e.id]);
+  } catch(e) {}
+  function setPaint(value){
+    const e=Fleet.forRace(Planets.RACES[sel.race]);
+    shipPaints[e.id]=Fleet.paintId(value);
+    try { localStorage.setItem('ir.shipPaints',JSON.stringify(shipPaints)); } catch(e) {}
+    goShip();
+  }
   const settings = { name: null };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('ir.settings') || '{}')); } catch (e) {}
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
@@ -40,8 +51,8 @@ const UI = (() => {
   // Current craft choice: a race family (archetype seed) or a kitbash generated for that race.
   function currentCraft() {
     const r = Planets.RACES[sel.race];
-    if (sel.kit && typeof Kitbash !== 'undefined') { const rec = Kitbash.forRace(r.id, sel.kitSeed); rec.hue = r.hue; rec.seed = sel.kitSeed; return { race: r, craft: rec, recipe: rec, seed: sel.kitSeed }; }
-    return { race: r, craft: null, recipe: Planets.RECIPES[r.vehicle], seed: sel.archSeed };
+    const e=Fleet.forRace(r),rec=Fleet.recipe(e.id,sel.archSeed);
+    return {race:r,craft:rec,recipe:rec,seed:sel.archSeed};
   }
 
   // Cover: random planet, gallery camera.
@@ -50,10 +61,11 @@ const UI = (() => {
     Game.ui.select({ planetId: p.id, seed: Game.ui.randomSeed(), raceId: Planets.RACES.find(r => r.planet === p.id)?.id, craftSeed: null, mode: 'cover' });
     seed = Game.ui.seed();
     sel.planet = Planets.PLANETS.indexOf(p);
-    sel.race = Math.max(0, Planets.RACES.findIndex(r => r.planet === p.id));
+    sel.race = Fleet.entries.indexOf(Fleet.forRace(Planets.RACES.find(r => r.planet === p.id)));
     show('cover');
   }
   function goShip() {
+    sel.archSeed=shipPaints[Fleet.forRace(Planets.RACES[sel.race]).id];
     const cc = currentCraft();
     Game.ui.select({ raceId: cc.race.id, craft: cc.craft, craftSeed: cc.seed, mode: 'showcase' });
     if (mp() && MP.connected()) pushPick();   // the lobby shows what everyone has picked
@@ -116,8 +128,8 @@ const UI = (() => {
     $('roomStatus').classList.toggle('err', !!err);
     const ps = MP.players();
     $('lobbyRows').innerHTML = ps.length ? ps.map(p => {
-      const race = Planets.race(p.raceId), craft = race ? Planets.VEHICLES[race.vehicle].name : '';
-      return `<div class="r on${p.me ? ' me' : ''}"><span class="dot"></span><span class="who">${esc(p.name || 'racer')}${p.dropped ? ' · left' : ''}${p.me ? ' · you' : ''}</span><span>${p.kit ? 'kitbash' : craft}</span><span class="ping num">${p.ping ? p.ping + ' ms' : ''}</span></div>`;
+      const race = Planets.race(p.raceId), craft = Fleet.forRace(race).name;
+      return `<div class="r on${p.me ? ' me' : ''}"><span class="dot"></span><span class="who">${esc(p.name || 'racer')}${p.dropped ? ' · left' : ''}${p.me ? ' · you' : ''}</span><span>${craft} · ${esc(Fleet.paintName(p.archSeed))}</span><span class="ping num">${p.ping ? p.ping + ' ms' : ''}</span></div>`;
     }).join('') : '<div class="r"><span class="dot"></span><span class="who">waiting for players…</span><span></span><span></span></div>';
     $('roomStart').innerHTML = MP.isHost() ? 'Start race <kbd>↵</kbd>' : 'Waiting for the host';
     $('roomStart').disabled = !MP.isHost();
@@ -188,33 +200,26 @@ const UI = (() => {
     for (const tile of rail.children) if (tile.requestThumb) thumbObserver.observe(tile);
   }
   function renderShip() {
-    const cc = currentCraft(), r = cc.race, home = Planets.planet(r.planet);
-    const st = Stats.compute(cc.recipe, cc.seed, r.ability);
-    $('heroName').textContent = cc.craft ? (cc.craft.name || 'Kitbash') : Planets.VEHICLES[r.vehicle].name;
-    $('heroSub').textContent = `${r.name} of ${home ? home.name : ''}${cc.craft ? ' · kitbash' : st.archetype ? ' · ' + st.archetype : ''}`;
-    $('heroTag').textContent = `${r.ability.name} · ${r.ability.desc}`;
-    $('heroStats').innerHTML = STATS.map(k => { const v = Math.max(0, Math.min(1, st.bars[k] || 0)); return `<div class="st"><span class="k">${k}</span><span class="v num">${(v * 10).toFixed(1)}</span><i style="--v:${Math.max(0.03, v).toFixed(2)}"></i></div>`; }).join('');
-    $('archName').textContent = cc.craft ? `Kit ${sel.kitSeed}` : (st.archetype || '');
-    $('archHint').textContent = cc.craft ? 'kitbash · seed' : `archetype · seed ${sel.archSeed}`;
-    // Rail: one tile per race plus a kitbash tile. Each shows a real render of that craft.
-    const rail = $('shipRail'); rail.innerHTML = '';
-    Planets.RACES.forEach((race, i) => {
-      const key = craftKey(race, false, sel.archSeed);
-      const seedN = sel.archSeed;
-      const url = TH() ? Thumbs.get(key) : null;
-      const b = tile(i === sel.race && !sel.kit ? 'on' : '', url, key, Planets.VEHICLES[race.vehicle].name, race.name);
-      if (!url && TH()) b.requestThumb = () => Thumbs.craft(key, Planets.RECIPES[race.vehicle], seedN, race.hue);
-      b.dataset.i = i;
-      b.onclick = () => { sel.race = i; sel.kit = false; goShip(); };
-      rail.appendChild(b);
+    const cc=currentCraft(),r=cc.race,e=Fleet.forRace(r);
+    const st=Stats.compute(cc.recipe,1,r.ability);
+    $('heroName').textContent=e.name;
+    $('heroSub').textContent='Choose your ship and paint · race on any terrain';
+    $('heroTag').textContent=`${r.ability.name} · ${r.ability.desc}`;
+    $('heroStats').innerHTML=STATS.map(k=>{const v=st.bars[k];return `<div class="st"><span class="k">${k}</span><span class="v num">${(v*10).toFixed(1)}</span><i style="--v:${v.toFixed(2)}"></i></div>`}).join('');
+    $('archName').textContent=Fleet.paintName(sel.archSeed);
+    $('archHint').textContent='Paint · any terrain';
+    const picker=$('paintSelect');picker.replaceChildren();
+    for(const p of Fleet.paints){const option=document.createElement('option');option.value=p.id;option.textContent=p.name;picker.append(option)}
+    if(sel.archSeed>Fleet.paints.length){const option=document.createElement('option');option.value=sel.archSeed;option.textContent=Fleet.paintName(sel.archSeed);picker.append(option)}
+    picker.value=String(sel.archSeed);
+    const rail=$('shipRail');rail.innerHTML='';
+    Fleet.entries.forEach((ship,i)=>{
+      const race=Planets.RACES[i],paint=shipPaints[ship.id],key='fleet:'+ship.id+':'+paint;
+      const url=TH()?Thumbs.get(key):null;
+      const b=tile(ship.id===e.id?'on':'',url,key,ship.name,Fleet.paintName(paint));
+      if(!url&&TH())b.requestThumb=()=>Thumbs.craft(key,Fleet.recipe(ship.id,paint),1,race.hue);
+      b.dataset.i=i;b.onclick=()=>{sel.race=i;sel.kit=false;goShip()};rail.append(b);
     });
-    const kitKey = craftKey(r, true, sel.kitSeed);
-    const kitSeedN = sel.kitSeed;
-    const kitUrl = cc.craft && TH() ? Thumbs.get(kitKey) : null;
-    const kb = tile('kit' + (sel.kit ? ' on' : ''), kitUrl, cc.craft ? kitKey : '', 'Kitbash', sel.kit ? 'reroll ›' : 'generate one');
-    if (!kitUrl && cc.craft && TH()) kb.requestThumb = () => Thumbs.craft(kitKey, cc.craft, kitSeedN, r.hue);
-    kb.onclick = () => { if (sel.kit) sel.kitSeed = Math.floor(Math.random() * 9000) + 1; sel.kit = true; goShip(); };
-    rail.appendChild(kb);
     scrollToOn(rail);
     observeThumbs(rail);
   }
@@ -350,10 +355,8 @@ const UI = (() => {
 
   // ---------------------------------------------------------------- keys
   function moveShip(d) {
-    const n = Planets.RACES.length; // the kitbash tile sits after the last race
-    let i = sel.kit ? n : sel.race;
-    i = (i + d + n + 1) % (n + 1);
-    if (i === n) { sel.kit = true; } else { sel.kit = false; sel.race = i; }
+    sel.race=(Fleet.entries.indexOf(Fleet.forRace(Planets.RACES[sel.race]))+d+Fleet.entries.length)%Fleet.entries.length;
+    sel.kit=false;
     goShip();
   }
   function onKey(e) {
@@ -368,7 +371,7 @@ const UI = (() => {
     }
     else if (screen === 'ship' && (e.key === '[' || e.key === ']')) { cycleSeed(e.key === ']' ? 1 : -1); }
   }
-  function cycleSeed(d) { if (sel.kit) sel.kitSeed = Math.max(1, sel.kitSeed + d); else sel.archSeed = Math.max(1, sel.archSeed + d); goShip(); }
+  function cycleSeed(d) { setPaint(1+((sel.archSeed-1+d+Fleet.paints.length)%Fleet.paints.length)); }
   function primary() {
     if (screen === 'cover') goShip();
     else if (screen === 'ship') goPlanet();
@@ -461,6 +464,8 @@ const UI = (() => {
     $('setName').onchange = () => { Game.ui.setPlayerName($('setName').value.trim()); };
     $('setMusic').oninput = () => { const v = +$('setMusic').value; $('setMusicV').textContent = v.toFixed(2); A(a => a.setMusic(v)); };
     $('setSfx').oninput = () => { const v = +$('setSfx').value; $('setSfxV').textContent = v.toFixed(2); A(a => { a.setSfx(v); a.sfx.click(); }); };
+    $('paintSelect').onchange=e=>{setPaint(Number(e.target.value))};
+    $('paintRandom').onclick=()=>{setPaint(Fleet.paints.length+1+Math.floor(Math.random()*PALETTES.length))};
     $('archPrev').onclick = () => cycleSeed(-1);
     $('archNext').onclick = () => cycleSeed(1);
     $('shipNext').onclick = goPlanet;

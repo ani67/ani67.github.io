@@ -338,9 +338,9 @@ const Game = (() => {
   }
 
   function craftParams(race) {
-    if (race === raceDef && craftOverride && craftOverride.hull) return { recipe: craftOverride, seed: craftOverride.seed || 1 };
-    const recipe = Planets.RECIPES[race.vehicle] || Planets.RECIPES.falcon;
-    return { recipe, seed: race === raceDef && craftSeed ? craftSeed : 1 + Planets.RACES.indexOf(race) };
+    const e=Fleet.forRace(race);
+    const paint=race===raceDef?(craftOverride?.paint||craftSeed||1):2+Planets.RACES.indexOf(race)%Planets.PLANETS.length;
+    return {recipe:Fleet.recipe(e.id,paint),seed:1};
   }
   function getPlayerName() {
     if (playerName) return playerName;
@@ -352,12 +352,7 @@ const Game = (() => {
   // In a room the roster decides who sits in which slot; in single player slot 0 is the local craft and the rest are bots.
   function craftParamsFor(e) {
     const race = Planets.race(e.raceId) || Planets.RACES[0];
-    if (e.kit && typeof Kitbash !== 'undefined') {
-      const rec = Kitbash.forRace(race.id, e.kitSeed || 1);
-      rec.hue = race.hue; rec.seed = e.kitSeed || 1;
-      return { recipe: rec, seed: e.kitSeed || 1 };
-    }
-    return { recipe: Planets.RECIPES[race.vehicle] || Planets.RECIPES.falcon, seed: e.archSeed || 1 };
+    return {recipe:Fleet.recipe(Fleet.forRace(race).id,e.archSeed||1),seed:1};
   }
   // Reuse CPU meshes across setup screens and restarts. GPU buffers still follow
   // scene ownership, so changing worlds cannot leave stale/destroyed handles.
@@ -367,7 +362,7 @@ const Game = (() => {
     const key = JSON.stringify([params.recipe, params.seed]);
     const cached = craftMeshes.get(key);
     if (cached) { craftMeshes.delete(key); craftMeshes.set(key, cached); return cached.mesh; }
-    const mesh = Geo.withLods(Craft.build(params.recipe, params.seed));
+    const mesh = Geo.withLods(params.recipe.fleetId ? Fleet.build(params.recipe) : Craft.build(params.recipe, params.seed));
     const arrays = new Set([mesh, ...(mesh.lods || [])].flatMap(m => [m.verts, m.idx]));
     const bytes = [...arrays].reduce((sum, a) => sum + a.byteLength, 0);
     const budget = 16 * 1024 * 1024;
@@ -412,7 +407,7 @@ const Game = (() => {
         // Stats includes bounded faction/role bonuses and the actual selected craft seed.
         id: i, isBot: roster ? roster[i].bot : i !== 0, race: r, ab: st.ability, x: p[0], z: p[2], y: p[1], heading: Math.atan2(s.tan[0], s.tan[2]), pitch: 0, jumpCd: 0, outLane: 0, outTime: 0, alt: 99, camPitch: 0, stunEvents: 0,
         vx: 0, vz: 0, vy: 0, t: s.t, lap: 0, half: false, prog: 0, spin: 0, steer: 0, boost: 0, charge: 0, drifting: false, glow: 0,
-        color: hsl(((hue % 1) + 1) % 1, 0.75, 0.55), body: [0.92 + rnd() * 0.16, 1, 0.94 + rnd() * 0.12],
+        color: hsl(((hue % 1) + 1) % 1, 0.75, 0.55), body: [1, 1, 1],
         lane: (rnd() - 0.5) * 1.2, laneY: (rnd() - 0.5), laneT: rnd() * 10, skill: 0.75 + rnd() * 0.25, finished: false, finishTime: 0,
         maxSpeed: ph.maxSpeed * st.speedMul, speed: 0, lat: 0, sample: s, yaw: 0, air: false, onRoad: true, stun: 0, shake: 0, flash: 0, offTime: 0, hits: 0, roll: 0, lastGate: -1,
       });
@@ -424,10 +419,10 @@ const Game = (() => {
     document.documentElement.style.setProperty('--accent', cssColor(player.color));
     for (const g of groups.values()) {
       const raw = preparedCraft(g.params);
-      let ext = 1, ylo = 1e9, yhi = -1e9;
-      for (let k = 0; k < raw.verts.length; k += Geo.STRIDE) { ext = Math.max(ext, Math.hypot(raw.verts[k], raw.verts[k + 2])); const y = raw.verts[k + 1]; if (y < ylo) ylo = y; if (y > yhi) yhi = y; }
+      let ext = 1, radius = 1, ylo = 1e9, yhi = -1e9;
+      for (let k = 0; k < raw.verts.length; k += Geo.STRIDE) { radius = Math.max(radius, Math.hypot(raw.verts[k], raw.verts[k + 1], raw.verts[k + 2])); ext = Math.max(ext, Math.hypot(raw.verts[k], raw.verts[k + 2])); const y = raw.verts[k + 1]; if (y < ylo) ylo = y; if (y > yhi) yhi = y; }
       const vcen = ylo < yhi ? (ylo + yhi) / 2 : 0.8;   // hull mid-height, so the showcase camera can centre the craft
-      for (const ci of g.ids) { cars[ci].extent = ext; cars[ci].vcen = vcen; }
+      for (const ci of g.ids) { cars[ci].extent = ext; cars[ci].previewRadius = radius; cars[ci].vcen = vcen; }
       const mesh = Gpu.createMesh(raw);
       const data = new Float32Array(Gpu.CAR_FLOATS * g.ids.length);
       carGroups.push({ mesh, inst: Gpu.createInstances(data), data, count: g.ids.length, ids: g.ids });
@@ -944,7 +939,11 @@ const Game = (() => {
     let target, lookT;
     const tNow = performance.now() / 1000;
     if (camMode === 'showcase') {
-      const az = tNow * 0.3 + 2.4, el = 0.22, r = clamp((c.extent || 4) * 3.5, 10, 36);
+      // Fit the entire rotating silhouette, including upright wings, above the selection rail.
+      const aspect = innerWidth / Math.max(1, innerHeight);
+      const halfFov = Math.atan(Math.tan(Math.PI / 12) * Math.min(1, aspect));
+      const az = tNow * 0.3 + 2.4, el = 0.22;
+      const r = (c.previewRadius || c.extent || 4) / (Math.sin(halfFov) * 0.55);
       const cy = c.y + (c.vcen === undefined ? 0.8 : c.vcen);   // orbit the hull's middle, not the hover origin
       target = [c.x + Math.cos(az) * Math.cos(el) * r, cy + Math.sin(el) * r, c.z + Math.sin(az) * Math.cos(el) * r];
       lookT = [c.x, cy - r * 0.067, c.z];  // a touch below the hull: the craft sits just above centre, clear of the stats row

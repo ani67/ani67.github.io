@@ -78,6 +78,7 @@ const Stats = (() => {
     return out;
   }
   function compute(recipe, seed = 1, ability = {}) {
+    if (recipe?.fleetId && typeof Fleet !== 'undefined') return compute(Planets.RECIPES[Fleet.entry(recipe.fleetId).family], 1, ability);
     const valid = recipe && (recipe.hull || recipe.archetypes) && typeof Craft !== 'undefined' && Craft.measure;
     const raw = valid ? rawCompute(recipe, seed) : { ...REFERENCE, budget: 0, perk: {} }, result = { ...raw, perk: {}, ability: boundedAbility(ability, raw.perk) };
     for (const key of Object.keys(CENTRES)) {

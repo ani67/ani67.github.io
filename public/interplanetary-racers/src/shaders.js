@@ -72,6 +72,8 @@ struct VOut {
   @location(3) ex : vec4f,
   @location(4) tint : vec4f,
   @location(5) extra : vec4f, // craft: damage, shield
+  @location(6) localPos : vec3f,
+  @location(7) localNormal : vec3f,
 };
 `;
 
@@ -205,6 +207,7 @@ fn carWorld(v : CarIn) -> VOut {
   let wn = v.iright * n.x + v.iup * n.y + v.ifwd * n.z;
   o.wp = wp; o.n = wn; o.uv = v.uv; o.ex = v.ex; o.tint = vec4f(v.icol, v.iglow);
   o.extra = vec4f(v.idmg, v.ishield, 0.0, 0.0);
+  o.localPos = v.p; o.localNormal = v.n;
   if (part == 9.0) {
     // A forward-moving wave follows spline distance, even around bends/climbs.
     let wave = pow(0.5 + 0.5 * cos(6.2831853 * (v.ispin - F.pal0.w * 2.0)), 4.0);
@@ -218,6 +221,7 @@ fn carWorld(v : CarIn) -> VOut {
 @fragment fn fsScene(i : VOut) -> FsOut { return shadeScene(i); }
 @fragment fn fsSceneEco(i : VOut) -> @location(0) vec4f { return shadeScene(i).col; }
 fn shadeScene(i : VOut) -> FsOut {
+  let surfaceFootprint = max(fwidth(i.localPos),vec3f(0.004));
   let mat = i.ex.x;
   var albedo = vec3f(0.5);
   var emis = vec3f(0.0);
@@ -338,6 +342,52 @@ fn shadeScene(i : VOut) -> FsOut {
     // Cars.
     let part = i.ex.y; let col = i.tint.xyz; let glow = i.tint.w;
     let tone2 = i.ex.z; let stripeF = i.ex.w; let wear = i.uv.y;
+    if (part == 10.0) {
+      // Fleet vertex paint is independent of terrain colour remapping.
+      let pattern = floor(i.ex.w / 1000.0);
+      let flags = i.ex.w - pattern * 1000.0;
+      let region = flags - floor(flags / 100.0) * 100.0;
+      let grey = flags >= 100.0;
+      let n = normalize(i.n); let V = normalize(F.camPos.xyz - i.wp);
+      let light = dot(n, normalize(F.sunDir.xyz));
+      var base = vec3f(i.uv, i.ex.z);
+      let p = i.localPos; let ln = abs(i.localNormal);
+      let uv = select(select(p.xy, p.xz, ln.y > ln.z), p.zy, ln.x > max(ln.y, ln.z));
+      if (region == 0.0 || region == 5.0) {
+        // Static, local-space detail; no simulation, extra texture or render pass.
+        var detail = 0.0;
+        if (pattern == 1.0) { detail = (vnoise(uv * 6.0) - 0.5) * 0.09; }
+        else if (pattern == 2.0) { let grid = abs(fract(uv * 2.5) - 0.5); detail = -0.10 * smoothstep(0.45, 0.49, max(grid.x, grid.y)); }
+        else if (pattern == 3.0) { detail = -0.07 * smoothstep(0.8, 0.9, sin(uv.x * 28.0 + sin(uv.y * 9.0) * 2.0)); }
+        else if (pattern == 4.0) { detail = -0.13 * smoothstep(0.80, 0.95, sin(uv.x * 36.0)) * (1.0 - smoothstep(0.35, 0.55, abs(uv.y))); }
+        else if (pattern == 5.0) { detail = (hash21(floor(uv * 12.0)) - 0.5) * 0.06; }
+        else { detail = -0.07 * smoothstep(0.91, 0.98, sin(uv.y * 22.0)); }
+        let fade = 1.0 - smoothstep(25.0, 100.0, length(F.camPos.xyz-i.wp));
+        let cells = uv * 1.4;
+        let edge = min(fract(cells), 1.0-fract(cells));
+        let aa = vec2f(max(surfaceFootprint.x,max(surfaceFootprint.y,surfaceFootprint.z))*1.4);
+        let seam = 1.0-smoothstep(0.012,0.012+max(aa.x,aa.y),min(edge.x,edge.y));
+        let panelTone = (hash21(floor(cells))-0.5)*0.12;
+        // Sparse maintenance marks, inset panel seams and a lighter seam lip.
+        let local = fract(cells);
+        let marking = step(0.77,hash21(floor(cells)+17.0))*step(0.13,local.x)*step(local.x,0.36)*step(0.16,local.y)*step(local.y,0.20);
+        base *= 1.0 + (detail + panelTone - seam*0.24) * fade;
+        base = mix(base,vec3f(0.88,0.89,0.86),marking*0.7*fade);
+      }
+      let shadeCol = base * vec3f(0.50, 0.57, 0.70) + vec3f(0.015,0.019,0.028);
+      let warm = min(base * vec3f(1.08,1.04,0.95) + vec3f(0.025,0.02,0.012), vec3f(1.0));
+      var c = mix(shadeCol, base, smoothstep(0.10,0.14,light));
+      c = mix(c, warm, smoothstep(0.72,0.76,light)*0.8);
+      if (region == 4.0) { c = base * (1.0 + glow * 0.9); }
+      c *= 1.0 - clamp(i.extra.x,0.0,1.0)*0.35;
+      if (i.extra.y > 0.5) { c += vec3f(0.15,0.4,0.6)*pow(1.0-max(dot(n,V),0.0),2.0); }
+      if (grey) { c = vec3f(luma(c)); }
+      let fog = 1.0-exp(-length(F.camPos.xyz-i.wp)*F.skyA.w);
+      var painted : FsOut;
+      painted.col = vec4f(mix(c,F.skyA.xyz,fog),-1.0);
+      painted.nd = vec4f(n,length(F.camPos.xyz-i.wp));
+      return painted;
+    }
     if (part == 0.0) {
       // Secondary paint tone, stripe band, belly dirt and edge chips.
       let col2 = mix(col.zxy * 0.8, vec3f(0.92, 0.9, 0.85), 0.45);

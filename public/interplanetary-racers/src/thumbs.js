@@ -76,7 +76,7 @@ const Thumbs = (() => {
 
   // ---------------------------------------------------------------- craft
   function craftJob(key, recipe, seedN, hue) {
-    const mesh = Craft.build(recipe, seedN);
+    const mesh = recipe.fleetId ? Fleet.build(recipe) : Craft.build(recipe, seedN);
     const b = bounds(mesh);
     const gpuMesh = Gpu.createMesh(mesh);
     const data = new Float32Array(Gpu.CAR_FLOATS);

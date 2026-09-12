@@ -358,7 +358,7 @@
     <div class="statrow" id="heroStats"></div>
     <div class="railwrap"><button class="railbtn" id="shipPrev">‹</button><div class="rail" id="shipRail"></div><button class="railbtn" id="shipNextTile">›</button></div>
     <div class="tools bottom">
-      <div class="left"><div class="arch"><button class="iconbtn" id="archPrev">‹</button><div class="name display" id="archName"></div><button class="iconbtn" id="archNext">›</button></div><span class="label" id="archHint">archetype</span></div>
+      <div class="left"><div class="arch"><button class="iconbtn" id="archPrev">‹</button><select id="paintSelect" aria-label="Ship colour" style="max-width:190px;color:inherit;background:#182126;padding:8px;border:1px solid #697579;border-radius:6px"></select><span id="archName" hidden></span><button class="iconbtn" id="archNext">›</button></div><span class="label" id="archHint">Paint · any terrain</span><button class="btn ghost" id="paintRandom">Random colour</button></div>
       <div class="right"><button class="btn ghost" data-back>Back <kbd>esc</kbd></button><button class="btn primary" id="shipNext">Next <kbd>↵</kbd></button></div>
     </div>
   </div>
@@ -421,31 +421,38 @@
   </div>
 </div>
 <div id="err"></div>
-<script src="src/math.js"></script>
-<script src="src/palettes.js"></script>
-<script src="src/planets.js"></script>
-<script src="src/craft.js"></script>
-<script src="src/kitbash.js"></script>
-<script src="src/stats.js"></script>
-<script src="src/tracks.js"></script>
-<script src="src/weapons.js"></script>
-<script src="src/particles.js"></script>
-<script src="src/biomes.js"></script>
-<script src="src/world.js"></script>
-<script src="src/geometry.js"></script>
-<script src="src/flora.js"></script>
-<script src="src/propsets.js"></script>
-<script src="src/shaders.js"></script>
-<script src="src/gpu.js"></script>
-<script src="src/frame.js"></script>
-<script src="src/names.js"></script>
-<script src="src/radio.js"></script>
-<script src="src/audio.js"></script>
-<script src="src/net.js"></script>
-<script src="src/mp.js"></script>
-<script src="src/thumbs.js"></script>
-<script src="src/game.js"></script>
-<script src="src/ui.js"></script>
+<script src="src/math.js?v=fleet-20260913-4"></script>
+<script src="src/palettes.js?v=fleet-20260913-4"></script>
+<script src="src/planets.js?v=fleet-20260913-4"></script>
+<script src="src/craft.js?v=fleet-20260913-4"></script>
+<script src="src/kitbash.js?v=fleet-20260913-4"></script>
+<script src="src/stats.js?v=fleet-20260913-4"></script>
+<script src="src/tracks.js?v=fleet-20260913-4"></script>
+<script src="src/weapons.js?v=fleet-20260913-4"></script>
+<script src="src/particles.js?v=fleet-20260913-4"></script>
+<script src="src/biomes.js?v=fleet-20260913-4"></script>
+<script src="src/world.js?v=fleet-20260913-4"></script>
+<script src="ships/ship-01.js?v=fleet-20260913-4"></script>
+<script src="ships/ship-02.js?v=fleet-20260913-4"></script>
+<script src="ships/ship-03.js?v=fleet-20260913-4"></script>
+<script src="ships/ship-04.js?v=fleet-20260913-4"></script>
+<script src="ships/ship-05.js?v=fleet-20260913-4"></script>
+<script src="ships/ship-06.js?v=fleet-20260913-4"></script>
+<script src="src/fleet.js?v=fleet-20260913-4"></script>
+<script src="src/geometry.js?v=fleet-20260913-4"></script>
+<script src="src/flora.js?v=fleet-20260913-4"></script>
+<script src="src/propsets.js?v=fleet-20260913-4"></script>
+<script src="src/shaders.js?v=fleet-20260913-4"></script>
+<script src="src/gpu.js?v=fleet-20260913-4"></script>
+<script src="src/frame.js?v=fleet-20260913-4"></script>
+<script src="src/names.js?v=fleet-20260913-4"></script>
+<script src="src/radio.js?v=fleet-20260913-4"></script>
+<script src="src/audio.js?v=fleet-20260913-4"></script>
+<script src="src/net.js?v=fleet-20260913-4"></script>
+<script src="src/mp.js?v=fleet-20260913-4"></script>
+<script src="src/thumbs.js?v=fleet-20260913-4"></script>
+<script src="src/game.js?v=fleet-20260913-4"></script>
+<script src="src/ui.js?v=fleet-20260913-4"></script>
 <script>
   if (new URLSearchParams(location.search).get('preview') === '1') {
     document.querySelector('a[aria-label="Back to Ani Dalal’s portfolio"]')?.remove();

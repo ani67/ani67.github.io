@@ -323,7 +323,7 @@ const Geo = (() => {
       const v = mesh.verts;
       const normalAxis = Math.abs(v[o + 3]) > Math.abs(v[o + 4]) ? (Math.abs(v[o + 3]) > Math.abs(v[o + 5]) ? 0 : 2) : (Math.abs(v[o + 4]) > Math.abs(v[o + 5]) ? 1 : 2);
       const face = normalAxis * 2 + (v[o + 3 + normalAxis] < 0 ? 1 : 0);
-      const key = `${Math.round((v[o] - lo[0]) / cell)},${Math.round((v[o + 1] - lo[1]) / cell)},${Math.round((v[o + 2] - lo[2]) / cell)}:${face}:${v[o + 8]},${v[o + 9]},${v[o + 10]},${v[o + 11]}`;
+      const key = `${Math.round((v[o] - lo[0]) / cell)},${Math.round((v[o + 1] - lo[1]) / cell)},${Math.round((v[o + 2] - lo[2]) / cell)}:${face}:${v[o + 9] === 10 ? `${v[o + 6]},${v[o + 7]}:` : ""}${v[o + 8]},${v[o + 9]},${v[o + 10]},${v[o + 11]}`;
       if (!buckets.has(key)) { buckets.set(key, counts.length); counts.push(0); sums.push(new Float64Array(STRIDE)); }
       const id = buckets.get(key); remap[o / STRIDE] = id; counts[id]++;
       for (let k = 0; k < STRIDE; k++) sums[id][k] += v[o + k];
