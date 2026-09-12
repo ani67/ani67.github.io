@@ -10,6 +10,7 @@ function scene() {
     routeRings: [0.1, 0.5].map((t, i) => ({ t, p: [0, 0, i * 50], tan: [0, 0, 1], radius: 10, flash: 0 })),
     routePrevious: [0, 0, -1], player: { x: 0, y: 0, z: 1, t: 0.11, wrecked: 0 },
     rs: { state: 'racing' }, reducedMotion: { matches: false },
+    A: fn => fn({ sfx: { routePassed: () => { context.sounds = (context.sounds || 0) + 1; } } }),
     Gpu: { CAR_FLOATS: 24, updateInstances: () => {} },
     sub: (a, b) => a.map((v, i) => v - b[i]), scale: (a, n) => a.map(v => v * n),
     dot: (a, b) => a.reduce((n, v, i) => n + v * b[i], 0), len: a => Math.hypot(...a),
@@ -21,6 +22,8 @@ function scene() {
 test('forward passage inside a ring confirms and next-ring selection wraps at the lap boundary', () => {
   const c = scene(); c.updateRouteCues(1 / 30);
   assert(c.routeRings[0].flash > 0.9);
+  assert.equal(c.sounds, 1);
+  c.updateRouteCues(1 / 30); assert.equal(c.sounds, 1, 'no repeated chime while inside');
   assert.equal(c.gateGroup[0].data[45], 1);
   c.player.t = 0.99; c.updateRouteCues(1 / 30);
   assert.equal(c.gateGroup[0].data[21], 1);

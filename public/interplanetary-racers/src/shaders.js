@@ -192,6 +192,11 @@ fn carWorld(v : CarIn) -> VOut {
   } else {
     p = p * v.ibody; n = normalize(n / v.ibody);
   }
+  if (part == 8.0 && v.ishield > 0.0) {
+    // Brief outward ripple and gentle return, reusing the hoop's own vertices.
+    let ripple = sin((1.0 - v.ishield) * 3.14159265) * 0.12;
+    p = vec3f(p.xy * (1.0 + ripple), p.z);
+  }
   let wp = v.ipos + v.iright * p.x + v.iup * p.y + v.ifwd * p.z;
   let wn = v.iright * n.x + v.iup * n.y + v.ifwd * n.z;
   o.wp = wp; o.n = wn; o.uv = v.uv; o.ex = v.ex; o.tint = vec4f(v.icol, v.iglow);
@@ -356,12 +361,16 @@ fn shadeScene(i : VOut) -> FsOut {
     else if (part == 4.0) { albedo = vec3f(0.02, 0.03, 0.05); gloss = 0.5; }
     else if (part == 6.0) { emis = mix(F.emis.xyz, col, 0.4) * (0.25 + glow * 0.7) * (1.0 - i.extra.x * 0.8); albedo = vec3f(0.05); }
     else if (part == 8.0) {
-      // Dark rim + luminous core stays legible in daylight and with Eco bloom off.
-      let core = smoothstep(0.25, 0.65, abs(cos(i.uv.x * 6.2831853)));
+      // Continuous light, independent of the world's cel shading and ink filters.
       let sweep = pow(0.5 + 0.5 * cos(6.2831853 * (i.uv.y - F.pal0.w * 0.3)), 6.0);
       let motion = select(0.0, sweep, F.pal0.w > 0.0);
-      emis = mix(col, vec3f(0.8, 1.0, 0.9), i.extra.y) * core * (0.35 + glow + motion * (0.35 + i.extra.x) + i.extra.y * 2.0);
-      albedo = vec3f(0.015, 0.035, 0.045);
+      let light = mix(col, vec3f(0.8, 1.0, 0.9), i.extra.y * 0.65) * (0.12 + glow + motion * i.extra.x * 0.5 + i.extra.y * 1.8);
+      let distance = length(F.camPos.xyz - i.wp);
+      var hoop : FsOut;
+      let guided = mix(mix(F.skyA.xyz, col * 0.65, 0.35), light, max(i.extra.x, i.extra.y));
+      hoop.col = vec4f(mix(guided, F.skyA.xyz, 1.0 - exp(-distance * F.skyA.w)), -1.0);
+      hoop.nd = vec4f(normalize(i.n), distance);
+      return hoop;
     }
     else if (part == 9.0) { emis = col * glow; albedo = vec3f(0.015, 0.06, 0.08); }
     else if (part == 7.0) {
@@ -539,7 +548,7 @@ fn aces(x : vec3f) -> vec3f {
   let uv = 0.5 + c * (1.0 - (0.03 + F.camFwd.w * 0.28) * r2);
   let sample = textureSample(sceneTex, samp, uv);
   var col = sample.xyz;
-  let mask = (sample.w - 1.5 * floor(sample.w / 1.5)) / 0.9;
+  let mask = select((sample.w - 1.5 * floor(sample.w / 1.5)) / 0.9, 0.0, sample.w < 0.0);
   if (F.look.x > 0.0) {
     let l = luma(col);
     col = mix(col, palette(clamp(l, 0.0, 1.0)), F.look.x * (1.0 - smoothstep(0.9, 1.8, l)) * mask);
@@ -570,16 +579,16 @@ override WITH_BLOOM: bool = true;
   let c4 = textureSample(sceneTex, samp, uv);
 
   let band = floor(c4.w / 1.5) * 0.5;
-  let mask = (c4.w - 1.5 * floor(c4.w / 1.5)) / 0.9;
+  let mask = select((c4.w - 1.5 * floor(c4.w / 1.5)) / 0.9, 0.0, c4.w < 0.0);
   var col = c4.xyz;
   if (WITH_EFFECTS) {
-    col.r = textureSample(sceneTex, samp, uv + dir * ca).r;
-    col.b = textureSample(sceneTex, samp, uv - dir * ca).b;
+    col.r = select(textureSample(sceneTex, samp, uv + dir * ca).r, col.r, c4.w < 0.0);
+    col.b = select(textureSample(sceneTex, samp, uv - dir * ca).b, col.b, c4.w < 0.0);
   }
   // Ink outlines from depth and normal discontinuities.
   let px = vec2i(uv * F.res.xy);
   let inkCol = select(F.pal0.xyz * 0.35, F.ramp1.xyz * 0.22, (u32(F.env.w + 0.5) & 1u) != 0u);
-  if (WITH_EFFECTS && F.look.z > 0.0) {
+  if (WITH_EFFECTS && F.look.z > 0.0 && c4.w >= 0.0) {
     let nd0 = textureLoad(ndTex, px, 0);
     var dd = 0.0; var nn = 0.0;
     let offs = array<vec2i, 4>(vec2i(1, 0), vec2i(-1, 0), vec2i(0, 1), vec2i(0, -1));

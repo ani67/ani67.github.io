@@ -282,7 +282,7 @@ const Game = (() => {
       const boost = designed ? designed.some(g => { let e = t - g; e -= Math.round(e); return Math.abs(e) < gap * 0.5; }) : k % 3 === 1;
       if (boost) boostGates.push(t);
       put(s, R, boost ? [1, 0.48, 0.06] : [0.04, 0.65, 0.95], 0.35);
-      routeRings.push({ t, p: s.p, tan: s.tan, radius: R, flash: 0 });
+      routeRings.push({ t, p: s.p, tan: s.tan, radius: R, boost, flash: 0 });
     }
     if (!boostGates.length) boostGates.push(1 / n);
     const ringCount = n;
@@ -292,7 +292,7 @@ const Game = (() => {
       data[o - Gpu.CAR_FLOATS + 15] = k / m * length / 112; // phase along the route, not world axes
     }
     const routeMesh = (mesh, part) => { for (let i = 9; i < mesh.verts.length; i += Geo.STRIDE) mesh.verts[i] = part; return mesh; };
-    const ring = Gpu.createMesh(routeMesh(Geo.buildRing(1, 0.06, 36, 8), 8)), cube = Gpu.createMesh(routeMesh(Geo.buildCube(), 9));
+    const ring = Gpu.createMesh(routeMesh(Geo.buildRing(1, 0.018, 48, 6), 8)), cube = Gpu.createMesh(routeMesh(Geo.buildCube(), 9));
     const ringData = data.slice(0, ringCount * Gpu.CAR_FLOATS);
     const buf = Gpu.createInstances(ringData);
     gateGroup = [
@@ -318,12 +318,15 @@ const Game = (() => {
       const ring = routeRings[i], offset = sub(position, ring.p), along = dot(offset, ring.tan);
       if (active && moved && player.wrecked <= 0 && dot(sub(routePrevious, ring.p), ring.tan) < 0 && along >= 0 && along < 100) {
         const radial = len(sub(offset, scale(ring.tan, along)));
-        if (radial < ring.radius * 0.94) ring.flash = 1;
+        if (radial < ring.radius * 0.94) {
+          ring.flash = 1;
+          if (!ring.boost) A(a => a.sfx.routePassed());
+        }
       }
       if (!active) ring.flash = 0;
       else ring.flash = Math.max(0, ring.flash - Math.min(dt, 0.1) * 1.8);
       const o = i * Gpu.CAR_FLOATS;
-      data[o + 20] = active && i === nearest ? 0.8 + 0.9 * (1 - smoothstep(20, 260, len(offset))) : 0.35;
+      data[o + 20] = active && i === nearest ? 1.2 + 1.2 * (1 - smoothstep(20, 260, len(offset))) : 0.12;
       data[o + 21] = active && i === nearest ? 1 : 0;
       data[o + 22] = reducedMotion.matches ? 0 : ring.flash;
     }

@@ -97,3 +97,9 @@ RCA: room start previously sent only planet and seed. A client joining from a cu
 The host now supplies a copied generated descriptor and explicit overrides, including null, to both lobby and race start. Both peers rebuild from that snapshot. Identical lobby messages do not repeatedly rebuild the preview. Large reliable events are split into bounded packets to avoid data-channel message-size limits. Client map controls defer to the host.
 
 Validation: real two-peer WebRTC comparisons matched every sampled route point and the complete descriptor for normal sessions, custom-client links, and custom-host maps. Lobby previews matched in all three cases; mixed-preset pause/resume passed. The 43-test suite includes repeated preview suppression, rejoin/reset, authoritative same-seed starts and packet assembly across peers.
+
+## Ring clarity revision (13 September)
+
+The broad dark ring band is replaced with a continuous unlit hoop, 70% thinner. Circumference resolution increases from 36 to 48 segments while the tube uses six instead of eight sides, preserving the triangle count. Hoop pixels bypass ink outlines and chromatic channel offsets, preventing those filters from reintroducing internal dark bands. Future rings blend toward the sky; the next ring brightens on approach. Amber continues to identify boost gates.
+
+Forward passage produces a brief outward-and-return ripple using the same vertices. Ordinary route rings play a quiet sine chime; boost rings retain their existing boost sound. Reduced motion suppresses the ripple. Route/boost rules remain unchanged. The 43 tests passed, including one-shot passage audio. Browser checks covered all presets and the Embervale/Solar-Orbit-188 world from the reported screenshot, with no shader errors or extra render passes.
