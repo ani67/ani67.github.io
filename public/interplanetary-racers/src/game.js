@@ -975,7 +975,7 @@ const Game = (() => {
       target = [c.x + fwd[0] * 2.3, c.y + 1.1 + fwd[1] * 2.3, c.z + fwd[2] * 2.3];
       lookT = [c.x + fwd[0] * 40, c.y + 1.1 + fwd[1] * 40 + sway, c.z + fwd[2] * 40];
       cam.pos = M.lerp3(cam.pos, target, 1 - Math.exp(-dt * 30)); cam.look = M.lerp3(cam.look, lookT, 1 - Math.exp(-dt * 14));
-      cam.fov = mix(cam.fov, 66 + speed01 * 14, k); cam.speed01 = speed01;
+      cam.fov = mix(cam.fov, 66 + (reducedMotion.matches ? 0 : speed01 * 4), k); cam.speed01 = speed01;
       return;
     }
     {
@@ -996,7 +996,7 @@ const Game = (() => {
     if (desc.water) { target[1] += Math.sin(t * 0.8) * 0.4; sh += 0.05; }
     cam.pos = [cam.pos[0] + (Math.random() - 0.5) * sh, cam.pos[1] + (Math.random() - 0.5) * sh, cam.pos[2] + (Math.random() - 0.5) * sh];
     cam.look = M.lerp3(cam.look, lookT, 1 - Math.exp(-dt * 10));
-    cam.fov = mix(cam.fov, 56 + speed01 * 20 + (c.boost > 0 ? 6 : 0), k);
+    cam.fov = mix(cam.fov, 56 + (reducedMotion.matches ? 0 : speed01 * 8 + (c.boost > 0 ? 2 : 0)), k);
     cam.speed01 = speed01;
   }
 

@@ -555,12 +555,19 @@ fn shadeSky(i : FOut) -> FsOut {
 fn aces(x : vec3f) -> vec3f {
   return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), vec3f(0.0), vec3f(1.0));
 }
+// Inverse radial mapping: magnify the centre and progressively compress the
+// periphery. Corners stay in bounds; the centre stays fixed for aiming.
+fn speedLens(uv : vec2f) -> vec2f {
+  let c = uv - 0.5;
+  let strength = clamp(F.camFwd.w, 0.0, 1.0) * 0.26;
+  return 0.5 + c * (1.0 - strength + 2.0 * strength * dot(c, c));
+}
 // Eco reads one HDR sample. Preserve the world's palette, posterization, exposure,
 // hit feedback and speed lens while omitting screen-space noise, outlines and bloom.
 @fragment fn fsCompositeEco(i : FOut) -> @location(0) vec4f {
   let c = i.uv - 0.5;
   let r2 = dot(c, c);
-  let uv = 0.5 + c * (1.0 - (0.03 + F.camFwd.w * 0.28) * r2);
+  let uv = speedLens(i.uv);
   let sample = textureSample(sceneTex, samp, uv);
   var col = sample.xyz;
   let mask = select((sample.w - 1.5 * floor(sample.w / 1.5)) / 0.9, 0.0, sample.w < 0.0);
@@ -583,10 +590,10 @@ override WITH_BLOOM: bool = true;
   let row = floor(uv.y * 60.0);
   let tear = step(0.92, hash21(vec2f(row, floor(t * 24.0)))) * flash;
   uv.x += (hash21(vec2f(row, 3.0)) - 0.5) * 0.08 * tear;
-  // Speed fisheye (barrel) on the viewing window.
+  // Centre magnification and peripheral compression share the Eco mapping.
   let c = uv - 0.5;
   let r2 = dot(c, c);
-  uv = 0.5 + c * (1.0 - (0.03 + speed * 0.28) * r2);
+  uv = speedLens(uv);
   // Chromatic aberration grows with speed and drift.
   let ca = (0.0012 + speed * 0.004 + drift * 0.004 + flash * 0.012) * length(c) * 2.0;
   let dir = normalize(c + vec2f(1e-5));

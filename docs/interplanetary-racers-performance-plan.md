@@ -109,3 +109,9 @@ Forward passage produces a brief outward-and-return ripple using the same vertic
 Hoop tube radius increases from 0.018 to 0.032, about 78% thicker, with the same mesh count. Next-ring focus now uses time-based exponential easing (roughly one second to reach 95%) instead of a binary switch. Both brightness and highlight mixing follow this eased value, including fade-out of the previous target.
 
 Route dots have a brighter steady core and narrow dark keyline, retain their forward-travelling pulse, and bypass the terrain's palette/ink filters. Their base size increases from 0.45 to 0.65 world units, with distance scaling capped at 3×. Fog still applies and scene depth still occludes them. No extra geometry or rendering passes are added. The 44-test suite includes matching highlight transitions at 30/60 FPS.
+
+## Speed-driven centre magnification (13 September)
+
+The scene lens now uses a shared inverse radial mapping in Eco and full composite shaders: `c * (1 - strength + 2 * strength * dot(c,c))`, with strength capped at 0.26 and driven by the existing smoothed speed response. This magnifies the centre while progressively compressing the periphery, preserving the image centre and sampling bounds. At maximum strength, the centre magnification from the lens alone is about 1.35×. Chase/cockpit speed-based FOV widening is reduced so it does not cancel the effect. Reduced motion disables both this lens and the added FOV widening.
+
+No texture samples or render passes are added. Browser checks cover all presets, neutral/full-speed views and reduced motion; the existing test suite and production checks pass.
