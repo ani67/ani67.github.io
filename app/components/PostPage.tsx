@@ -9,6 +9,7 @@ import { BlogLayout } from './layout/BlogLayout';
 import { VideoAutoplay } from './AutoplayVideo';
 import { ReadMore } from './ReadMore';
 import { PostContent } from './PostContent';
+import { XPost } from './XPost';
 
 const rehypeRawOptions = {
   passThrough: [
@@ -93,6 +94,7 @@ function MDXLink({ href, children, ...props }: ComponentProps<'a'>) {
 }
 
 const components = {
+  XPost,
   img: MDXImage,
   video: MDXVideo,
   iframe: MDXIframe,
