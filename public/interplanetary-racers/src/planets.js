@@ -423,7 +423,7 @@ const Planets = (() => {
     { id: 'vantari', name: 'Vantari', planet: 'vantera', vehicle: 'falcon', hue: 0.07, ability: { name: 'Overdrive', desc: 'Stronger boosts', boostMul: 1.3 } },
     { id: 'nereids', name: 'Nereids', planet: 'nereid', vehicle: 'manta', hue: 0.55, ability: { name: 'Slipstream', desc: 'Drift charges faster', driftCharge: 1.6 } },
     { id: 'kestrels', name: 'Kestrels', planet: 'kestrel', vehicle: 'needle', hue: 0.13, ability: { name: 'Thermal', desc: 'Boost pads and gates give more', padMul: 1.5 } },
-    { id: 'voidborn', name: 'Voidborn', planet: 'nullsector', vehicle: 'hulk', hue: 0.72, ability: { name: 'Bulwark', desc: 'Half wipeout time', crashResist: 0.5 } },
+    { id: 'voidborn', name: 'Voidborn', planet: 'nullsector', vehicle: 'hulk', hue: 0.72, ability: { name: 'Bulwark', desc: 'Slightly quicker recovery', crashResist: 0.5 } },
     { id: 'sablekin', name: 'Sablekin', planet: 'sablewaste', vehicle: 'dune', hue: 0.1, ability: { name: 'Dustrunner', desc: 'Full speed off road', offroad: 1.0 } },
     { id: 'glassmind', name: 'Glassmind', planet: 'glasshold', vehicle: 'prism', hue: 0.85, ability: { name: 'Refract', desc: 'Sharper steering', steer: 1.25 } },
   ];

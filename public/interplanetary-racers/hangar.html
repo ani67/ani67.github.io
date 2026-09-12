@@ -85,7 +85,7 @@
         const hue = race ? (Planets.race(race).hue + (rnd() - 0.5) * 0.1 + 1) % 1 : rnd();
         const col = hsl(hue, 0.7, 0.55);
         const x = ((i % COLS) - (COLS - 1) / 2) * SP, z = (Math.floor(i / COLS) - 4.5) * SP;
-        ships.push({ recipe, built, seed: s, hue, col, x, z, group: { mesh: Gpu.createMesh(built), inst: Gpu.createInstances(data), data, count: 1 }, stats: Stats.compute(recipe, s) });
+        ships.push({ recipe, built, seed: s, hue, col, x, z, group: { mesh: Gpu.createMesh(built), inst: Gpu.createInstances(data), data, count: 1 }, stats: Stats.compute(recipe, s, race ? Planets.race(race).ability : {}) });
       }
       scene.carGroups = ships.map(s => s.group);
       $('status').textContent = `100 craft · ${Math.round(tris / 100)} tris avg · ${rej} retried builds · ${unresolved} unresolved · ${Math.round(performance.now() - t0)} ms`;

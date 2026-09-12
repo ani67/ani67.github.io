@@ -189,7 +189,7 @@ const UI = (() => {
   }
   function renderShip() {
     const cc = currentCraft(), r = cc.race, home = Planets.planet(r.planet);
-    const st = Stats.compute(cc.recipe, cc.seed);
+    const st = Stats.compute(cc.recipe, cc.seed, r.ability);
     $('heroName').textContent = cc.craft ? (cc.craft.name || 'Kitbash') : Planets.VEHICLES[r.vehicle].name;
     $('heroSub').textContent = `${r.name} of ${home ? home.name : ''}${cc.craft ? ' · kitbash' : st.archetype ? ' · ' + st.archetype : ''}`;
     $('heroTag').textContent = `${r.ability.name} · ${r.ability.desc}`;

@@ -1,21 +1,27 @@
-// Ship stats derived from a craft recipe's geometry. Contract shared by the craft designer (owner) and the physics.
+// Ship geometry supplies character; the final balance envelope limits every playable variant.
 // All *Mul fields are multipliers applied to the planet's medium constants; life is hit points; armour scales damage taken (<1 = tougher).
-// bars are 0..1 for the designer; budget is the normalised stat sum over the cap (>1 means the recipe was scaled down to fit).
+// bars are 0..1 for the designer; budget is the final weighted bar sum over the cap; rawBudget preserves the geometry diagnostic.
 const Stats = (() => {
   const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
-  const DEFAULT = { massMul: 1, accelMul: 1, speedMul: 1, gripMul: 1, driftMul: 1, steerMul: 1, armour: 1, life: 100, budget: 0, bars: { speed: 0.5, accel: 0.5, drift: 0.5, defense: 0.5, life: 0.5 } };
+  const CENTRES = Object.freeze({ speedMul: 1.02, accelMul: 1, driftMul: 1.2, gripMul: 0.82, steerMul: 0.8, cornerMul: 1.12, massMul: 1.2, armour: 0.8, life: 120 });
+  // Reference medians: all 14 stock factions, archetype seeds 1–32, before balancing.
+  const REFERENCE = { speedMul: 1.0190036557703726, accelMul: 0.9913562407267794, driftMul: 1.2144430929168781, gripMul: 0.8123118628701913, steerMul: 0.7965259046365436, cornerMul: 1.1217528099272418, massMul: 1.2055713873911729, armour: 0.7962551420035149, life: 119 };
+  // ±7% of a fixed centre guarantees <16% from ANY fleet median:
+  // 1.07 / 0.93 - 1 = 15.06%. Hull/armour use ±3% to bound combined effective HP.
+  const SPREAD = 0.07, DURABILITY_SPREAD = 0.03;
+  const DEFAULT = { ...CENTRES, budget: 0, perk: {}, ability: {}, bars: { speed: 0.5, accel: 0.5, drift: 0.5, defense: 0.5, life: 0.5 } };
   // Race-relevant stats cost more budget than survivability, because speed, acceleration and cornering are what
   // decide a lap while armour and hull only pay off under fire. Without this a glass cannon buys the whole top end free.
   const COST = { speed: 1.35, accel: 1.25, drift: 0.9, defense: 0.75, life: 0.75 };
   const CAP = 2.9;
-  // Wider spans than before so the five bars actually separate the families in play, not just on the readout.
+  // Raw geometry signals, compressed into the playable envelope by compute().
   function fromBars(bars, extra) {
     return {
       speedMul: 0.88 + 0.24 * bars.speed, accelMul: 0.62 + 0.86 * bars.accel, driftMul: 0.6 + 1.0 * bars.drift,
       armour: 1.25 - 0.72 * bars.defense, life: Math.round(58 + 104 * bars.life), bars, ...extra,
     };
   }
-  function compute(recipe, seed = 1) {
+  function rawCompute(recipe, seed = 1) {
     if (!recipe || (!recipe.hull && !recipe.archetypes)) return { ...DEFAULT, bars: { ...DEFAULT.bars } };
     if (typeof Craft === 'undefined' || !Craft.measure) return { ...DEFAULT, bars: { ...DEFAULT.bars } };
     const m = Craft.measure(recipe, seed);
@@ -57,10 +63,41 @@ const Stats = (() => {
     // cap, so they were strictly worse; now every craft spends the same total and differs only in how it spends it.
     const norm = clamp(1 / Math.max(0.01, budget), 0.8, 1.3);
     for (const k of Object.keys(bars)) bars[k] = clamp(bars[k] * norm, 0, 1);
-    // Role perks, small enough not to unbalance the bars: haulers push harder on boost, brutes hit harder when ramming.
+    // Raw role preferences; boundedAbility compresses these after faction bonuses are combined.
     const perk = { hauler: { boostMul: 1.45, ramMul: 1.15, padMul: 1.3 }, brute: { ramMul: 1.45, boostMul: 1.3, padMul: 1.25 }, racer: { boostMul: 1.05 }, drifter: { driftCharge: 1.25 }, scout: {}, junker: { padMul: 1.05 } }[m.recipe.role] || {};
     const cornerMul = clamp(0.86 + 0.26 * bars.drift + 0.17 * bars.defense + 0.12 * (gripMul - 1), 0.85, 1.3);
     return fromBars(bars, { massMul, gripMul, steerMul, cornerMul, budget, perk, role: m.recipe.role, archetype: m.recipe.archetype, measure: { hullVol: m.hullVol, partVol: m.partVol, thrust: m.thrust, liftArea: m.liftArea, plates: m.plates, engines: m.engines } });
   }
-  return { compute, DEFAULT, CAP };
+  function boundedAbility(ability, perk) {
+    const out = { ...(ability || {}) };
+    for (const [key, value] of Object.entries(perk || {})) out[key] = typeof out[key] === 'number' ? out[key] * value : value;
+    for (const key of Object.keys(out)) if (typeof out[key] === 'number') {
+      const value = Number.isFinite(out[key]) ? out[key] : 1;
+      out[key] = clamp(1 + (value - 1) * 0.14, 1 - SPREAD, 1 + SPREAD);
+    }
+    return out;
+  }
+  function compute(recipe, seed = 1, ability = {}) {
+    const valid = recipe && (recipe.hull || recipe.archetypes) && typeof Craft !== 'undefined' && Craft.measure;
+    const raw = valid ? rawCompute(recipe, seed) : { ...REFERENCE, budget: 0, perk: {} }, result = { ...raw, perk: {}, ability: boundedAbility(ability, raw.perk) };
+    for (const key of Object.keys(CENTRES)) {
+      const spread = key === 'life' || key === 'armour' ? DURABILITY_SPREAD : SPREAD;
+      const value = Number.isFinite(raw[key]) ? raw[key] : REFERENCE[key];
+      result[key] = CENTRES[key] * (1 + spread * Math.tanh(4 * (value / REFERENCE[key] - 1)));
+    }
+    // Steering perks are included in the final handling value, never multiplied again by physics.
+    result.steerMul = clamp(result.steerMul * (result.ability.steer || 1), CENTRES.steerMul * (1 - SPREAD), CENTRES.steerMul * (1 + SPREAD));
+    result.ability.steer = 1;
+    result.bars = {
+      speed: 0.5 * result.speedMul / CENTRES.speedMul,
+      accel: 0.5 * result.accelMul / CENTRES.accelMul,
+      drift: 0.5 * result.driftMul / CENTRES.driftMul,
+      defense: 0.5 * CENTRES.armour / result.armour,
+      life: 0.5 * result.life / CENTRES.life,
+    };
+    result.rawBudget = raw.budget;
+    result.budget = Object.entries(COST).reduce((sum, [key, cost]) => sum + result.bars[key] * cost, 0) / CAP;
+    return result;
+  }
+  return { compute, DEFAULT, CAP, CENTRES, SPREAD, DURABILITY_SPREAD };
 })();

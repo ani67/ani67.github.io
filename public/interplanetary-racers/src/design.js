@@ -233,7 +233,7 @@ const Design = (() => {
     craftGroup = { mesh, inst: Gpu.createInstances(data), data, count: 1 };
     scene.carGroups = [craftGroup];
     // Stat bars and grounding notes.
-    const st = Stats.compute(state.craft, state.craft.seed || 1);
+    const st = Stats.compute(state.craft, state.craft.seed || 1, Planets.race(state.race)?.ability || {});
     const box = document.getElementById('statbars');
     if (box) {
       const bar = (label, v) => `<div class="row" style="margin:3px 0"><label>${label}</label><div style="grid-column:2 / span 2;height:8px;background:#222;border-radius:4px;overflow:hidden"><div style="width:${Math.round(v * 100)}%;height:100%;background:${v > 0.75 ? '#fff' : '#9cf'}"></div></div></div>`;

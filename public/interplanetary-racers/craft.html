@@ -51,7 +51,7 @@
     const race = Planets.RACES.find(r => r.vehicle === family) || Planets.RACES[0];
     const recipe = family === 'kitbash' ? Kitbash.generate(seed, { style: style || undefined }) : Planets.RECIPES[family];
     const mesh = Craft.build(recipe, seed);
-    const st = Stats.compute(recipe, seed);
+    const st = Stats.compute(recipe, seed, race.ability);
     document.title = `${family} · ${mesh.recipe.archetype} · ${mesh.tris} tris · ${mesh.rejections} rejected${mesh.problems.length ? ' · unresolved: ' + mesh.problems.join(', ') : ''}`;
     document.getElementById('status').textContent = `${family} · ${mesh.recipe.archetype} · seed ${seed} · ${mesh.tris} triangles · ${mesh.rejections} rejected builds${mesh.fixes.length ? ' · fixes: ' + mesh.fixes.join(', ') : ''} · speed ${st.bars.speed.toFixed(2)} accel ${st.bars.accel.toFixed(2)} drift ${st.bars.drift.toFixed(2)} def ${st.bars.defense.toFixed(2)} life ${st.bars.life.toFixed(2)} · budget ${Math.round(st.budget * 100)}%`;
     const seeds = document.createElement('span'); seeds.style.marginLeft = '12px'; seeds.append('seed ');

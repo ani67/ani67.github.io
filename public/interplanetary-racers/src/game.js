@@ -400,7 +400,7 @@ const Game = (() => {
       groups.get(key).ids.push(i);
       const ph = desc.physics;
       const gp = groups.get(key).params;
-      const st = Stats.compute(gp.recipe);
+      const st = Stats.compute(gp.recipe, gp.seed, r.ability);
       const hb = (() => { try { return Craft.hullBounds(gp.recipe.hull); } catch (e) { return null; } })();
       const wingSpan = (gp.recipe.parts || []).filter(pt => pt.type === 'wing').reduce((m, pt) => Math.max(m, (pt.span || 1) + Math.abs((pt.at || [0])[0])), 0);
       const box = { hw: Math.max(0.9, hb ? hb.halfW : 0.9, wingSpan * 0.6), hl: Math.max(1.6, hb ? hb.len / 2 : 2.2) };
@@ -409,8 +409,8 @@ const Game = (() => {
         : (i === 0 && craftOverride && craftOverride.hue !== undefined ? craftOverride.hue : r.hue) + (i === 0 ? 0 : (rnd() - 0.5) * 0.06);
       cars.push({
         stats: st, recipe: gp.recipe, box, mass: st.massMul, life: st.life, lifeMax: st.life, dmg: 0, wrecked: 0, wrecks: 0, shield: 0, item: null, useItem: false, itemCd: 0, hitMark: 0, padPitch: 0, padRoll: 0,
-        // The race ability and the hull's role perk stack multiplicatively, so a Vantari hauler gets both boosts.
-        id: i, isBot: roster ? roster[i].bot : i !== 0, race: r, ab: mergeAb(r.ability, st.perk), x: p[0], z: p[2], y: p[1], heading: Math.atan2(s.tan[0], s.tan[2]), pitch: 0, jumpCd: 0, outLane: 0, outTime: 0, alt: 99, camPitch: 0, stunEvents: 0,
+        // Stats includes bounded faction/role bonuses and the actual selected craft seed.
+        id: i, isBot: roster ? roster[i].bot : i !== 0, race: r, ab: st.ability, x: p[0], z: p[2], y: p[1], heading: Math.atan2(s.tan[0], s.tan[2]), pitch: 0, jumpCd: 0, outLane: 0, outTime: 0, alt: 99, camPitch: 0, stunEvents: 0,
         vx: 0, vz: 0, vy: 0, t: s.t, lap: 0, half: false, prog: 0, spin: 0, steer: 0, boost: 0, charge: 0, drifting: false, glow: 0,
         color: hsl(((hue % 1) + 1) % 1, 0.75, 0.55), body: [0.92 + rnd() * 0.16, 1, 0.94 + rnd() * 0.12],
         lane: (rnd() - 0.5) * 1.2, laneY: (rnd() - 0.5), laneT: rnd() * 10, skill: 0.75 + rnd() * 0.25, finished: false, finishTime: 0,
@@ -520,12 +520,6 @@ const Game = (() => {
     c.heading = Math.atan2(s.tan[0], s.tan[2]); c.flash = 1;
     if (c.life <= 0) { c.life = c.lifeMax * 0.6; c.dmg = 0.4; }
     c.wrecked = 0; c.respawnT = 3; c.offRadT = 0; c.offHeadT = 0; c.offLane = false; c.offHide = 0;
-  }
-  // Race ability x hull role perk. Numeric fields multiply; everything else is carried through from the ability.
-  function mergeAb(ability, perk) {
-    const out = { ...(ability || {}) };
-    for (const k of Object.keys(perk || {})) out[k] = typeof out[k] === 'number' ? out[k] * perk[k] : perk[k];
-    return out;
   }
   function driftLogic(c, ctl, vf, dt, allowed) {
     const wantDrift = ctl.drift && allowed && Math.abs(vf) > 18 * SPD && Math.abs(ctl.steer) > 0.2;

@@ -141,7 +141,7 @@
     { id: 'verdani', name: 'Verdani', planet: 'verdance', vehicle: 'manta', hue: 0.33, ability: { name: 'Canopy', desc: 'Grip off road', offroad: 0.85 } },
     { id: 'halcyonites', name: 'Halcyonites', planet: 'halcyon', vehicle: 'falcon', hue: 0.5, ability: { name: 'Tidal', desc: 'Stronger boosts', boostMul: 1.25 } },
     { id: 'emberkin', name: 'Emberkin', planet: 'embervale', vehicle: 'dune', hue: 0.08, ability: { name: 'Emberdrift', desc: 'Drift charges faster', driftCharge: 1.4 } },
-    { id: 'cindral', name: 'Cindral', planet: 'cinder', vehicle: 'hulk', hue: 0.98, ability: { name: 'Slagplate', desc: 'Half wipeout time', crashResist: 0.5 } },
+    { id: 'cindral', name: 'Cindral', planet: 'cinder', vehicle: 'hulk', hue: 0.98, ability: { name: 'Slagplate', desc: 'Slightly quicker recovery', crashResist: 0.5 } },
     { id: 'redrunners', name: 'Redrunners', planet: 'redrock', vehicle: 'dune', hue: 0.05, ability: { name: 'Thermal', desc: 'Boost pads and gates give more', padMul: 1.5 } },
     { id: 'vitrines', name: 'Vitrines', planet: 'vitrine', vehicle: 'needle', hue: 0.55, ability: { name: 'Glide', desc: 'Sharper steering', steer: 1.2 } },
     { id: 'meridians', name: 'Meridians', planet: 'meridian', vehicle: 'prism', hue: 0.78, ability: { name: 'Gridlock', desc: 'Drift charges faster', driftCharge: 1.5 } },
