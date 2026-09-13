@@ -18,10 +18,10 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Interplanetary Racers","url":"https://anidalal.com/interplanetary-racers/","description":"A procedural hover racing game across ten planets, with solo bot races and peer-to-peer multiplayer.","author":{"@type":"Person","name":"Ani Dalal","url":"https://anidalal.com/"},"image":"https://anidalal.com/images/interplanetary-racers.jpg","genre":"Racing","gamePlatform":"Web browser with WebGPU","playMode":["SinglePlayer","MultiPlayer"]}</script>
 
 <link rel="icon" href="data:,">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/HVKiloV2.otf" as="font" type="font/otf" crossorigin>
 <style>
+  @font-face { font-family: "Kilo"; src: url("fonts/HVKiloV2.otf") format("opentype"); font-weight: 400; font-style: normal; font-display: swap; }
+
   :root {
     color-scheme: dark;
     --accent: #ffb04a;
@@ -30,12 +30,14 @@
     --faint: rgba(242,240,234,.32);
     --line: rgba(242,240,234,.14);
     --panel: rgba(12,12,16,.62);
-    --display: "Instrument Serif", "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
-    --sans: "Inter", -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    --display: "Kilo", sans-serif;
+    --sans: "Kilo", sans-serif;
+    --mono: "Kilo", monospace;
   }
   [hidden] { display: none !important; }
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: var(--sans); color: var(--ink); font-size: 13px; -webkit-font-smoothing: antialiased; }
   canvas#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  input, select, textarea { font-family: var(--sans); }
   button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
   .display { font-family: var(--display); font-weight: 400; text-transform: uppercase; letter-spacing: .03em; line-height: .92; }
   .label { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
@@ -115,7 +117,7 @@
   .screen { position: absolute; inset: 0; display: none; pointer-events: auto; }
   .screen.on { display: block; }
   .scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%); }
-  #cover .title { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-58%); text-align: center; font-size: clamp(72px, 13vw, 190px); text-shadow: 0 6px 60px rgba(0,0,0,.45); }
+  #cover .title { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-58%); text-align: center; font-size: clamp(18px, 5.8vw, 84px); text-shadow: 0 6px 60px rgba(0,0,0,.45); }
   #cover .title small { display: block; font-family: var(--sans); font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--muted); margin-bottom: 22px; }
   #cover .actions { position: absolute; left: 0; right: 0; top: calc(50% + 16vh); display: flex; justify-content: center; gap: 12px; }
   #cover .where { position: absolute; left: 32px; bottom: 28px; color: var(--muted); font-size: 12px; }
@@ -138,9 +140,9 @@
   .cards.ten .bars { margin-top: 9px; gap: 4px; }
   .cards.ten .bars .b { grid-template-columns: 44px 1fr; font-size: 9px; }
   .setup .head.top { position: absolute; left: 32px; right: 32px; top: 28px; margin: 0; }
-  .setup .head.top h2 { font-size: 38px; }
+  .setup .head.top h2 { font-size: 28px; }
   .setup .hero { position: absolute; right: 32px; bottom: 300px; text-align: right; max-width: 46vw; padding: 18px 8px 18px 64px; background: radial-gradient(130% 160% at 100% 50%, rgba(6,6,10,.62) 0%, rgba(6,6,10,.30) 48%, rgba(6,6,10,0) 80%); border-radius: 22px; }
-  .setup .hero .hname { font-size: clamp(44px, 6vw, 84px); text-shadow: 0 4px 40px rgba(0,0,0,.45); }
+  .setup .hero .hname { font-size: clamp(24px, 3.5vw, 54px); text-shadow: 0 4px 40px rgba(0,0,0,.45); }
   .setup .hero .hsub { color: var(--ink); font-size: 14px; margin-top: 8px; }
   .setup .hero .htag { color: var(--muted); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; margin-top: 6px; }
   .setup .statrow { position: absolute; left: 32px; right: 32px; bottom: 248px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
@@ -258,7 +260,7 @@
   }
   @media (max-width: 600px) {
     .setup .head.top { top: 58px; left: 18px; right: 18px; align-items: flex-start; flex-direction: column; gap: 12px; }
-    .setup .head.top h2 { font-size: 30px; }
+    .setup .head.top h2 { font-size: 22px; }
     .setup .tools.bottom { left: 18px; right: 18px; bottom: max(12px, env(safe-area-inset-bottom)); }
     .tools { flex-wrap: wrap; }
     .tools .left, .tools .right { flex-wrap: wrap; }
@@ -268,8 +270,8 @@
     .setup .tools .field input { width: 100%; min-width: 0; }
     .setup .arch .name { min-width: 100px; font-size: 20px; }
     #archHint { display: none; }
-    .railwrap { bottom: 132px; left: 12px; right: 12px; }
-    .setup .statrow { bottom: 300px; left: 18px; right: 18px; }
+    .railwrap { bottom: 184px; left: 12px; right: 12px; }
+    .setup .statrow { bottom: 354px; left: 18px; right: 18px; }
     #room .panel, #results .panel { width: calc(100vw - 24px) !important; padding: 18px; max-height: calc(100dvh - 100px); overflow-y: auto; }
     #room .head { align-items: flex-start; flex-direction: column; gap: 8px; }
 
@@ -287,8 +289,8 @@
 <script defer src="src/analytics.js?v=20260913"></script>
 </head>
 <body>
-<a href="/?piece=interplanetary-racers" aria-label="Back to Ani Dalal’s portfolio" style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:1000;color:#f2f0ea;font:12px system-ui;text-decoration:none;padding:8px 12px;border-radius:20px;background:rgba(12,12,16,.7)">← Portfolio</a>
-<noscript><div style="position:fixed;inset:0;z-index:999;background:#101014;color:#f2f0ea;display:grid;place-content:center;padding:32px;font:18px system-ui"><h1>Interplanetary Racers</h1><p>A procedural hover racing game by Ani Dalal.</p><p>Enable JavaScript to play in a browser with WebGPU support.</p><a href="/" style="color:inherit">Return to the portfolio</a></div></noscript>
+<a href="/?piece=interplanetary-racers" aria-label="Back to Ani Dalal’s portfolio" style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:1000;color:#f2f0ea;font:12px var(--sans);text-decoration:none;padding:8px 12px;border-radius:20px;background:rgba(12,12,16,.7)">← Portfolio</a>
+<noscript><div style="position:fixed;inset:0;z-index:999;background:#101014;color:#f2f0ea;display:grid;place-content:center;padding:32px;font:18px var(--sans)"><h1>Interplanetary Racers</h1><p>A procedural hover racing game by Ani Dalal.</p><p>Enable JavaScript to play in a browser with WebGPU support.</p><a href="/" style="color:inherit">Return to the portfolio</a></div></noscript>
 <canvas id="gl"></canvas>
 <div id="vignette"></div>
 
@@ -424,38 +426,38 @@
   </div>
 </div>
 <div id="err"></div>
-<script src="src/math.js?v=fleet-20260913-5"></script>
-<script src="src/palettes.js?v=fleet-20260913-5"></script>
-<script src="src/planets.js?v=fleet-20260913-5"></script>
-<script src="src/craft.js?v=fleet-20260913-5"></script>
-<script src="src/kitbash.js?v=fleet-20260913-5"></script>
-<script src="src/stats.js?v=fleet-20260913-5"></script>
-<script src="src/tracks.js?v=fleet-20260913-5"></script>
-<script src="src/weapons.js?v=fleet-20260913-5"></script>
-<script src="src/particles.js?v=fleet-20260913-5"></script>
-<script src="src/biomes.js?v=fleet-20260913-5"></script>
-<script src="src/world.js?v=fleet-20260913-5"></script>
-<script src="ships/ship-01.js?v=fleet-20260913-5"></script>
-<script src="ships/ship-02.js?v=fleet-20260913-5"></script>
-<script src="ships/ship-03.js?v=fleet-20260913-5"></script>
-<script src="ships/ship-04.js?v=fleet-20260913-5"></script>
-<script src="ships/ship-05.js?v=fleet-20260913-5"></script>
-<script src="ships/ship-06.js?v=fleet-20260913-5"></script>
-<script src="src/fleet.js?v=fleet-20260913-5"></script>
-<script src="src/geometry.js?v=fleet-20260913-5"></script>
-<script src="src/flora.js?v=fleet-20260913-5"></script>
-<script src="src/propsets.js?v=fleet-20260913-5"></script>
-<script src="src/shaders.js?v=fleet-20260913-5"></script>
-<script src="src/gpu.js?v=fleet-20260913-5"></script>
-<script src="src/frame.js?v=fleet-20260913-5"></script>
-<script src="src/names.js?v=fleet-20260913-5"></script>
-<script src="src/radio.js?v=fleet-20260913-5"></script>
-<script src="src/audio.js?v=fleet-20260913-5"></script>
-<script src="src/net.js?v=fleet-20260913-5"></script>
-<script src="src/mp.js?v=fleet-20260913-5"></script>
-<script src="src/thumbs.js?v=fleet-20260913-5"></script>
-<script src="src/game.js?v=fleet-20260913-5"></script>
-<script src="src/ui.js?v=fleet-20260913-5"></script>
+<script src="src/math.js?v=fleet-20260913-6"></script>
+<script src="src/palettes.js?v=fleet-20260913-6"></script>
+<script src="src/planets.js?v=fleet-20260913-6"></script>
+<script src="src/craft.js?v=fleet-20260913-6"></script>
+<script src="src/kitbash.js?v=fleet-20260913-6"></script>
+<script src="src/stats.js?v=fleet-20260913-6"></script>
+<script src="src/tracks.js?v=fleet-20260913-6"></script>
+<script src="src/weapons.js?v=fleet-20260913-6"></script>
+<script src="src/particles.js?v=fleet-20260913-6"></script>
+<script src="src/biomes.js?v=fleet-20260913-6"></script>
+<script src="src/world.js?v=fleet-20260913-6"></script>
+<script src="ships/ship-01.js?v=fleet-20260913-6"></script>
+<script src="ships/ship-02.js?v=fleet-20260913-6"></script>
+<script src="ships/ship-03.js?v=fleet-20260913-6"></script>
+<script src="ships/ship-04.js?v=fleet-20260913-6"></script>
+<script src="ships/ship-05.js?v=fleet-20260913-6"></script>
+<script src="ships/ship-06.js?v=fleet-20260913-6"></script>
+<script src="src/fleet.js?v=fleet-20260913-6"></script>
+<script src="src/geometry.js?v=fleet-20260913-6"></script>
+<script src="src/flora.js?v=fleet-20260913-6"></script>
+<script src="src/propsets.js?v=fleet-20260913-6"></script>
+<script src="src/shaders.js?v=fleet-20260913-6"></script>
+<script src="src/gpu.js?v=fleet-20260913-6"></script>
+<script src="src/frame.js?v=fleet-20260913-6"></script>
+<script src="src/names.js?v=fleet-20260913-6"></script>
+<script src="src/radio.js?v=fleet-20260913-6"></script>
+<script src="src/audio.js?v=fleet-20260913-6"></script>
+<script src="src/net.js?v=fleet-20260913-6"></script>
+<script src="src/mp.js?v=fleet-20260913-6"></script>
+<script src="src/thumbs.js?v=fleet-20260913-6"></script>
+<script src="src/game.js?v=fleet-20260913-6"></script>
+<script src="src/ui.js?v=fleet-20260913-6"></script>
 <script>
   if (new URLSearchParams(location.search).get('preview') === '1') {
     document.querySelector('a[aria-label="Back to Ani Dalal’s portfolio"]')?.remove();
