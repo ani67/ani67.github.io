@@ -1,4 +1,4 @@
-// Interplanetary Racers game: hover craft physics (surface + corridor), bots, camera, race flow, HUD.
+// Galactic Racers game: hover craft physics (surface + corridor), bots, camera, race flow, HUD.
 const Game = (() => {
   const { TAU, clamp, mix, smoothstep, mulberry32, norm, cross, sub, add, scale, dot, len } = M;
   const SPD = (typeof Planets !== 'undefined' && Planets.SPD) || 1; // global speed scale; speed-relative thresholds derive from it
@@ -1100,7 +1100,7 @@ const Game = (() => {
       const a = a0 + span * (k / maxK), major = k % 100 === 0, l = major ? 18 : 9;
       g.strokeStyle = major ? 'rgba(242,240,234,0.6)' : 'rgba(242,240,234,0.22)'; g.lineWidth = major ? 2 : 1.5;
       g.beginPath(); g.moveTo(cx + Math.cos(a) * (R - 8), cy + Math.sin(a) * (R - 8)); g.lineTo(cx + Math.cos(a) * (R - 8 - l), cy + Math.sin(a) * (R - 8 - l)); g.stroke();
-      if (major && k > 0 && k < maxK) { g.fillStyle = 'rgba(242,240,234,0.45)'; g.font = '400 15px Kilo, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(k), cx + Math.cos(a) * (R - 46), cy + Math.sin(a) * (R - 46)); }
+      if (major && k > 0 && k < maxK) { g.fillStyle = 'rgba(242,240,234,0.45)'; g.font = '400 18px Mori, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(k), cx + Math.cos(a) * (R - 46), cy + Math.sin(a) * (R - 46)); }
     }
     // Boost charge as an inner arc.
     const charge = clamp(c.drifting ? c.charge / 2.2 : (c.boost > 0 ? c.boost / 1.4 : 0), 0, 1);
@@ -1114,9 +1114,9 @@ const Game = (() => {
     g.fillStyle = accent; g.beginPath(); g.arc(cx + 22, cy - 22, 5, 0, TAU); g.fill();
     // Number inside the slice, along the diagonal.
     const nx = cx + R * 0.44, ny = cy - R * 0.36;
-    g.fillStyle = 'rgba(242,240,234,0.95)'; g.font = '400 52px Kilo, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    g.fillStyle = 'rgba(242,240,234,0.95)'; g.font = '400 60px Mori, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
     g.fillText(String(Math.round(kph)), nx, ny);
-    g.fillStyle = 'rgba(242,240,234,0.45)'; g.font = '400 12px Kilo, sans-serif'; g.fillText('K P H', nx, ny + 20);
+    g.fillStyle = 'rgba(242,240,234,0.45)'; g.font = '400 16px Mori, sans-serif'; g.fillText('K P H', nx, ny + 20);
   }
 
   // ---------------------------------------------------------------- minimap (holographic elevation map)

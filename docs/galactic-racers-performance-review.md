@@ -1,6 +1,6 @@
-# Interplanetary Racers: performance RCA and todo
+# Galactic Racers: performance RCA and todo
 
-Baseline reviewed 12 September 2026 at commit 6ef1b6b. The findings below describe that version. See [implementation and validation](interplanetary-racers-performance-plan.md) for the subsequent optimization work.
+Baseline reviewed 12 September 2026 at commit 6ef1b6b. The findings below describe that version. See [implementation and validation](galactic-racers-performance-plan.md) for the subsequent optimization work.
 
 ## Conclusion and limits
 

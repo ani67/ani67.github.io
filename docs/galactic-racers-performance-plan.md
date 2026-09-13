@@ -1,6 +1,6 @@
-# Interplanetary Racers performance implementation
+# Galactic Racers performance implementation
 
-12 September 2026. Follow-up to the [baseline RCA](interplanetary-racers-performance-review.md).
+12 September 2026. Follow-up to the [baseline RCA](galactic-racers-performance-review.md).
 
 ## Plan and delivery
 

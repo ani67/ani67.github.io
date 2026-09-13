@@ -1,13 +1,13 @@
 ---
-title: "Racing in parametric worlds | Interplanetary Racers"
+title: "Racing in parametric worlds | Galactic Racers"
 date: "2026-09-10"
 description: "A free browser racing game for playing with friends. Built in a couple of days using Fable, drawing on my earlier generative art experiments."
 tags: ["art"]
-image: "https://res.cloudinary.com/duw0custw/image/upload/v1788848985/Screenshot_2026-09-08_at_11.57.02_AM_gmgnhx.png"
+image: "/images/galactic-racers.jpg"
 published: true
 ---
 
-I made a game. [Interplanetary Racers](/interplanetary-racers/) is a free browser space racer. Pick a spacecraft, choose a planet, and race with friends or bots through a procedurally generated world.
+I made a game. [Galactic Racers](/galactic-racers/) is a free browser space racer. Pick a spacecraft, choose a planet, and race with friends or bots through a procedurally generated world.
 
 Here's what it looks like in motion.
 
@@ -19,11 +19,11 @@ I wanted to make something I could play with my friends. Keeping it free and in 
 
 I kept coming back to the flying machines and planets in Oban Star-Racers and Star Wars. I wanted to make a game where I could fly through places like those.
 
-![Two racers flying alongside a cliff in Oban Star-Racers.](/images/posts/interplanetary-racers/oban-racing.jpg "A race in Oban Star-Racers.")
+![Two racers flying alongside a cliff in Oban Star-Racers.](/images/posts/galactic-racers/oban-racing.jpg "A race in Oban Star-Racers.")
 
 *Image: [official Oban Star-Racers Blu-ray campaign](https://oban-star-racers-15th-anniversay-bluray.pledgebox.com/preorder).*
 
-![Podracing in Star Wars: The Phantom Menace.](/images/posts/interplanetary-racers/starwars-racing.jpg "Podracing in Star Wars: The Phantom Menace.")
+![Podracing in Star Wars: The Phantom Menace.](/images/posts/galactic-racers/starwars-racing.jpg "Podracing in Star Wars: The Phantom Menace.")
 
 *Image: Lucasfilm, via [StarWars.com](https://www.starwars.com/news/star-wars-inside-intel-podracing).*
 
@@ -39,7 +39,7 @@ Looking at the game, I can see a direct connection to two of my earlier generati
 
 ![Terra: a drone among tall, dark red rock formations.](/images/nft-previews/terra.png "Terra, 2022. Drones surveying procedurally generated terrain.")
 
-Interplanetary Racers gave me a reason to revisit those experiments. This time, someone has to steer through the terrain. A rock formation can block your path, and a narrow valley makes a turn harder.
+Galactic Racers gave me a reason to revisit those experiments. This time, someone has to steer through the terrain. A rock formation can block your path, and a narrow valley makes a turn harder.
 
 ## Building the rules
 
@@ -47,7 +47,7 @@ My practise is [building tools](/posts/tool-making-as-an-art-practice/). I enjoy
 
 The craft are assembled from parts: hulls, wings, engines, fins. Parameters change their proportions and arrangement. Each planet defines a range of terrain, colours and environmental conditions, including things like drag and gravity that affect movement.
 
-![The craft selection screen in Interplanetary Racers.](https://res.cloudinary.com/duw0custw/image/upload/v1788848984/Screenshot_2026-09-08_at_11.57.10_AM_vuj9qv.png "Parametric parts become spacecraft you can choose and fly.")
+![The craft selection screen in Galactic Racers.](https://res.cloudinary.com/duw0custw/image/upload/v1788848984/Screenshot_2026-09-08_at_11.57.10_AM_vuj9qv.png "Parametric parts become spacecraft you can choose and fly.")
 
 A seed is the starting value for generating a world and its course. Change it and you get a new configuration. Keep it and you can return to the same track. In multiplayer, everyone uses that shared starting point, so you can learn a course together or try somewhere unfamiliar.
 
@@ -63,6 +63,6 @@ I hadn't expected to get from those experiments to a playable multiplayer game s
 
 Having it running is only the start. I still need to judge how the steering feels, whether the camera helps, and whether you can see the next turn in time.
 
-[Give it a go](/interplanetary-racers/). Bring a friend, or race the bots. I'd like to know whether you want another lap.
+[Give it a go](/galactic-racers/). Bring a friend, or race the bots. I'd like to know whether you want another lap.
 
 *Best with a keyboard. Requires a browser and device with WebGPU support.*

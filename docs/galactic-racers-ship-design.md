@@ -1,8 +1,8 @@
 # Replacement fleet
 
-Review URL: http://localhost:3000/interplanetary-racers/ship-studio.html
+Review URL: http://localhost:3000/galactic-racers/ship-studio.html
 
-`public/interplanetary-racers/ships/fleet.json` records the legacy fleet and the separate replacement collection. All six current families, their 30 authored archetypes, faction variants, and the existing kitbash generator are marked for retirement. The six replacements now supply player, bot and multiplayer meshes; legacy geometry remains available only in the archive.
+`public/galactic-racers/ships/fleet.json` records the legacy fleet and the separate replacement collection. All six current families, their 30 authored archetypes, faction variants, and the existing kitbash generator are marked for retirement. The six replacements now supply player, bot and multiplayer meshes; legacy geometry remains available only in the archive.
 
 The collection contains Retro saucer, Industrial tug, Orbital racer, Splitwing, Twinfin and Longtail. Add each new design to `designs` with `id`, `name`, `status`, `notes`, and a same-origin `previewUrl` relative to the studio. Set `current` to that design's ID. The stable studio URL then shows it automatically. Preview pages can use entirely new geometry/rendering; they are not restricted to the legacy part grammar. The studio reads the registry without caching.
 

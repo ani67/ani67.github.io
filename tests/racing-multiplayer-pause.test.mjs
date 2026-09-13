@@ -10,7 +10,7 @@ function session() {
   const ctx=vm.createContext({console,document,window:{addEventListener:()=>{}},performance:{now:()=>now},Net,
     Planets:{MAX_RACERS:2,RACES:[{id:'craft'}]},Weapons:{ITEMS:[]},M:{},
     Game:{ui:{playerName:()=> 'Tester',worldConfig:(planetId='halcyon',seed='seed')=>({planetId,seed,overrides:null,descriptor:{R:200}}),select:o=>{selected.push(o);api.assignCars([])}},mp:{race:()=>rs}}});
-  vm.runInContext(fs.readFileSync(new URL('../public/interplanetary-racers/src/mp.js',import.meta.url),'utf8'),ctx);
+  vm.runInContext(fs.readFileSync(new URL('../public/galactic-racers/src/mp.js',import.meta.url),'utf8'),ctx);
   const api=vm.runInContext('MP',ctx);
   return {api,sent,selected,rs,document,visibility:()=>events.visibilitychange(),setTime:t=>{now=t},receive:(ch,msg,pid='host')=>handlers.data(pid,ch,msg)};
 }

@@ -30,7 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: 'https://anidalal.com/interplanetary-racers/',
+      url: 'https://anidalal.com/galactic-racers/',
       changeFrequency: 'monthly',
       priority: 0.8,
     },

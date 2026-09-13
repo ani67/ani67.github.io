@@ -6,7 +6,7 @@ import { test } from 'node:test';
 // Exercise the actual browser scheduler with a deterministic display clock.
 // Physics is stubbed at its boundary so integration step size/count can be
 // compared across display frequencies without needing a GPU or random worlds.
-const source = fs.readFileSync(new URL('../public/interplanetary-racers/src/game.js', import.meta.url), 'utf8');
+const source = fs.readFileSync(new URL('../public/galactic-racers/src/game.js', import.meta.url), 'utf8');
 const from = source.indexOf('    let last = performance.now(), lastDraw');
 const to = source.indexOf('\n  let paused = false;', from);
 assert(from > 0 && to > from, 'game scheduler boundaries exist');

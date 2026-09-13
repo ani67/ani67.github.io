@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const ctx = vm.createContext({ console });
-vm.runInContext(fs.readFileSync(new URL('../public/interplanetary-racers/src/math.js', import.meta.url), 'utf8'), ctx);
+vm.runInContext(fs.readFileSync(new URL('../public/galactic-racers/src/math.js', import.meta.url), 'utf8'), ctx);
 vm.runInContext('const World = { terrainRaw: (d,x,z) => Math.sin(x/30)*20+Math.cos(z/20)*10 };', ctx);
-vm.runInContext(fs.readFileSync(new URL('../public/interplanetary-racers/src/geometry.js', import.meta.url), 'utf8'), ctx);
+vm.runInContext(fs.readFileSync(new URL('../public/galactic-racers/src/geometry.js', import.meta.url), 'utf8'), ctx);
 const Geo = vm.runInContext('Geo', ctx);
 test('terrain draw chunks preserve the collision field and valid meshes at every LOD', () => {
   const t = Geo.buildTerrain({ terrainAmp: 30 }, { S: [], N: 0, maxR: 100 }, 60, { flatten: false });

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const ctx=vm.createContext({console});
-const root=new URL('../public/interplanetary-racers/',import.meta.url);
+const root=new URL('../public/galactic-racers/',import.meta.url);
 for(const file of ['src/math.js','src/palettes.js','src/planets.js','src/craft.js','src/biomes.js','src/world.js',...Array.from({length:6},(_,i)=>`ships/ship-0${i+1}.js`),'src/fleet.js','src/stats.js','src/geometry.js']) vm.runInContext(fs.readFileSync(new URL(file,root),'utf8'),ctx);
 const {Fleet,Stats,Planets,Geo}=vm.runInContext('({Fleet,Stats,Planets,Geo})',ctx);
 test('six replacement ships produce finite meshes and truly neutral greyscale',()=>{

@@ -8,7 +8,9 @@ const nextConfig: NextConfig = {
   ...(process.env.NODE_ENV === 'development' && {
     async rewrites() {
       return [
+        { source: '/galactic-racers/', destination: '/galactic-racers/index.html' },
         { source: '/interplanetary-racers/', destination: '/interplanetary-racers/index.html' },
+        { source: '/posts/racing-in-parametric-worlds-interplanetary-racers/', destination: '/posts/racing-in-parametric-worlds-interplanetary-racers/index.html' },
       ];
     },
   }),

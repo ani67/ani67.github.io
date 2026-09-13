@@ -1,7 +1,7 @@
 [
   {
-    "id": "interplanetary-racers",
-    "title": "Interplanetary Racers",
+    "id": "galactic-racers",
+    "title": "Galactic Racers",
     "year": "2026",
     "medium": "Browser game · Procedural racing",
     "blurb": "A procedural hover racer across ten planets. Choose a craft, chase the gates, and race against bots or friends. Every world and ship starts from a seed.",
@@ -11,16 +11,16 @@
     "media": [
       {
         "type": "image",
-        "src": "https://res.cloudinary.com/duw0custw/image/upload/v1788848985/Screenshot_2026-09-08_at_11.57.02_AM_gmgnhx.png",
-        "alt": "Interplanetary Racers — title screen",
+        "src": "/images/galactic-racers.jpg",
+        "alt": "Galactic Racers — title screen",
         "ratio": 1.7777777777777777
       }
     ],
     "collection": {
-      "file": "interplanetary-racers",
+      "file": "galactic-racers",
       "count": 4
     },
-    "href": "/interplanetary-racers/",
+    "href": "/galactic-racers/",
     "hrefLabel": "Play game",
     "external": true,
     "controls": [

@@ -1,10 +1,10 @@
 {
-  "name": "Interplanetary Racers",
+  "name": "Galactic Racers",
   "count": 4,
   "items": [
     {
       "i": 1,
-      "c": "https://res.cloudinary.com/duw0custw/image/upload/v1788848985/Screenshot_2026-09-08_at_11.57.02_AM_gmgnhx.png"
+      "c": "/images/galactic-racers.jpg"
     },
     {
       "i": 2,

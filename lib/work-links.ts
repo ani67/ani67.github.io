@@ -9,5 +9,5 @@ export const PROJECT_LINKS: Record<string, string> = {
   'dashtoon-studio-features': '/posts/dashtoon-studio-2023-24-webcomic-creation-platform/',
   'the-end': '/posts/the-end-generative-art-22/',
   'the-instrument': '/instrument/',
-  'interplanetary-racers': '/interplanetary-racers/',
+  'galactic-racers': '/galactic-racers/',
 };

@@ -22,7 +22,8 @@ export function GalleryOverlayHost({ entries }: GalleryOverlayHostProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const openId = searchParams.get(PIECE_PARAM);
+  const requestedId = searchParams.get(PIECE_PARAM);
+  const openId = requestedId === 'interplanetary-racers' ? 'galactic-racers' : requestedId;
   // Never open over the editor: `?edit=1` owns the page, and its own tile
   // click opens the edit form rather than this.
   const editing = searchParams.get('edit') === '1';

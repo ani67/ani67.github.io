@@ -15,7 +15,7 @@ const eslintConfig = defineConfig([
     // Vendored, pre-bundled Cables.gl export — not ours to lint.
     "thegiftofpoetry/**",
     // Standalone game imported from its own source project.
-    "public/interplanetary-racers/**",
+    "public/galactic-racers/**",
   ]),
 ]);
 

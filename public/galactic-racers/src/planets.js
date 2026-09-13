@@ -1,4 +1,4 @@
-// Interplanetary Racers content: planets (designed parameter ranges), vehicle families, and races.
+// Galactic Racers content: planets (designed parameter ranges), vehicle families, and races.
 // A planet is a set of ranges; the seed rolls inside them. Physics constants describe the medium.
 const Planets = (() => {
   // Flight constants: every planet is flown. gravity is the sink rate pull, lift comes from ground effect near terrain.

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-const source = fs.readFileSync(new URL('../public/interplanetary-racers/src/game.js', import.meta.url), 'utf8');
+const source = fs.readFileSync(new URL('../public/galactic-racers/src/game.js', import.meta.url), 'utf8');
 const code = source.slice(source.indexOf('  function updateRouteCues'), source.indexOf('  function craftParams(race)'));
 function scene() {
   const context = {

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-const source = fs.readFileSync(new URL('../public/interplanetary-racers/src/net.js', import.meta.url), 'utf8');
+const source = fs.readFileSync(new URL('../public/galactic-racers/src/net.js', import.meta.url), 'utf8');
 const ctx = {};
 vm.runInNewContext(source.slice(source.indexOf('  function eventPackets'), source.indexOf('  function send(to,')), ctx);
 test('large map events round-trip in bounded packets without mixing peers', () => {

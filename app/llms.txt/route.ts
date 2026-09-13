@@ -29,7 +29,7 @@ ${postsList}
 - [Home](https://anidalal.com/): Portfolio homepage
 - [Blog](https://anidalal.com/blog/): All writing, filterable by tag
 - [About](https://anidalal.com/about/): Background, experience, education, exhibitions, and contact
-- [Interplanetary Racers](https://anidalal.com/interplanetary-racers/): Play a procedural hover racing game across ten planets
+- [Galactic Racers](https://anidalal.com/galactic-racers/): Play a procedural hover racing game across ten planets
 
 ## Contact
 

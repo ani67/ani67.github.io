@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 const context = vm.createContext({ console });
 for (const name of ['math', 'palettes', 'planets', 'craft', 'kitbash', 'stats', 'biomes']) {
-  vm.runInContext(fs.readFileSync(new URL(`../public/interplanetary-racers/src/${name}.js`, import.meta.url), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(new URL(`../public/galactic-racers/src/${name}.js`, import.meta.url), 'utf8'), context);
 }
 const { Stats, Planets, Kitbash } = vm.runInContext('({Stats, Planets, Kitbash})', context);
 const stock = [], generated = [];

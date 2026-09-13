@@ -53,9 +53,9 @@ Run `npm run lint`, `npm run typecheck`, and `npm test` before shipping. After b
 
 The `/work/` index links to selected project pages, existing case studies and playable tools. New project stories are authored in `lib/work.ts`; `lib/work-links.ts` maps gallery cards to their canonical pages. Card clicks retain the fullscreen gallery, while opening a link in a new tab reaches its project page.
 
-## Interplanetary Racers
+## Galactic Racers
 
-The homepage game card opens the gallery viewer and links to `/interplanetary-racers/`. The standalone game and its designers are included in the same static export. See [hosting and update notes](docs/interplanetary-racers.md).
+The homepage game card opens the gallery viewer and links to `/galactic-racers/`. The standalone game and its designers are included in the same static export. See [hosting and update notes](docs/galactic-racers.md).
 
 ## Project Structure
 
