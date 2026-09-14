@@ -692,10 +692,11 @@ override WITH_BLOOM: bool = true;
   }
   // Hatching inside the shadow bands: diagonal strokes in screen space, plus a cross hatch in full shadow.
   let hp = vec2f(px);
-  if (WITH_EFFECTS) {
-    let h1 = step(0.55, fract((hp.x + hp.y) / 7.0 + vnoise(hp * 0.08) * 0.4));
-    let h2 = step(0.6, fract((hp.x - hp.y) / 9.0 + vnoise(hp * 0.05) * 0.4));
-    let hatch = (h1 * select(0.0, 1.0, band < 0.75) + h2 * select(0.0, 1.0, band < 0.25)) * step(0.05, mask);
+  // Sky and unhatched materials previously evaluated both noise fields then
+  // multiplied them by zero. Keep the identical visible hatching only where used.
+  if (WITH_EFFECTS && mask >= 0.05 && band < 0.75) {
+    var hatch = step(0.55, fract((hp.x + hp.y) / 7.0 + vnoise(hp * 0.08) * 0.4));
+    if (band < 0.25) { hatch += step(0.6, fract((hp.x - hp.y) / 9.0 + vnoise(hp * 0.05) * 0.4)); }
     col = mix(col, inkCol, hatch * 0.13);
   }
   // Ordered dither on luminance, then map luminance through the five-colour palette (ColorMap / LUT look).

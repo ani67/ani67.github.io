@@ -1,0 +1,888 @@
+{
+  "secondsPerRun": 180,
+  "note": "Sequential headless races, High, 60 FPS, 2160x1350 internal resolution held fixed; no automatic resolution reduction. Not a temperature or battery measurement.",
+  "runs": [
+    {
+      "variant": "before",
+      "errors": [],
+      "windows": [
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.200000047683716,
+            "p99": 18.799999952316284
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.7000000476837158,
+            "p99": 0.7999999523162842
+          },
+          "gpu": {
+            "scene": {
+              "p50": 3.93216,
+              "p95": 6.22592,
+              "p99": 6.815744
+            },
+            "shadow": {
+              "p50": 0.393216,
+              "p95": 0.65536,
+              "p99": 0.786432
+            },
+            "bloom": {
+              "p50": 3.145728,
+              "p95": 4.849664,
+              "p99": 5.57056
+            },
+            "composite": {
+              "p50": 5.373952,
+              "p95": 6.750208,
+              "p99": 7.20896
+            }
+          },
+          "triangles": {
+            "p50": 256640,
+            "p95": 526951,
+            "p99": 578223
+          },
+          "shadowTriangles": {
+            "p50": 152784,
+            "p95": 230382,
+            "p99": 242534
+          },
+          "metrics": {
+            "frames": 2162,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 397078,
+            "shadowTriangles": 165421,
+            "drawCalls": 471,
+            "passes": 4,
+            "cpuSubmitMs": 0.40000009536743164,
+            "culledGroups": 1145,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 3.670016,
+              "composite": 3.538944,
+              "shadow": 0.393216,
+              "bloom": 2.097152
+            },
+            "gpuMedianMs": {
+              "scene": 3.473408,
+              "composite": 3.473408,
+              "shadow": 0.393216,
+              "bloom": 2.097152
+            }
+          },
+          "heap": 32813853
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.200000047683716,
+            "p99": 18.700000047683716
+          },
+          "cpuMs": {
+            "p50": 0.40000009536743164,
+            "p95": 0.6000001430511475,
+            "p99": 0.6999998092651367
+          },
+          "gpu": {
+            "scene": {
+              "p50": 3.473408,
+              "p95": 5.24288,
+              "p99": 5.89824
+            },
+            "shadow": {
+              "p50": 0.393216,
+              "p95": 0.720896,
+              "p99": 0.786432
+            },
+            "bloom": {
+              "p50": 2.686976,
+              "p95": 4.128768,
+              "p99": 4.718592
+            },
+            "composite": {
+              "p50": 4.456448,
+              "p95": 6.356992,
+              "p99": 6.88128
+            }
+          },
+          "triangles": {
+            "p50": 253099,
+            "p95": 396299,
+            "p99": 406717
+          },
+          "shadowTriangles": {
+            "p50": 177690,
+            "p95": 259296,
+            "p99": 263480
+          },
+          "metrics": {
+            "frames": 3963,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 195487,
+            "shadowTriangles": 78413,
+            "drawCalls": 253,
+            "passes": 4,
+            "cpuSubmitMs": 0.5,
+            "culledGroups": 1261,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 2.752512,
+              "composite": 3.538944,
+              "shadow": 0.196608,
+              "bloom": 2.490368
+            },
+            "gpuMedianMs": {
+              "scene": 3.211264,
+              "composite": 4.194304,
+              "shadow": 0.196608,
+              "bloom": 2.818048
+            }
+          },
+          "heap": 45132333
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.200000047683716,
+            "p99": 18.700000047683716
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.6999998092651367,
+            "p99": 0.7999999523162842
+          },
+          "gpu": {
+            "scene": {
+              "p50": 3.735552,
+              "p95": 6.094848,
+              "p99": 6.750208
+            },
+            "shadow": {
+              "p50": 0.393216,
+              "p95": 0.720896,
+              "p99": 0.786432
+            },
+            "bloom": {
+              "p50": 2.94912,
+              "p95": 4.849664,
+              "p99": 5.636096
+            },
+            "composite": {
+              "p50": 4.653056,
+              "p95": 6.488064,
+              "p99": 7.012352
+            }
+          },
+          "triangles": {
+            "p50": 348656,
+            "p95": 521851,
+            "p99": 575095
+          },
+          "shadowTriangles": {
+            "p50": 180105,
+            "p95": 260630,
+            "p99": 263988
+          },
+          "metrics": {
+            "frames": 5764,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 253929,
+            "shadowTriangles": 167604,
+            "drawCalls": 481,
+            "passes": 4,
+            "cpuSubmitMs": 0.5,
+            "culledGroups": 1161,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 3.211264,
+              "composite": 4.653056,
+              "shadow": 0.32768,
+              "bloom": 2.752512
+            },
+            "gpuMedianMs": {
+              "scene": 3.080192,
+              "composite": 4.25984,
+              "shadow": 0.32768,
+              "bloom": 2.62144
+            }
+          },
+          "heap": 49191432
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.200000047683716,
+            "p99": 19
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.7000000476837158,
+            "p99": 1
+          },
+          "gpu": {
+            "scene": {
+              "p50": 3.735552,
+              "p95": 6.094848,
+              "p99": 7.077888
+            },
+            "shadow": {
+              "p50": 0.32768,
+              "p95": 0.786432,
+              "p99": 0.98304
+            },
+            "bloom": {
+              "p50": 2.94912,
+              "p95": 4.653056,
+              "p99": 6.488064
+            },
+            "composite": {
+              "p50": 4.653056,
+              "p95": 6.619136,
+              "p99": 8.912896
+            }
+          },
+          "triangles": {
+            "p50": 326409,
+            "p95": 523665,
+            "p99": 573295
+          },
+          "shadowTriangles": {
+            "p50": 149929,
+            "p95": 258668,
+            "p99": 261998
+          },
+          "metrics": {
+            "frames": 7564,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 232786,
+            "shadowTriangles": 207710,
+            "drawCalls": 533,
+            "passes": 4,
+            "cpuSubmitMs": 0.5,
+            "culledGroups": 1109,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 3.866624,
+              "composite": 5.046272,
+              "shadow": 0.65536,
+              "bloom": 3.014656
+            },
+            "gpuMedianMs": {
+              "scene": 3.670016,
+              "composite": 5.373952,
+              "shadow": 0.65536,
+              "bloom": 2.94912
+            }
+          },
+          "heap": 30450512
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18,
+            "p99": 18.59999990463257
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.6000001430511475,
+            "p99": 0.7000000476837158
+          },
+          "gpu": {
+            "scene": {
+              "p50": 4.325376,
+              "p95": 6.291456,
+              "p99": 7.143424
+            },
+            "shadow": {
+              "p50": 0.32768,
+              "p95": 0.589824,
+              "p99": 0.65536
+            },
+            "bloom": {
+              "p50": 3.473408,
+              "p95": 5.177344,
+              "p99": 6.094848
+            },
+            "composite": {
+              "p50": 5.636096,
+              "p95": 7.012352,
+              "p99": 7.733248
+            }
+          },
+          "triangles": {
+            "p50": 267682,
+            "p95": 518684,
+            "p99": 575051
+          },
+          "shadowTriangles": {
+            "p50": 143994,
+            "p95": 200056,
+            "p99": 208616
+          },
+          "metrics": {
+            "frames": 9365,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 439232,
+            "shadowTriangles": 109083,
+            "drawCalls": 660,
+            "passes": 4,
+            "cpuSubmitMs": 0.39999985694885254,
+            "culledGroups": 906,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 5.89824,
+              "composite": 6.422528,
+              "shadow": 0.393216,
+              "bloom": 4.58752
+            },
+            "gpuMedianMs": {
+              "scene": 5.832704,
+              "composite": 6.356992,
+              "shadow": 0.32768,
+              "bloom": 3.997696
+            }
+          },
+          "heap": 41171650
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.09999990463257,
+            "p99": 18.700000047683716
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.6000001430511475,
+            "p99": 0.7000000476837158
+          },
+          "gpu": {
+            "scene": {
+              "p50": 3.801088,
+              "p95": 5.832704,
+              "p99": 6.291456
+            },
+            "shadow": {
+              "p50": 0.458752,
+              "p95": 0.720896,
+              "p99": 0.786432
+            },
+            "bloom": {
+              "p50": 2.94912,
+              "p95": 4.194304,
+              "p99": 4.9152
+            },
+            "composite": {
+              "p50": 4.784128,
+              "p95": 6.422528,
+              "p99": 6.88128
+            }
+          },
+          "triangles": {
+            "p50": 280065,
+            "p95": 455293,
+            "p99": 500612
+          },
+          "shadowTriangles": {
+            "p50": 180159,
+            "p95": 257652,
+            "p99": 259704
+          },
+          "metrics": {
+            "frames": 11165,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 231598,
+            "shadowTriangles": 111825,
+            "drawCalls": 420,
+            "passes": 4,
+            "cpuSubmitMs": 0.39999985694885254,
+            "culledGroups": 1162,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 4.194304,
+              "composite": 5.373952,
+              "shadow": 0.393216,
+              "bloom": 3.93216
+            },
+            "gpuMedianMs": {
+              "scene": 3.407872,
+              "composite": 4.718592,
+              "shadow": 0.262144,
+              "bloom": 2.94912
+            }
+          },
+          "heap": 33622599
+        }
+      ]
+    },
+    {
+      "variant": "after",
+      "errors": [],
+      "windows": [
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.600000143051147,
+            "p99": 19.40000009536743
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.7000000476837158,
+            "p99": 0.7999999523162842
+          },
+          "gpu": {
+            "scene": {
+              "p50": 3.60448,
+              "p95": 5.636096,
+              "p99": 6.160384
+            },
+            "shadow": {
+              "p50": 0.32768,
+              "p95": 0.65536,
+              "p99": 0.720896
+            },
+            "bloom": {
+              "p50": 3.080192,
+              "p95": 4.25984,
+              "p99": 5.111808
+            },
+            "composite": {
+              "p50": 5.177344,
+              "p95": 6.356992,
+              "p99": 6.619136
+            }
+          },
+          "triangles": {
+            "p50": 217940,
+            "p95": 491855,
+            "p99": 540015
+          },
+          "shadowTriangles": {
+            "p50": 127331,
+            "p95": 216450,
+            "p99": 228676
+          },
+          "metrics": {
+            "frames": 2159,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 361254,
+            "shadowTriangles": 133311,
+            "drawCalls": 472,
+            "passes": 4,
+            "cpuSubmitMs": 0.5,
+            "totalRaceInstances": 315,
+            "visibleRaceInstances": 44,
+            "shadowRaceInstances": 8,
+            "culledGroups": 1141,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 2.031616,
+              "composite": 2.686976,
+              "shadow": 0.196608,
+              "bloom": 1.572864
+            },
+            "gpuMedianMs": {
+              "scene": 3.801088,
+              "composite": 3.93216,
+              "shadow": 0.262144,
+              "bloom": 2.555904
+            }
+          },
+          "heap": 34487619
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.5,
+            "p99": 19.5
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.6000001430511475,
+            "p99": 0.7000000476837158
+          },
+          "gpu": {
+            "scene": {
+              "p50": 3.801088,
+              "p95": 4.718592,
+              "p99": 5.046272
+            },
+            "shadow": {
+              "p50": 0.458752,
+              "p95": 0.720896,
+              "p99": 0.720896
+            },
+            "bloom": {
+              "p50": 3.080192,
+              "p95": 3.997696,
+              "p99": 4.58752
+            },
+            "composite": {
+              "p50": 5.439488,
+              "p95": 6.291456,
+              "p99": 6.750208
+            }
+          },
+          "triangles": {
+            "p50": 227042,
+            "p95": 359878,
+            "p99": 370592
+          },
+          "shadowTriangles": {
+            "p50": 154774,
+            "p95": 232924,
+            "p99": 235070
+          },
+          "metrics": {
+            "frames": 3960,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 130648,
+            "shadowTriangles": 65382,
+            "drawCalls": 230,
+            "passes": 4,
+            "cpuSubmitMs": 0.40000009536743164,
+            "totalRaceInstances": 314,
+            "visibleRaceInstances": 29,
+            "shadowRaceInstances": 8,
+            "culledGroups": 1302,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 4.128768,
+              "composite": 6.422528,
+              "shadow": 0.262144,
+              "bloom": 4.25984
+            },
+            "gpuMedianMs": {
+              "scene": 4.194304,
+              "composite": 6.291456,
+              "shadow": 0.262144,
+              "bloom": 3.997696
+            }
+          },
+          "heap": 30552723
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.600000143051147,
+            "p99": 19.399999856948853
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.7000000476837158,
+            "p99": 0.7000000476837158
+          },
+          "gpu": {
+            "scene": {
+              "p50": 3.93216,
+              "p95": 5.701632,
+              "p99": 6.160384
+            },
+            "shadow": {
+              "p50": 0.458752,
+              "p95": 0.720896,
+              "p99": 0.720896
+            },
+            "bloom": {
+              "p50": 3.080192,
+              "p95": 4.456448,
+              "p99": 5.177344
+            },
+            "composite": {
+              "p50": 5.439488,
+              "p95": 6.488064,
+              "p99": 6.88128
+            }
+          },
+          "triangles": {
+            "p50": 316498,
+            "p95": 494401,
+            "p99": 542847
+          },
+          "shadowTriangles": {
+            "p50": 153066,
+            "p95": 234558,
+            "p99": 242006
+          },
+          "metrics": {
+            "frames": 5760,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 196921,
+            "shadowTriangles": 134287,
+            "drawCalls": 462,
+            "passes": 4,
+            "cpuSubmitMs": 0.40000009536743164,
+            "totalRaceInstances": 315,
+            "visibleRaceInstances": 42,
+            "shadowRaceInstances": 10,
+            "culledGroups": 1176,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 3.866624,
+              "composite": 5.636096,
+              "shadow": 0.458752,
+              "bloom": 3.145728
+            },
+            "gpuMedianMs": {
+              "scene": 3.866624,
+              "composite": 5.505024,
+              "shadow": 0.393216,
+              "bloom": 3.145728
+            }
+          },
+          "heap": 41867017
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.600000143051147,
+            "p99": 19.59999990463257
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.6999998092651367,
+            "p99": 0.7000000476837158
+          },
+          "gpu": {
+            "scene": {
+              "p50": 4.194304,
+              "p95": 5.701632,
+              "p99": 6.22592
+            },
+            "shadow": {
+              "p50": 0.32768,
+              "p95": 0.720896,
+              "p99": 0.720896
+            },
+            "bloom": {
+              "p50": 3.342336,
+              "p95": 4.653056,
+              "p99": 5.24288
+            },
+            "composite": {
+              "p50": 5.701632,
+              "p95": 6.5536,
+              "p99": 7.077888
+            }
+          },
+          "triangles": {
+            "p50": 322316,
+            "p95": 496751,
+            "p99": 547611
+          },
+          "shadowTriangles": {
+            "p50": 124645,
+            "p95": 233282,
+            "p99": 236056
+          },
+          "metrics": {
+            "frames": 7561,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 196635,
+            "shadowTriangles": 234298,
+            "drawCalls": 468,
+            "passes": 4,
+            "cpuSubmitMs": 0.5,
+            "totalRaceInstances": 314,
+            "visibleRaceInstances": 48,
+            "shadowRaceInstances": 8,
+            "culledGroups": 1179,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 3.801088,
+              "composite": 4.521984,
+              "shadow": 0.65536,
+              "bloom": 2.94912
+            },
+            "gpuMedianMs": {
+              "scene": 3.93216,
+              "composite": 5.439488,
+              "shadow": 0.65536,
+              "bloom": 3.014656
+            }
+          },
+          "heap": 32299126
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.40000009536743,
+            "p99": 19.5
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.7000000476837158,
+            "p99": 0.7000000476837158
+          },
+          "gpu": {
+            "scene": {
+              "p50": 4.063232,
+              "p95": 6.22592,
+              "p99": 6.619136
+            },
+            "shadow": {
+              "p50": 0.32768,
+              "p95": 0.65536,
+              "p99": 0.65536
+            },
+            "bloom": {
+              "p50": 3.342336,
+              "p95": 4.849664,
+              "p99": 5.505024
+            },
+            "composite": {
+              "p50": 5.57056,
+              "p95": 6.750208,
+              "p99": 7.274496
+            }
+          },
+          "triangles": {
+            "p50": 222842,
+            "p95": 498997,
+            "p99": 548623
+          },
+          "shadowTriangles": {
+            "p50": 121849,
+            "p95": 206154,
+            "p99": 230356
+          },
+          "metrics": {
+            "frames": 9361,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 375053,
+            "shadowTriangles": 128817,
+            "drawCalls": 483,
+            "passes": 4,
+            "cpuSubmitMs": 0.6000001430511475,
+            "totalRaceInstances": 315,
+            "visibleRaceInstances": 52,
+            "shadowRaceInstances": 10,
+            "culledGroups": 1126,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 5.046272,
+              "composite": 5.636096,
+              "shadow": 0.393216,
+              "bloom": 3.670016
+            },
+            "gpuMedianMs": {
+              "scene": 5.308416,
+              "composite": 5.89824,
+              "shadow": 0.393216,
+              "bloom": 3.670016
+            }
+          },
+          "heap": 41703369
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.5,
+            "p99": 19.300000190734863
+          },
+          "cpuMs": {
+            "p50": 0.5,
+            "p95": 0.6000001430511475,
+            "p99": 0.7000000476837158
+          },
+          "gpu": {
+            "scene": {
+              "p50": 3.866624,
+              "p95": 4.980736,
+              "p99": 5.373952
+            },
+            "shadow": {
+              "p50": 0.458752,
+              "p95": 0.720896,
+              "p99": 0.720896
+            },
+            "bloom": {
+              "p50": 3.080192,
+              "p95": 4.063232,
+              "p99": 4.784128
+            },
+            "composite": {
+              "p50": 5.373952,
+              "p95": 6.356992,
+              "p99": 7.012352
+            }
+          },
+          "triangles": {
+            "p50": 230733,
+            "p95": 367782,
+            "p99": 378284
+          },
+          "shadowTriangles": {
+            "p50": 155258,
+            "p95": 232862,
+            "p99": 239596
+          },
+          "metrics": {
+            "frames": 11162,
+            "width": 2160,
+            "height": 1350,
+            "sceneTriangles": 137046,
+            "shadowTriangles": 60512,
+            "drawCalls": 249,
+            "passes": 4,
+            "cpuSubmitMs": 0.40000009536743164,
+            "totalRaceInstances": 318,
+            "visibleRaceInstances": 35,
+            "shadowRaceInstances": 6,
+            "culledGroups": 1291,
+            "colorAttachments": 2,
+            "normalTargetPixels": 2916000,
+            "gpuMs": {
+              "scene": 4.194304,
+              "composite": 6.356992,
+              "shadow": 0.196608,
+              "bloom": 3.997696
+            },
+            "gpuMedianMs": {
+              "scene": 4.25984,
+              "composite": 6.356992,
+              "shadow": 0.262144,
+              "bloom": 3.997696
+            }
+          },
+          "heap": 37843420
+        }
+      ]
+    }
+  ]
+}

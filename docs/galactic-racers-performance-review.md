@@ -1,5 +1,7 @@
 # Galactic Racers: performance RCA and todo
 
+> Historical record. The [14 September efficiency work](galactic-racers-efficiency-todo.md) supersedes the menu, High LOD, frame-rate and adaptive-quality behavior described below.
+
 Baseline reviewed 12 September 2026 at commit 6ef1b6b. The findings below describe that version. See [implementation and validation](galactic-racers-performance-plan.md) for the subsequent optimization work.
 
 ## Conclusion and limits

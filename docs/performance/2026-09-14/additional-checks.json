@@ -1,0 +1,38 @@
+{
+  "report": {
+    "craft.html": {
+      "frames": 54,
+      "timing": true
+    },
+    "design.html": {
+      "frames": 54,
+      "timing": true
+    },
+    "hangar.html": {
+      "frames": 54,
+      "timing": true
+    },
+    "touchAndRecovery": true,
+    "blur": [
+      {
+        "enabled": true,
+        "TaskDuration": 0.528949,
+        "LayoutDuration": 0.030279,
+        "RecalcStyleDuration": 0.142287
+      },
+      {
+        "enabled": false,
+        "TaskDuration": 0.459558,
+        "LayoutDuration": 0.027634,
+        "RecalcStyleDuration": 0.08483000000000002
+      },
+      {
+        "enabled": true,
+        "TaskDuration": 0.40026799999999996,
+        "LayoutDuration": 0.027346000000000002,
+        "RecalcStyleDuration": 0.05286599999999997
+      }
+    ]
+  },
+  "errors": []
+}

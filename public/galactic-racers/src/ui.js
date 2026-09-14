@@ -309,6 +309,7 @@ const UI = (() => {
     // The look sliders need a loaded world; the rest of the panel works without one (deep link, cover).
     let look = null; try { look = Game.ui.desc().look; } catch (e) {}
     $('setQuality').value = Game.ui.quality();
+    $('setFrameRate').value = Game.ui.frameRate();
     updateQualityNote();
     $('settingsRaceNote').textContent = lastBefore === null && Game.ui.state() === 'race' ? (Game.ui.paused() ? 'Race paused. Back to continue.' : 'Your multiplayer race continues while settings are open.') : '';
     for (const id of ['setEdge', 'setDither', 'setMap']) $(id).disabled = !look;
@@ -378,6 +379,7 @@ const UI = (() => {
     if (e.key === 'Escape' && e.repeat) { e.preventDefault(); return; }
     if (!screen || (e.key !== 'Escape' && e.target?.closest?.('#qualityTabs'))) return;
     const tag = (e.target && e.target.tagName) || '';
+    if (tag === 'SELECT' && e.key !== 'Escape') return;
     if (tag === 'INPUT' && e.key !== 'Enter' && e.key !== 'Escape') return;
     if (e.key === 'Enter') { e.preventDefault(); primary(); }
     else if (e.key === 'Escape') { e.preventDefault(); back(); }
@@ -406,9 +408,9 @@ const UI = (() => {
   let lastBefore = null;
 
   const QUALITY_NOTES = {
-    eco: '30 FPS limit. Lower resolution, no dynamic shadows or bloom. Uses less graphics power.',
-    balanced: '60 FPS limit. Reduced shadows and adaptive resolution for smoother play.',
-    high: '60 FPS limit. Sharper rendering and full effects, with a higher graphics workload.',
+    eco: 'Lighter rendering without dynamic shadows or bloom. Auto targets up to 30 FPS; choose 60 FPS for smoother motion.',
+    balanced: 'Reduced shadows and adaptive resolution. Auto targets up to 60 FPS.',
+    high: 'Sharper rendering and full effects with efficient distant detail. Auto targets up to 60 FPS; uses more power.',
   };
   function updateQualityNote() {
     const quality = Game.ui.quality();
@@ -508,6 +510,7 @@ const UI = (() => {
         e.preventDefault(); const next=qualityTabs[(index+step+qualityTabs.length)%qualityTabs.length]; next.focus(); next.click();
       };
     });
+    $('setFrameRate').onchange = () => Game.ui.setFrameRate($('setFrameRate').value);
     $('setQuality').onchange = () => { Game.ui.setQuality($('setQuality').value); updateQualityNote(); Game.ui.invalidate(); };
     bindFlight();
     const look = (id, key, out) => { $(id).oninput = () => { Game.ui.setLook({ [key]: +$(id).value }); Game.ui.invalidate(); $(out).textContent = (+$(id).value).toFixed(2); }; };

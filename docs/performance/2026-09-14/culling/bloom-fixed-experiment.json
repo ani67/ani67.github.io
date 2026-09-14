@@ -1,0 +1,1201 @@
+{
+  "rows": [
+    {
+      "variant": "before",
+      "metrics": {
+        "frames": 120,
+        "width": 1440,
+        "height": 900,
+        "sceneTriangles": 129650,
+        "shadowTriangles": 141040,
+        "drawCalls": 543,
+        "passes": 4,
+        "cpuSubmitMs": 0.5,
+        "culledGroups": 1568,
+        "colorAttachments": 2,
+        "normalTargetPixels": 1296000,
+        "gpuMs": {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.769472
+        },
+        "gpuMedianMs": {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        }
+      },
+      "samples": [
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.835008,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.458752,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.458752,
+          "bloom": 1.376256
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.424832,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.393216,
+          "bloom": 1.835008
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.458752,
+          "bloom": 1.769472
+        }
+      ],
+      "errors": []
+    },
+    {
+      "variant": "visibility",
+      "metrics": {
+        "frames": 123,
+        "width": 1440,
+        "height": 900,
+        "sceneTriangles": 88852,
+        "shadowTriangles": 103588,
+        "drawCalls": 478,
+        "passes": 4,
+        "cpuSubmitMs": 0.6000001430511475,
+        "totalRaceInstances": 417,
+        "visibleRaceInstances": 113,
+        "shadowRaceInstances": 7,
+        "culledGroups": 1568,
+        "colorAttachments": 2,
+        "normalTargetPixels": 1296000,
+        "gpuMs": {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        "gpuMedianMs": {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        }
+      },
+      "samples": [
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.589824,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.835008,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.376256
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.262144,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 2.359296,
+          "composite": 3.080192,
+          "shadow": 1.31072,
+          "bloom": 2.29376
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.835008,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.262144,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.262144,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.262144,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.835008,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.32768,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.32768,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.32768,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.555904,
+          "shadow": 0.262144,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        }
+      ],
+      "errors": []
+    },
+    {
+      "variant": "after",
+      "metrics": {
+        "frames": 123,
+        "width": 1440,
+        "height": 900,
+        "sceneTriangles": 88852,
+        "shadowTriangles": 103588,
+        "drawCalls": 479,
+        "passes": 5,
+        "cpuSubmitMs": 0.5999999046325684,
+        "totalRaceInstances": 417,
+        "visibleRaceInstances": 113,
+        "shadowRaceInstances": 7,
+        "culledGroups": 1568,
+        "colorAttachments": 2,
+        "normalTargetPixels": 1296000,
+        "gpuMs": {
+          "scene": 1.835008,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        "gpuMedianMs": {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        }
+      },
+      "samples": [
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.359296,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.572864
+        },
+        {
+          "scene": 1.835008,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 2.686976,
+          "composite": 3.342336,
+          "shadow": 0.32768,
+          "bloom": 2.555904
+        },
+        {
+          "scene": 1.703936,
+          "composite": 3.080192,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.555904,
+          "shadow": 0.262144,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.686976,
+          "shadow": 0.262144,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 2.424832,
+          "composite": 3.014656,
+          "shadow": 0.32768,
+          "bloom": 2.228224
+        },
+        {
+          "scene": 1.769472,
+          "composite": 3.014656,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.572864
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.686976,
+          "shadow": 0.262144,
+          "bloom": 1.769472
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 3.080192,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.835008,
+          "composite": 3.080192,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.359296,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.376256
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.359296,
+          "shadow": 0.32768,
+          "bloom": 1.572864
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.424832,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.572864
+        },
+        {
+          "scene": 1.835008,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.359296,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.359296,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.441792
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.572864,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.572864
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.703936
+        },
+        {
+          "scene": 1.835008,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.359296,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.572864
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.359296,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.572864
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.359296,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.424832,
+          "shadow": 0.262144,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.359296,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.703936,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.769472,
+          "composite": 2.424832,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        },
+        {
+          "scene": 1.835008,
+          "composite": 2.490368,
+          "shadow": 0.32768,
+          "bloom": 1.6384
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "diffs": [
+    {
+      "from": "before",
+      "to": "visibility",
+      "meanChannelDifference": 0.051578317901234565,
+      "max": 70,
+      "changedChannels": 11118,
+      "totalChannels": 5184000
+    },
+    {
+      "from": "visibility",
+      "to": "after",
+      "meanChannelDifference": 0.000003858024691358025,
+      "max": 1,
+      "changedChannels": 20,
+      "totalChannels": 5184000
+    }
+  ]
+}

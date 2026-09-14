@@ -246,6 +246,7 @@
   #results .verdict { font-size: clamp(56px, 8vw, 110px); margin: 0 0 4px; }
   #results .sub { color: var(--muted); margin-bottom: 18px; }
   #settings .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 40px; }
+  #settings .row.frame-rate { grid-template-columns: auto minmax(0, 1fr); }
   #settings .row { display: grid; grid-template-columns: 130px 1fr 44px; gap: 12px; align-items: center; margin: 12px 0; }
   #settings input[type=range] { width: 100%; accent-color: var(--accent); }
   #settings select { font: inherit; color: var(--ink); background: rgba(0,0,0,.3); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; }
@@ -765,6 +766,9 @@
         <button type="button" role="radio" data-quality="balanced" aria-checked="false"><span>Balanced</span><small>Everyday play</small></button>
         <button type="button" role="radio" data-quality="high" aria-checked="false"><span>High</span><small>More detail</small></button>
       </div>
+      <div class="row frame-rate"><label for="setFrameRate">Frame rate</label><select id="setFrameRate" aria-describedby="frameRateNote"><option value="auto">Auto</option><option value="30">30 FPS</option><option value="60">60 FPS</option></select></div>
+      <p class="note" id="frameRateNote">Auto keeps motion even. 30 FPS saves power; Eco + 60 FPS gives smoother motion with lighter graphics.</p>
+      <p class="note" id="qualityNote"></p>
       <div class="flight-guide" aria-label="Keyboard controls">
         <section><div class="key-cluster"><kbd class="up">W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div><strong>Fly</strong><p>W accelerate · S brake<br>A / D steer</p></section>
         <section><div class="key-cluster"><kbd class="up">↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></div><strong>Steer & pitch</strong><p>← / → steer<br>↑ / ↓ climb and dive</p></section>
@@ -775,7 +779,7 @@
         <div>
           <div class="label">Rendering</div>
           <div class="row"><label for="setQuality">Graphics</label><select id="setQuality" aria-describedby="qualityNote"><option value="eco">Eco</option><option value="balanced">Balanced</option><option value="high">High</option></select><span></span></div>
-          <p class="note" id="qualityNote"></p><p class="note" id="settingsRaceNote"></p>
+          <p class="note" id="settingsRaceNote"></p>
           <div class="label" style="margin-top:22px">Look</div>
           <div class="row"><span>Ink lines</span><input type="range" id="setEdge" min="0" max="0.8" step="0.01"><span class="num" id="setEdgeV"></span></div>
           <div class="row"><span>Dither</span><input type="range" id="setDither" min="0" max="0.4" step="0.01"><span class="num" id="setDitherV"></span></div>
@@ -863,43 +867,44 @@
   </div>
 </div>
 <div id="err"></div>
-<script src="src/math.js?v=galactic-20260913-10"></script>
-<script src="src/palettes.js?v=galactic-20260913-10"></script>
-<script src="src/planets.js?v=galactic-20260913-10"></script>
-<script src="src/craft.js?v=galactic-20260913-10"></script>
-<script src="src/kitbash.js?v=galactic-20260913-10"></script>
-<script src="src/stats.js?v=galactic-20260913-10"></script>
-<script src="src/tracks.js?v=galactic-20260913-10"></script>
-<script src="src/weapons.js?v=galactic-20260913-10"></script>
-<script src="src/particles.js?v=galactic-20260913-10"></script>
-<script src="src/biomes.js?v=galactic-20260913-10"></script>
-<script src="src/world.js?v=galactic-20260913-10"></script>
-<script src="ships/ship-01.js?v=galactic-20260913-10"></script>
-<script src="ships/ship-02.js?v=galactic-20260913-10"></script>
-<script src="ships/ship-03.js?v=galactic-20260913-10"></script>
-<script src="ships/ship-04.js?v=galactic-20260913-10"></script>
-<script src="ships/ship-05.js?v=galactic-20260913-10"></script>
-<script src="ships/ship-06.js?v=galactic-20260913-10"></script>
+<script src="src/math.js?v=galactic-20260914-efficiency"></script>
+<script src="src/palettes.js?v=galactic-20260914-efficiency"></script>
+<script src="src/planets.js?v=galactic-20260914-efficiency"></script>
+<script src="src/craft.js?v=galactic-20260914-efficiency"></script>
+<script src="src/kitbash.js?v=galactic-20260914-efficiency"></script>
+<script src="src/stats.js?v=galactic-20260914-efficiency"></script>
+<script src="src/tracks.js?v=galactic-20260914-efficiency"></script>
+<script src="src/weapons.js?v=galactic-20260914-efficiency"></script>
+<script src="src/particles.js?v=galactic-20260914-efficiency"></script>
+<script src="src/biomes.js?v=galactic-20260914-efficiency"></script>
+<script src="src/world.js?v=galactic-20260914-efficiency"></script>
+<script src="ships/ship-01.js?v=galactic-20260914-efficiency"></script>
+<script src="ships/ship-02.js?v=galactic-20260914-efficiency"></script>
+<script src="ships/ship-03.js?v=galactic-20260914-efficiency"></script>
+<script src="ships/ship-04.js?v=galactic-20260914-efficiency"></script>
+<script src="ships/ship-05.js?v=galactic-20260914-efficiency"></script>
+<script src="ships/ship-06.js?v=galactic-20260914-efficiency"></script>
 <script src="ships/ship-07.js?v=20260914-1"></script>
 <script src="ships/ship-08.js?v=20260914-1"></script>
-<script src="src/fleet.js?v=galactic-20260913-10"></script>
-<script src="src/geometry.js?v=galactic-20260913-10"></script>
-<script src="src/flora.js?v=galactic-20260913-10"></script>
-<script src="src/propsets.js?v=galactic-20260913-10"></script>
-<script src="src/shaders.js?v=galactic-20260913-10"></script>
-<script src="src/gpu.js?v=galactic-20260913-10"></script>
-<script src="src/frame.js?v=galactic-20260913-10"></script>
-<script src="src/names.js?v=galactic-20260913-10"></script>
-<script src="src/radio.js?v=galactic-20260913-10"></script>
-<script src="src/audio.js?v=galactic-20260913-10"></script>
-<script src="src/net.js?v=galactic-20260913-10"></script>
-<script src="src/mp.js?v=galactic-20260913-10"></script>
-<script src="src/thumbs.js?v=galactic-20260913-10"></script>
+<script src="src/fleet.js?v=galactic-20260914-efficiency"></script>
+<script src="src/geometry.js?v=galactic-20260914-efficiency"></script>
+<script src="src/flora.js?v=galactic-20260914-efficiency"></script>
+<script src="src/propsets.js?v=galactic-20260914-efficiency"></script>
+<script src="src/shaders.js?v=galactic-20260914-efficiency"></script>
+<script src="src/timing.js?v=20260914-efficiency"></script>
+<script src="src/gpu.js?v=galactic-20260914-efficiency"></script>
+<script src="src/frame.js?v=galactic-20260914-efficiency"></script>
+<script src="src/names.js?v=galactic-20260914-efficiency"></script>
+<script src="src/radio.js?v=galactic-20260914-efficiency"></script>
+<script src="src/audio.js?v=galactic-20260914-efficiency"></script>
+<script src="src/net.js?v=galactic-20260914-efficiency"></script>
+<script src="src/mp.js?v=galactic-20260914-efficiency"></script>
+<script src="src/thumbs.js?v=galactic-20260914-efficiency"></script>
 <script src="src/cover-world.js?v=20260913-1"></script>
 <script src="src/dock.js?v=20260913-1"></script>
-<script src="src/game.js?v=galactic-20260913-10"></script>
+<script src="src/game.js?v=galactic-20260914-efficiency"></script>
 <script src="src/title-glass.js?v=20260913-1"></script>
-<script src="src/ui.js?v=galactic-20260913-10"></script>
+<script src="src/ui.js?v=galactic-20260914-efficiency"></script>
 <script>
   if (new URLSearchParams(location.search).get('preview') === '1') {
     document.querySelector('a[aria-label="Back to Ani Dalal’s portfolio"]')?.remove();

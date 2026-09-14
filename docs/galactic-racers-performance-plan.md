@@ -1,5 +1,7 @@
 # Galactic Racers performance implementation
 
+> Historical record. The [14 September efficiency work](galactic-racers-efficiency-todo.md) supersedes the menu, High LOD, frame-rate and adaptive-quality behavior described below.
+
 12 September 2026. Follow-up to the [baseline RCA](galactic-racers-performance-review.md).
 
 ## Plan and delivery

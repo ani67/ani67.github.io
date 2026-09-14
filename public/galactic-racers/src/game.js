@@ -26,6 +26,10 @@ const Game = (() => {
   let speedWarp = 0, warpSpeed = 0, warpValue = '';
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let resetClock = () => {}, invalidate = () => {};
+  let renderAlpha = 1, previousCamera = null;
+  const previousPoses = new WeakMap();
+  const frameTimes = Timing.samples(), cpuTimes = Timing.samples();
+  function resetVisuals() { previousCamera = null; for (const c of cars) previousPoses.delete(c); renderAlpha = 1; }
 
   // ---------------------------------------------------------------- setup
   async function start(canvasEl) {
@@ -37,7 +41,10 @@ const Game = (() => {
     bindInput();
     applyHash();
     let last = performance.now(), lastDraw = last, accumulator = 0;
-    let sampleAt = last, sampleFrames = 0, slowFor = 0, healthyFor = 0;
+    let sampleAt = last, sampleFrames = 0, slowFor = 0;
+    let menuUntil = last + 2400, previousDraw = 0;
+    const display = Timing.displayClock();
+    const resting = () => rs.state === 'idle' || (rs.state === 'finished' && !(typeof MP !== 'undefined' && MP.active()));
     let wasSuspended = false, pendingFrame = null, pausedDirty = false;
     let sampleKey = `${rs.state}:${quality()}`;
     const requestFrame = () => {
@@ -46,28 +53,40 @@ const Game = (() => {
     };
     resetClock = () => {
       last = lastDraw = sampleAt = performance.now(); accumulator = 0;
-      sampleFrames = slowFor = healthyFor = 0; perf.fps = 0;
+      menuUntil = last + 2400; previousDraw = 0;
+      resetVisuals(); frameTimes.clear(); cpuTimes.clear(); Gpu.resetTiming?.();
+      sampleFrames = slowFor = 0; perf.fps = 0;
       sampleKey = `${rs.state}:${quality()}`;
       requestFrame();
     };
     invalidate = () => {
       if (paused || (typeof MP !== 'undefined' && MP.paused && MP.paused())) pausedDirty = true;
-      if (rs.state === 'idle') resetClock(); else requestFrame();
+      if (resting()) {
+        menuUntil = performance.now() + 2400;
+        if (pendingFrame === null) resetClock();
+      } else requestFrame();
     };
     const STEP = 1 / 60, MAX_CATCHUP = 0.1;
     const loop = now => {
       pendingFrame = null;
       const wallDt = Math.max(0, (now - last) / 1000); last = now;
+      const cpuStarted = performance.now();
+      if (wallDt < 0.1) display.add(wallDt * 1000);
       const netPaused = typeof MP !== 'undefined' && MP.paused && MP.paused();
       const suspended = document.hidden || paused || netPaused;
       if (suspended || wasSuspended) {
         accumulator = 0; lastDraw = now; sampleAt = now; sampleFrames = 0;
-        slowFor = healthyFor = 0;
+        slowFor = 0;
         wasSuspended = suspended;
         if (suspended) {
           if (pausedDirty && !document.hidden) { draw(0); perf.renderedFrames++; pausedDirty = false; }
           return;
         }
+      }
+      if (resting() && now > menuUntil) {
+        perf.fps = 0;
+        if (rs.state === 'finished') A(a => { a.engineStopAll(); a.wind(0); a.race('menu'); });
+        return;
       }
       requestFrame();
       const dt = Math.min(MAX_CATCHUP, wallDt);
@@ -77,25 +96,34 @@ const Game = (() => {
         // Keep the original 60 Hz update and its three 1/180 s flight/collision
         // substeps, independently of display refresh rate or graphics preset.
         while (accumulator + 1e-9 >= STEP) {
+          for (const c of cars) previousPoses.set(c, Timing.pose(c));
+          previousCamera = { pos: [...cam.pos], look: [...cam.look], fov: cam.fov };
           update(STEP); accumulator -= STEP; perf.simulationSteps++;
         }
       } else accumulator = 0;
-      // Visible menus orbit continuously at 30 FPS, without running race simulation.
-      const fps = rs.state === 'idle' ? 30 : (Gpu.qualitySettings?.fps || (quality() === 'eco' ? 30 : 60));
+      // Auto chooses a display divisor (e.g. 48 on 144 Hz) instead of uneven 60 FPS.
+      const cap = Gpu.targetFps || Gpu.qualitySettings?.fps || 60;
+      const fps = display.target(cap, !Gpu.frameRate || Gpu.frameRate === 'auto');
+      perf.displayHz = display.hz;
+      renderAlpha = rs.state === 'idle' ? 1 : Math.max(0, Math.min(1, accumulator / STEP));
       const nextSampleKey = `${rs.state}:${quality()}:${fps}`;
       if (nextSampleKey !== sampleKey) {
-        sampleAt = now; sampleFrames = slowFor = healthyFor = 0;
+        sampleAt = now; sampleFrames = slowFor = 0;
         sampleKey = nextSampleKey; perf.fps = 0;
       }
       const interval = 1000 / fps, elapsed = now - lastDraw;
-      if (elapsed < interval - 0.5) return;
+      if (elapsed < interval - 0.5) { cpuTimes.add(performance.now() - cpuStarted); return; }
       // Retain the fractional frame remainder without trying to render missed frames.
       lastDraw = now - (elapsed % interval);
       if (elapsed < interval) lastDraw = now;
-      const drawDt = Math.min(0.1, elapsed / 1000);
+      const actualInterval = previousDraw ? now - previousDraw : interval;
+      const drawDt = Math.min(0.1, actualInterval / 1000);
+      if (previousDraw) frameTimes.add(actualInterval);
+      previousDraw = now;
       if (rs.state === 'idle') updateCamera(drawDt);
       else { updateHud(); }
       draw(drawDt);
+      cpuTimes.add(performance.now() - cpuStarted);
       perf.renderedFrames++; sampleFrames++;
       perf.targetFps = fps;
       if (now - sampleAt >= 3000) {
@@ -103,15 +131,15 @@ const Game = (() => {
         perf.fps = sampleFrames / seconds;
         if (rs.state !== 'idle') {
           // Frame pacing is a load signal, not a temperature measurement. Lower
-          // resolution after sustained misses; recover slowly below preset ceiling.
+          // resolution after sustained misses; preserve recovered headroom until the user resets the preset.
           const ratio = perf.fps / fps;
-          slowFor = ratio < 0.88 ? slowFor + seconds : 0;
-          healthyFor = ratio > 0.97 ? healthyFor + seconds : 0;
+          const gpu = Gpu.metrics?.gpuMedianMs;
+          const gpuMs = gpu ? Object.values(gpu).reduce((sum, value) => sum + value, 0) : 0;
+          // Leave time for compositing and workload spikes when GPU timings exist.
+          slowFor = ratio < 0.95 || gpuMs > interval * 0.7 ? slowFor + seconds : 0;
           const scale = Gpu.renderScale || 1;
-          if (slowFor >= 3 && scale > 0.5 && Gpu.setRenderScale) {
-            Gpu.setRenderScale(Math.max(0.5, scale - 0.1)); slowFor = healthyFor = 0;
-          } else if (healthyFor >= 30 && quality() !== 'eco' && scale < 1 && Gpu.setRenderScale) {
-            Gpu.setRenderScale(Math.min(1, scale + 0.05)); healthyFor = 0;
+          if (slowFor >= 6 && scale > 0.5 && Gpu.setRenderScale) {
+            Gpu.setRenderScale(Math.max(0.5, scale - 0.1)); slowFor = 0;
           }
         }
         sampleAt = now; sampleFrames = 0;
@@ -121,7 +149,7 @@ const Game = (() => {
       resetClock();
       emit('visibility', { hidden: document.hidden, multiplayer: typeof MP !== 'undefined' && MP.active() });
     });
-    window.addEventListener('resize', () => invalidate());
+    window.addEventListener('resize', () => { display.reset(); invalidate(); });
     window.addEventListener('pointerdown', () => { if (rs.state === 'idle') invalidate(); });
     if (typeof MP !== 'undefined' && MP.onChange) MP.onChange(() => resetClock());
     requestFrame();
@@ -302,13 +330,27 @@ const Game = (() => {
       data[o - Gpu.CAR_FLOATS + 15] = k / m * length / 112; // phase along the route, not world axes
     }
     const routeMesh = (mesh, part) => { for (let i = 9; i < mesh.verts.length; i += Geo.STRIDE) mesh.verts[i] = part; return mesh; };
-    const ring = Gpu.createMesh(routeMesh(Geo.buildRing(1, 0.032, 48, 6), 8)), cube = Gpu.createMesh(routeMesh(Geo.buildCube(), 9));
+    const ringRaw = routeMesh(Geo.buildRing(1, 0.032, 48, 6), 8);
+    ringRaw.lods = [routeMesh(Geo.buildRing(1, 0.032, 32, 4), 8), routeMesh(Geo.buildRing(1, 0.032, 24, 3), 8)];
+    const ring = Gpu.createMesh(ringRaw), cube = Gpu.createMesh(routeMesh(Geo.buildCube(), 9));
     const ringData = data.slice(0, ringCount * Gpu.CAR_FLOATS);
     const buf = Gpu.createInstances(ringData);
     gateGroup = [
-      { mesh: ring, inst: buf, count: ringCount, data: ringData },
-      { mesh: cube, inst: Gpu.createInstances(data.subarray(ringCount * Gpu.CAR_FLOATS)), count: m },
+      { mesh: ring, inst: buf, count: ringCount, data: ringData, lodThresholds: [180, 450], castShadow: false },
     ];
+    // Keep neighbouring markers contiguous in GPU buffers. Visibility can then
+    // submit runs of nearby dots without drawing the entire route.
+    const markerChunks = new Map();
+    for (let k = 0; k < m; k++) {
+      const offset = (ringCount + k) * Gpu.CAR_FLOATS;
+      const key = `${Math.floor(data[offset + 9] / 160)},${Math.floor(data[offset + 11] / 160)}`;
+      if (!markerChunks.has(key)) markerChunks.set(key, []);
+      markerChunks.get(key).push(...data.subarray(offset, offset + Gpu.CAR_FLOATS));
+    }
+    for (const chunk of markerChunks.values()) {
+      const markerData = new Float32Array(chunk);
+      gateGroup.push({ mesh: cube, inst: Gpu.createInstances(markerData), count: markerData.length / Gpu.CAR_FLOATS, data: markerData, castShadow: false });
+    }
   }
 
   // Only the small ring buffer changes on the CPU. The travelling dot wave is
@@ -495,6 +537,7 @@ const Game = (() => {
     });
     window.addEventListener('pointermove', e => {
       if (menuOrbit.pointer !== e.pointerId) return;
+      invalidate();
       if (rs.state !== 'idle' || !orbitScreen()) { menuOrbit.pointer = null; return; }
       const orbit = menuOrbit[camMode];
       if (!orbit) return;
@@ -506,6 +549,7 @@ const Game = (() => {
     const endOrbit = e => {
       if (e && menuOrbit.pointer !== e.pointerId) return;
       menuOrbit.pointer = null; menuOrbit.holdUntil = performance.now()+2200;
+      invalidate();
       for (const screen of document.querySelectorAll('#ship, #planet')) screen.style.cursor = '';
     };
     window.addEventListener('pointerup',endOrbit);
@@ -564,6 +608,7 @@ const Game = (() => {
   }
   function respawn(c) {
     c.botDecision = null; c.botDecisionAge = 0;
+    previousPoses.delete(c); previousCamera = null;
     const s = World.sampleAt(tab, c.t);
     c.x = s.p[0]; c.z = s.p[2]; c.y = s.p[1]; c.vx = c.vz = c.vy = 0; c.yaw = 0; c.pitch = 0; c.air = false; c.onRoad = true; c.offTime = 0; c.outTime = 0; c.outLane = 0; c.stun = 0.4;
     c.heading = Math.atan2(s.tan[0], s.tan[2]); c.flash = 1;
@@ -1244,8 +1289,9 @@ const Game = (() => {
   function craftBasis(c, t) {
     const s = c.sample || World.sampleAt(tab, c.t), ph = desc.physics;
     // Stable basis: world up, pitch clamped to about 35 degrees for the visual, never below the horizon.
-    const vp = clamp(c.pitch, -0.61, 0.61), cp = Math.cos(vp);
-    let fwd = [cp * Math.sin(c.heading), Math.sin(vp), cp * Math.cos(c.heading)];
+    const visual = rs.state === 'idle' || paused ? c : Timing.interpolate(previousPoses.get(c), c, renderAlpha);
+    const vp = clamp(visual.pitch, -0.61, 0.61), cp = Math.cos(vp);
+    let fwd = [cp * Math.sin(visual.heading), Math.sin(vp), cp * Math.cos(visual.heading)];
     let upB = norm(sub([0, 1, 0], scale(fwd, fwd[1])));
     // Roll: lean into steering and drift, clamped to about 35 degrees.
     const targetRoll = clamp(c.steer * ph.bank * 1.6 + (c.drifting ? c.steer * 0.6 : 0), -0.61, 0.61);
@@ -1258,7 +1304,7 @@ const Game = (() => {
     const right = norm(cross(upB, fwd));
     if (c.wrecked > 0) { const w = (1.5 - c.wrecked) * 6; upB = rotAround(upB, fwd, w * 0.7); fwd = rotAround(fwd, right0(upB, fwd), Math.sin(w) * 0.5); }
     const bob = Math.sin(t * 2.6 + c.id * 1.7) * ph.bob;
-    return { right, up: upB, fwd, pos: [c.x + upB[0] * bob, c.y + upB[1] * bob, c.z + upB[2] * bob] };
+    return { right, up: upB, fwd, pos: [visual.x + upB[0] * bob, visual.y + upB[1] * bob, visual.z + upB[2] * bob] };
   }
   function draw(dt) {
     updateSpeedWarp(dt);
@@ -1298,14 +1344,15 @@ const Game = (() => {
       }
     }
     for (const g of app.state === 'cover' || showcasing ? [] : carGroups) {
-      // A shared craft group retains detail if any instance is nearby. Keep the
-      // player's craft full quality, including cockpit and selection views.
-      let distance = Infinity;
-      for (const ci of g.ids) {
+      // Instances share geometry and buffers, but choose detail independently.
+      // The player's craft remains full detail in every camera mode.
+      g.lodDistances ||= new Float32Array(g.ids.length);
+      for (let i = 0; i < g.ids.length; i++) {
+        const ci = g.ids[i];
         const c = cars[ci];
-        distance = Math.min(distance, c.isPlayer ? 0 : Math.max(0, Math.hypot(c.x - cam.pos[0], c.y - cam.pos[1], c.z - cam.pos[2]) - c.extent * 2));
+        g.lodDistances[i] = c.isPlayer ? 0 : Math.max(0, Math.hypot(c.x - cam.pos[0], c.y - cam.pos[1], c.z - cam.pos[2]) - c.extent * 2);
       }
-      g.lodDistance = distance; g.lodThresholds = [100, 240];
+      g.lodThresholds = [100, 240];
       g.ids.forEach((ci, k) => {
         const c = cars[ci], b = craftBasis(showcasing ? player : c, t), o = k * Gpu.CAR_FLOATS;
         g.data.set(b.right, o); g.data.set(b.up, o + 3); g.data.set(b.fwd, o + 6); g.data.set(b.pos, o + 9); g.data.set(c.color, o + 12);
@@ -1315,7 +1362,11 @@ const Game = (() => {
     }
     Weapons.fill(t, c => craftBasis(c, t));
     const aspect = hud.canvas.clientWidth / hud.canvas.clientHeight;
-    Frame.fill(frame, desc, { pos: cam.pos, look: cam.look, fov: cam.fov, aspect, time: t, shadowCenter: [player.x, player.y, player.z], shadowSize: 180 },
+    const smoothCamera = previousCamera && rs.state !== 'idle' && !paused && Math.hypot(...cam.pos.map((v,i) => v-previousCamera.pos[i])) < 20;
+    const cameraPosition = smoothCamera ? M.lerp3(previousCamera.pos, cam.pos, renderAlpha) : cam.pos;
+    const cameraLook = smoothCamera ? M.lerp3(previousCamera.look, cam.look, renderAlpha) : cam.look;
+    const cameraFov = smoothCamera ? mix(previousCamera.fov, cam.fov, renderAlpha) : cam.fov;
+    Frame.fill(frame, desc, { pos: cameraPosition, look: cameraLook, fov: cameraFov, aspect, time: t, shadowCenter: [player.x, player.y, player.z], shadowSize: 180 },
       { routeTime: reducedMotion.matches ? 0 : t, speed01: speedWarp, drift: player.drifting, glow: player.glow, flash: player.flash });
     // Show the generated environment on home, excluding all craft, rings and route markers.
     Gpu.render(app.state === 'cover' ? { ...scene, carGroups:[], particles:false } : showcasing ? { ...scene, carGroups:showcaseGroups, particles:false } : scene);
@@ -1359,7 +1410,8 @@ const Game = (() => {
   }
   const ui = {
     invalidate: () => invalidate(), quality, setQuality, setPaused, paused: () => paused,
-    performance: () => ({ ...perf, quality: quality(), renderScale: Gpu.renderScale || 1, renderer: Gpu.metrics || null }),
+    frameRate: () => Gpu.frameRate, setFrameRate: value => { Gpu.setFrameRate(value); resetClock(); invalidate(); },
+    performance: () => ({ ...perf, frameMs: frameTimes.summary(), cpuMs: cpuTimes.summary(), frameRate: Gpu.frameRate, quality: quality(), renderScale: Gpu.renderScale || 1, renderer: Gpu.metrics || null }),
     on: (ev, f) => { (listeners[ev] = listeners[ev] || []).push(f); },
     showcaseBusy: () => app.state === 'showcase' && performance.now()-showcaseStarted < 800,
     state: () => app.state, planet: () => planet, desc: () => desc, seed: () => seedText, race: () => raceDef,

@@ -15,7 +15,10 @@ const schedule = source.slice(from, to).replace(/\n  }\s*$/, '');
 function harness(hz, quality = 'balanced', idle = false) {
   let callback, now = 0, netPaused = false, requestId = 0;
   const updates = [], draws = [], listeners = {};
+  const timing = vm.runInNewContext(fs.readFileSync(new URL('../public/galactic-racers/src/timing.js', import.meta.url), 'utf8') + '\nTiming');
   const context = {
+    A: () => {}, Timing: timing, cars: [], cam: {pos:[0,0,0],look:[0,0,1],fov:60}, previousPoses: new WeakMap(), previousCamera:null, renderAlpha:1,
+    resetVisuals: () => {}, frameTimes:timing.samples(), cpuTimes:timing.samples(),
     performance: { now: () => now }, requestAnimationFrame: f => { callback = f; return ++requestId; },
     window: { addEventListener: (event, fn) => { listeners[`window:${event}`] = fn; } },
     rs: { state: idle ? 'idle' : 'racing' },
@@ -40,7 +43,7 @@ function harness(hz, quality = 'balanced', idle = false) {
   };
 }
 
-for (const hz of [30, 60, 120, 144]) for (const quality of ['eco', 'balanced']) {
+for (const hz of [30, 60, 120]) for (const quality of ['eco', 'balanced']) {
   test(`${quality} at ${hz} Hz preserves 60 simulation updates/second and caps rendering`, () => {
     const h = harness(hz, quality); h.advance(5);
     assert.equal(h.updates.length, 300);
@@ -49,17 +52,29 @@ for (const hz of [30, 60, 120, 144]) for (const quality of ['eco', 'balanced']) 
   });
 }
 
-for (const preset of ['eco', 'balanced']) test(`${preset} menus keep orbiting at 30 FPS and suspend when hidden`, () => {
+for (const preset of ['eco', 'balanced']) test(`${preset} menus settle, sleep, and wake on interaction`, () => {
   const h = harness(60, preset, true); h.advance(5);
   assert.equal(h.updates.length, 0);
-  assert(Math.abs(h.draws.length - 150) <= 1);
-  assert.equal(h.pending, true);
-  const count = h.draws.length; h.hide(true); h.advance(3);
-  assert.equal(h.draws.length, count);
+  assert(h.draws.length > 50 && h.draws.length <= 144);
   assert.equal(h.pending, false);
-  h.hide(false); h.advance(3);
-  assert(h.draws.length >= count + 88);
-  assert.equal(h.updates.length, 0);
+  const count = h.draws.length; h.advance(3);
+  assert.equal(h.draws.length,count);
+  h.invalidate(); h.advance(1); assert(h.draws.length > count);
+  h.hide(true); h.advance(3); assert.equal(h.pending,false);
+  h.hide(false); h.advance(3); assert.equal(h.pending,false);
+  assert.equal(h.updates.length,0);
+});
+
+for (const hz of [90,144,165]) test(`Auto presents evenly at ${hz} Hz while preserving 60 Hz simulation`, () => {
+  const h = harness(hz); h.advance(3); const from=h.draws.length; h.advance(4);
+  const times=h.draws.slice(from), expected=1000/(hz/Math.ceil(hz/60));
+  for(let i=1;i<times.length;i++) assert(Math.abs(times[i]-times[i-1]-expected)<.01);
+  assert.equal(h.updates.length,420);
+});
+
+test('Eco can explicitly render at 60 FPS independently of detail', () => {
+  const h=harness(120,'eco'); h.context.Gpu.targetFps=60; h.context.Gpu.frameRate='60';h.advance(4);
+  assert.equal(h.draws.length,240);assert.equal(h.updates.length,240);
 });
 
 for (const reason of ['hidden', 'solo settings', 'host paused']) {
@@ -89,7 +104,7 @@ test('long stalls bound catch-up to six fixed updates and record dropped time', 
   assert(Math.abs(h.context.perf.droppedSeconds - 4.9) < 0.00001);
 });
 
-test('sustained missed frames reduce scale, recovery is slower and capped', () => {
+test('sustained missed frames reduce scale and retain recovered headroom', () => {
   const h = harness(30); h.advance(12);
   assert(h.context.Gpu.renderScale < 1);
   const reduced = h.context.Gpu.renderScale;
@@ -97,7 +112,7 @@ test('sustained missed frames reduce scale, recovery is slower and capped', () =
   assert.equal(h.context.Gpu.renderScale, reduced);
   h.advance(20); assert.equal(h.context.Gpu.renderScale, reduced);
   h.quality('balanced'); h.context.Gpu.qualitySettings.fps = 30; h.advance(34);
-  assert(h.context.Gpu.renderScale > reduced);
+  assert.equal(h.context.Gpu.renderScale, reduced);
   assert(h.context.Gpu.renderScale <= 1);
 });
 
@@ -167,4 +182,22 @@ test('bot plans run at 15 Hz while lane phase integrates at flight rate', () => 
   context.c.botDecision = null; context.c.botDecisionAge = 0;
   context.botInput(context.c, 1 / 180);
   assert.equal(context.perf.botDecisions, before + 6);
+});
+
+
+test('continuous menu pointer events do not starve rendering', () => {
+  const h=harness(60,'balanced',true);h.advance(4);
+  const before=h.draws.length;
+  for(let i=0;i<120;i++){h.invalidate();h.advance(1/60);}
+  assert(h.draws.length-before>=118);
+  h.advance(3);assert.equal(h.pending,false);
+});
+
+
+for (const multiplayer of [false,true]) test(`finished race ${multiplayer?'keeps multiplayer authority running':'sleeps in solo results'}`, () => {
+  const h=harness(60);h.context.MP.active=()=>multiplayer;h.advance(2);
+  h.context.rs.state='finished';h.invalidate();h.advance(4);
+  assert.equal(h.pending,multiplayer);
+  const n=h.updates.length;h.advance(1);
+  assert.equal(h.updates.length-n,multiplayer?60:0);
 });

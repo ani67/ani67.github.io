@@ -1,0 +1,77 @@
+{
+  "rows": [
+    {
+      "planet": "halcyon",
+      "angle": 0,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "halcyon",
+      "angle": 1.5707963267948966,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "halcyon",
+      "angle": 3.141592653589793,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "halcyon",
+      "angle": 4.71238898038469,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "nullsector",
+      "angle": 0,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "nullsector",
+      "angle": 1.5707963267948966,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "nullsector",
+      "angle": 3.141592653589793,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "nullsector",
+      "angle": 4.71238898038469,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "embervale",
+      "angle": 0,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "embervale",
+      "angle": 1.5707963267948966,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "embervale",
+      "angle": 3.141592653589793,
+      "max": 0,
+      "changed": 0
+    },
+    {
+      "planet": "embervale",
+      "angle": 4.71238898038469,
+      "max": 0,
+      "changed": 0
+    }
+  ],
+  "errors": []
+}

@@ -9,20 +9,34 @@ const Gpu = (() => {
     balanced: Object.freeze({ fps: 60, maxPixels: 1600 * 900, dpr: 1.25, shadowSize: 1024, bloom: true, effects: true }),
     high: Object.freeze({ fps: 60, maxPixels: 2560 * 1440, dpr: 1.5, shadowSize: 2048, bloom: true, effects: true }),
   });
+  let frameRate = 'auto';
+  try { const saved = localStorage.getItem('ir.frameRate'); if (['auto','30','60'].includes(saved)) frameRate = saved; } catch (_) {}
+  function setFrameRate(value) {
+    if (!['auto','30','60'].includes(String(value))) return;
+    frameRate = String(value);
+    try { localStorage.setItem('ir.frameRate', frameRate); } catch (_) {}
+  }
   let quality = window.matchMedia?.('(pointer: coarse)').matches ? 'eco' : 'balanced';
   try { const saved = localStorage.getItem('ir.quality'); if (presets[saved]) quality = saved; } catch (_) {}
+  let profileEveryFrame = false, timingEpoch = 0;
+  const gpuSamples = {};
   let lost = false, timestampSet, timestampResolve, timestampRead, timestampPending = false;
   let renderScale = 1, shadowSize = -1, captureState, captureDimensions;
   const metrics = { frames: 0, width: 0, height: 0, sceneTriangles: 0, shadowTriangles: 0, drawCalls: 0, passes: 0, cpuSubmitMs: 0 };
   function getQuality() { return quality; }
   function setQuality(name) {
     if (!presets[name]) return;
-    quality = name; renderScale = 1;
+    quality = name; renderScale = 1; resetTiming();
     if (captureState) captureState.W = 0;
     try { localStorage.setItem('ir.quality', name); } catch (_) {}
     if (device) { syncShadow(); W = 0; resize(); }
   }
-  function setRenderScale(scale) { if (Number.isFinite(scale)) renderScale = Math.max(0.5, Math.min(1, scale)); }
+  function resetTiming() { timingEpoch++; delete metrics.gpuMs; delete metrics.gpuMedianMs; for (const sample of Object.values(gpuSamples)) sample.clear(); }
+  function setRenderScale(scale) {
+    if (!Number.isFinite(scale)) return;
+    const next = Math.max(0.5, Math.min(1, scale));
+    if (next !== renderScale) { renderScale = next; resetTiming(); }
+  }
   function syncShadow() {
     const size = Math.max(1, presets[quality].shadowSize);
     if (size === shadowSize) return;
@@ -64,7 +78,8 @@ const Gpu = (() => {
     if (!navigator.gpu) throw new Error('WebGPU is not available in this browser.');
     const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'low-power' }) || await navigator.gpu.requestAdapter();
     if (!adapter) throw new Error('No WebGPU adapter found.');
-    const profile = new URLSearchParams(window.location.search).get('profile') === '1' && adapter.features.has('timestamp-query');
+    profileEveryFrame = new URLSearchParams(window.location.search).get('profile') === '1';
+    const profile = adapter.features.has('timestamp-query');
     device = await adapter.requestDevice(profile ? { requiredFeatures: ['timestamp-query'] } : {});
     if (profile) {
       timestampSet = device.createQuerySet({ type: 'timestamp', count: 8 });
@@ -253,7 +268,19 @@ const Gpu = (() => {
       bounds.min[axis] = Math.min(bounds.min[axis], m.verts[i + axis]);
       bounds.max[axis] = Math.max(bounds.max[axis], m.verts[i + axis]);
     }
-    return { vb, ib, count: m.idx.length, bounds, lods: (m.lods || []).map(createMesh) };
+    // Include shader animation in conservative instance bounds: rotating wheels,
+    // expanding route dots and the gate ripple must not disappear at view edges.
+    let cullRadius = 0;
+    for (let i = 0; i < m.verts.length; i += Geo.STRIDE) {
+      const p = m.verts.subarray(i, i + 3), part = m.verts[i + 9];
+      let radius = Math.hypot(...p);
+      if (part === 1 || part === 2) {
+        const pivot = [m.verts[i + 6], m.verts[i + 7], m.verts[i + 10]];
+        radius = Math.hypot(...pivot) + Math.hypot(...p.map((v, a) => v - pivot[a]));
+      }
+      cullRadius = Math.max(cullRadius, radius * (part === 9 ? 3 : part === 8 ? 1.12 : 1));
+    }
+    return { vb, ib, count: m.idx.length, bounds, cullRadius, lods: (m.lods || []).map(createMesh) };
   }
   function createInstances(data) {
     const buf = device.createBuffer({ size: Math.max(32, data.byteLength), usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
@@ -300,18 +327,18 @@ const Gpu = (() => {
     return true;
   }
   function chooseLod(mesh, frame) {
-    if (!mesh.lods?.length || quality === 'high') return mesh;
+    if (!mesh.lods?.length) return mesh;
     let distanceSquared = 0;
     for (let axis = 0; axis < 3; axis++) {
       const p = frame[16 + axis], d = Math.max(mesh.bounds.min[axis] - p, 0, p - mesh.bounds.max[axis]);
       distanceSquared += d * d;
     }
-    const near = quality === 'eco' ? 250 : 450, far = quality === 'eco' ? 650 : 1000;
+    const near = quality === 'eco' ? 250 : quality === 'high' ? 700 : 450, far = quality === 'eco' ? 650 : quality === 'high' ? 1400 : 1000;
     return distanceSquared > far * far ? (mesh.lods[1] || mesh.lods[0]) : distanceSquared > near * near ? mesh.lods[0] : mesh;
   }
 
   function groupLod(group, frame) {
-    if (!group.mesh.lods?.length || quality === 'high') return group;
+    if (!group.mesh.lods?.length) return group;
     let distance = group.lodDistance;
     const bounds = group.worldBounds || group.bounds;
     if (!Number.isFinite(distance) && bounds) {
@@ -322,9 +349,42 @@ const Gpu = (() => {
       distance = Math.sqrt(squared);
     }
     if (!Number.isFinite(distance)) return group;
-    const [near, far] = group.lodThresholds || (quality === 'eco' ? [150, 450] : [300, 750]);
+    const thresholds = group.lodThresholds || (quality === 'eco' ? [150, 450] : [300, 750]);
+    const detail = quality === 'high' ? 2 : 1;
+    const near = thresholds[0] * detail, far = thresholds[1] * detail;
     const mesh = distance > far ? (group.mesh.lods[1] || group.mesh.lods[0]) : distance > near ? group.mesh.lods[0] : group.mesh;
     return mesh === group.mesh ? group : { ...group, mesh };
+  }
+
+  function instanceBounds(mesh, data, offset) {
+    const radius = mesh.cullRadius * Math.max(1, Math.abs(data[offset + 17]), Math.abs(data[offset + 18]), Math.abs(data[offset + 19]));
+    const min = [], max = [];
+    for (let axis = 0; axis < 3; axis++) {
+      const extent = radius * Math.hypot(data[offset + axis], data[offset + 3 + axis], data[offset + 6 + axis]);
+      min[axis] = data[offset + 9 + axis] - extent;
+      max[axis] = data[offset + 9 + axis] + extent;
+    }
+    return { min, max };
+  }
+
+  function visibleInstances(groups, frame, shadow = false) {
+    const result = [];
+    for (const group of groups) {
+      if (!group.count || (shadow && group.castShadow === false)) continue;
+      if (!group.data || !Number.isFinite(group.mesh.cullRadius)) {
+        if (visible(group.worldBounds || group.bounds, frame, shadow ? 84 : 0)) result.push(groupLod(group, frame));
+        continue;
+      }
+      let run = null;
+      for (let i = 0; i < group.count; i++) {
+        const bounds = instanceBounds(group.mesh, group.data, i * CAR_FLOATS);
+        if (!visible(bounds, frame, shadow ? 84 : 0)) { run = null; continue; }
+        const selected = groupLod({ ...group, bounds, worldBounds: bounds, lodDistance: group.lodDistances?.[i] ?? group.lodDistance }, frame);
+        if (run && run.mesh === selected.mesh) run.count++;
+        else { run = { ...selected, firstInstance: i, count: 1 }; result.push(run); }
+      }
+    }
+    return result;
   }
 
   // scene = { frame: Float32Array(FRAME_FLOATS), statics: [mesh], propGroups: [{mesh, inst, count, bounds}], carGroups: [...] }
@@ -335,18 +395,23 @@ const Gpu = (() => {
     scene.frame[72] = W; scene.frame[73] = H;
     device.queue.writeBuffer(frameBuf, 0, scene.frame);
     const enc = device.createCommandEncoder();
-    const measure = timestampSet && !timestampPending && !captureDimensions;
+    const measure = timestampSet && !timestampPending && !captureDimensions && (profileEveryFrame || metrics.frames % 30 === 0);
+    const epoch = timingEpoch;
     const stamps = pass => measure ? { querySet: timestampSet, beginningOfPassWriteIndex: pass * 2, endOfPassWriteIndex: pass * 2 + 1 } : undefined;
     const propList = [...(scene.props && scene.props.count ? [scene.props] : []), ...(scene.propGroups || [])];
     const cameraStatics = scene.statics.filter(m => visible(m.bounds, scene.frame)).map(m => chooseLod(m, scene.frame));
     const lightStatics = settings.shadowSize ? scene.statics.filter(m => visible(m.bounds, scene.frame, 84)).map(m => chooseLod(m, scene.frame)) : [];
     const cameraProps = propList.filter(g => g.count && visible(g.worldBounds || g.bounds, scene.frame)).map(g => groupLod(g, scene.frame));
     const lightProps = settings.shadowSize ? propList.filter(g => g.count && visible(g.worldBounds || g.bounds, scene.frame, 84)).map(g => groupLod(g, scene.frame)) : [];
-    const cars = (scene.carGroups || []).filter(g => g.count).map(g => groupLod(g, scene.frame));
-    const triangles = (statics, props) => statics.reduce((n, m) => n + m.count / 3, 0) + [...props, ...cars].reduce((n, g) => n + g.mesh.count / 3 * g.count, 0);
-    metrics.sceneTriangles = triangles(cameraStatics, cameraProps) + (scene.water?.count || 0) / 3;
-    metrics.shadowTriangles = settings.shadowSize ? triangles(lightStatics, lightProps) : 0;
-    metrics.drawCalls = cameraStatics.length + cameraProps.length + cars.length + 2 + (scene.water ? 1 : 0) + (settings.bloom ? 1 : 0) + (settings.shadowSize ? lightStatics.length + lightProps.length + cars.length : 0);
+    const cars = visibleInstances(scene.carGroups || [], scene.frame);
+    const shadowCars = settings.shadowSize ? visibleInstances(scene.carGroups || [], scene.frame, true) : [];
+    const triangles = (statics, props, instances) => statics.reduce((n, m) => n + m.count / 3, 0) + [...props, ...instances].reduce((n, g) => n + g.mesh.count / 3 * g.count, 0);
+    metrics.sceneTriangles = triangles(cameraStatics, cameraProps, cars) + (scene.water?.count || 0) / 3;
+    metrics.shadowTriangles = settings.shadowSize ? triangles(lightStatics, lightProps, shadowCars) : 0;
+    metrics.drawCalls = cameraStatics.length + cameraProps.length + cars.length + 2 + (scene.water ? 1 : 0) + (settings.bloom ? 1 : 0) + (settings.shadowSize ? lightStatics.length + lightProps.length + shadowCars.length : 0);
+    metrics.totalRaceInstances = (scene.carGroups || []).reduce((n, g) => n + g.count, 0);
+    metrics.visibleRaceInstances = cars.reduce((n, g) => n + g.count, 0);
+    metrics.shadowRaceInstances = shadowCars.reduce((n, g) => n + g.count, 0);
     metrics.culledGroups = scene.statics.length + propList.length - cameraStatics.length - cameraProps.length;
     metrics.colorAttachments = settings.effects ? 2 : 1;
     metrics.normalTargetPixels = settings.effects ? W * H : 1;
@@ -363,11 +428,11 @@ const Gpu = (() => {
       }
       if (scene.carGroups) {
         p0.setPipeline(pipes.carShadow);
-        for (const g of cars) {
+        for (const g of shadowCars) {
           if (!g.count) continue;
           p0.setPipeline(g.fade ? pipes.carShadowFade : pipes.carShadow);
           p0.setVertexBuffer(0, g.mesh.vb); p0.setVertexBuffer(1, g.inst);
-          p0.setIndexBuffer(g.mesh.ib, 'uint32'); p0.drawIndexed(g.mesh.count, g.count);
+          p0.setIndexBuffer(g.mesh.ib, 'uint32'); p0.drawIndexed(g.mesh.count, g.count, 0, 0, g.firstInstance || 0);
         }
       }
       p0.end();
@@ -378,7 +443,7 @@ const Gpu = (() => {
         { view: sceneTex.createView(), loadOp: 'clear', clearValue: [0, 0, 0, 1], storeOp: 'store' },
         ...(settings.effects ? [{ view: ndTex.createView(), loadOp: 'clear', clearValue: [0, 0, 0, 100000], storeOp: 'store' }] : []),
       ],
-      depthStencilAttachment: { view: depthTex.createView(), depthClearValue: 1, depthLoadOp: 'clear', depthStoreOp: 'store' },
+      depthStencilAttachment: { view: depthTex.createView(), depthClearValue: 1, depthLoadOp: 'clear', depthStoreOp: 'discard' },
     });
     p1.setBindGroup(0, sceneBG);
     p1.setPipeline(settings.effects ? pipes.sky : pipes.skyEco); p1.draw(3);
@@ -394,7 +459,7 @@ const Gpu = (() => {
         if (!g.count) continue;
         p1.setPipeline(g.fade ? (settings.shadowSize ? pipes.carFade : pipes.carFadeEco) : (settings.shadowSize ? pipes.car : pipes.carEco));
         p1.setVertexBuffer(0, g.mesh.vb); p1.setVertexBuffer(1, g.inst);
-        p1.setIndexBuffer(g.mesh.ib, 'uint32'); p1.drawIndexed(g.mesh.count, g.count);
+        p1.setIndexBuffer(g.mesh.ib, 'uint32'); p1.drawIndexed(g.mesh.count, g.count, 0, 0, g.firstInstance || 0);
       }
     }
     if (scene.water) {
@@ -424,12 +489,18 @@ const Gpu = (() => {
       timestampRead.mapAsync(GPUMapMode.READ).then(() => {
         const times = new BigUint64Array(timestampRead.getMappedRange());
         const ms = pass => Number(times[pass * 32 + 1] - times[pass * 32]) / 1e6;
-        metrics.gpuMs = { scene: ms(1), composite: ms(3), shadow: settings.shadowSize ? ms(0) : 0, bloom: settings.bloom ? ms(2) : 0 };
+        if (epoch === timingEpoch) {
+          metrics.gpuMs = { scene: ms(1), composite: ms(3), shadow: settings.shadowSize ? ms(0) : 0, bloom: settings.bloom ? ms(2) : 0 };
+          for (const [pass, value] of Object.entries(metrics.gpuMs)) {
+            (gpuSamples[pass] ||= Timing.samples(60)).add(value);
+          }
+          metrics.gpuMedianMs = Object.fromEntries(Object.entries(gpuSamples).map(([pass, sample]) => [pass, sample.summary().p50]));
+        }
         timestampRead.unmap();
       }).catch(() => {}).finally(() => { timestampPending = false; });
     }
     metrics.frames++; metrics.cpuSubmitMs = performance.now() - started;
   }
 
-  return { init, resize, capture, setQuality, getQuality, setRenderScale, metrics, get qualitySettings() { return presets[quality]; }, get renderScale() { return renderScale; }, createMesh, createInstances, updateInstances, destroyGroups, destroyScene, render, FRAME_FLOATS, CAR_FLOATS };
+  return { init, resize, capture, resetTiming, setFrameRate, get frameRate() { return frameRate; }, get targetFps() { return frameRate === 'auto' ? presets[quality].fps : Number(frameRate); }, setQuality, getQuality, setRenderScale, metrics, get qualitySettings() { return presets[quality]; }, get renderScale() { return renderScale; }, createMesh, createInstances, updateInstances, destroyGroups, destroyScene, render, FRAME_FLOATS, CAR_FLOATS };
 })();

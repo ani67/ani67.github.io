@@ -1,0 +1,3348 @@
+{
+  "seconds": 900,
+  "baseline": "8a81399",
+  "browser": "153.0.8010.36",
+  "note": "Headless workload/pacing check; not a battery, temperature or physical display benchmark.",
+  "runs": [
+    {
+      "variant": "baseline",
+      "adapter": {
+        "vendor": "apple",
+        "architecture": "metal-3",
+        "device": "",
+        "description": ""
+      },
+      "configuration": {
+        "planet": "halcyon",
+        "race": "halcyonites",
+        "seed": "efficiency-sustained",
+        "quality": "high"
+      },
+      "thermalBefore": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded\n",
+      "samples": [
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.200000047683716,
+            "p99": 18.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 2161,
+            "simulationSteps": 2166,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.00132599615457,
+            "targetFps": 60,
+            "botDecisions": 4340,
+            "quality": "high",
+            "renderScale": 0.9500000000000001,
+            "renderer": {
+              "frames": 2161,
+              "width": 2052,
+              "height": 1282,
+              "sceneTriangles": 471504,
+              "shadowTriangles": 169673,
+              "drawCalls": 475,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1145,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2630664,
+              "gpuMs": {
+                "scene": 5.24288,
+                "composite": 5.701632,
+                "shadow": 0.524288,
+                "bloom": 3.801088
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 32.59999999999943
+          },
+          "heap": 32722805,
+          "elapsedSeconds": 30.009
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.200000047683716,
+            "p99": 18.899999856948853
+          },
+          "performance": {
+            "renderedFrames": 3962,
+            "simulationSteps": 3967,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.00132599615464,
+            "targetFps": 60,
+            "botDecisions": 7943,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 3962,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 189012,
+              "shadowTriangles": 96500,
+              "drawCalls": 233,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1302,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 3.670016,
+                "composite": 4.194304,
+                "shadow": 0.196608,
+                "bloom": 3.407872
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 62.61666666666439
+          },
+          "heap": 39153014,
+          "elapsedSeconds": 60.016
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.200000047683716,
+            "p99": 19.09999990463257
+          },
+          "performance": {
+            "renderedFrames": 5762,
+            "simulationSteps": 5767,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 11547,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 5762,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 301800,
+              "shadowTriangles": 173275,
+              "drawCalls": 475,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1168,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 2.359296,
+                "composite": 2.94912,
+                "shadow": 0.32768,
+                "bloom": 2.228224
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 92.6166666666627
+          },
+          "heap": 35480356,
+          "elapsedSeconds": 90.022
+        },
+        {
+          "count": 1799,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.299999952316284,
+            "p99": 19.200000047683716
+          },
+          "performance": {
+            "renderedFrames": 7561,
+            "simulationSteps": 7568,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.00132599615479,
+            "targetFps": 60,
+            "botDecisions": 15150,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 7561,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 212128,
+              "shadowTriangles": 237102,
+              "drawCalls": 443,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1194,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 1.572864,
+                "composite": 2.424832,
+                "shadow": 0.393216,
+                "bloom": 1.179648
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 122.63333333332766
+          },
+          "heap": 36424445,
+          "elapsedSeconds": 120.03
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.299999952316284,
+            "p99": 18.59999990463257
+          },
+          "performance": {
+            "renderedFrames": 9361,
+            "simulationSteps": 9368,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.0013259961545,
+            "targetFps": 60,
+            "botDecisions": 18753,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 9361,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 464192,
+              "shadowTriangles": 196549,
+              "drawCalls": 450,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1179,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 3.342336,
+                "composite": 5.177344,
+                "shadow": 0.32768,
+                "bloom": 3.801088
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 152.63333333334694
+          },
+          "heap": 53530364,
+          "elapsedSeconds": 150.038
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.200000047683716,
+            "p99": 18.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 11162,
+            "simulationSteps": 11169,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 22356,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 11162,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 339881,
+              "shadowTriangles": 80957,
+              "drawCalls": 325,
+              "passes": 4,
+              "cpuSubmitMs": 0.2999999523162842,
+              "culledGroups": 1185,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 3.735552,
+                "composite": 6.029312,
+                "shadow": 0.131072,
+                "bloom": 2.883584
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 182.6500000000375
+          },
+          "heap": 41746601,
+          "elapsedSeconds": 180.043
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.300000190734863,
+            "p99": 18.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 12962,
+            "simulationSteps": 12969,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 25958,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 12962,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 304181,
+              "shadowTriangles": 179396,
+              "drawCalls": 487,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1151,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 3.145728,
+                "composite": 4.456448,
+                "shadow": 0.32768,
+                "bloom": 2.555904
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 212.65000000006137
+          },
+          "heap": 52691228,
+          "elapsedSeconds": 210.047
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.300000190734863,
+            "p99": 18.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 14763,
+            "simulationSteps": 14770,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.0013259961545,
+            "targetFps": 60,
+            "botDecisions": 29562,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 14763,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 324608,
+              "shadowTriangles": 263292,
+              "drawCalls": 548,
+              "passes": 4,
+              "cpuSubmitMs": 0.7000000476837158,
+              "culledGroups": 1095,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 2.883584,
+                "composite": 4.128768,
+                "shadow": 0.458752,
+                "bloom": 1.900544
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 242.66666666675192
+          },
+          "heap": 28875820,
+          "elapsedSeconds": 240.054
+        },
+        {
+          "count": 1798,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.5,
+            "p99": 19.59999990463257
+          },
+          "performance": {
+            "renderedFrames": 16561,
+            "simulationSteps": 16570,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 33163,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 16561,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 618063,
+              "shadowTriangles": 137866,
+              "drawCalls": 581,
+              "passes": 4,
+              "cpuSubmitMs": 0.5999999046325684,
+              "culledGroups": 1012,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 6.094848,
+                "composite": 6.488064,
+                "shadow": 0.393216,
+                "bloom": 3.801088
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 272.66666666674735
+          },
+          "heap": 43585658,
+          "elapsedSeconds": 270.061
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.699999809265137,
+            "p99": 19.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 18361,
+            "simulationSteps": 18370,
+            "droppedSeconds": 0.2499000000000001,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "botDecisions": 36763,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 18361,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 218755,
+              "shadowTriangles": 101234,
+              "drawCalls": 277,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1267,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 2.686976,
+                "composite": 3.866624,
+                "shadow": 0.196608,
+                "bloom": 2.490368
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 302.66666666672006
+          },
+          "heap": 40692494,
+          "elapsedSeconds": 300.066
+        },
+        {
+          "count": 1769,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.700000047683716,
+            "p99": 19.5
+          },
+          "performance": {
+            "renderedFrames": 20130,
+            "simulationSteps": 20145,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.001325996153916,
+            "targetFps": 60,
+            "botDecisions": 40314,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 20130,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 243038,
+              "shadowTriangles": 175605,
+              "drawCalls": 410,
+              "passes": 4,
+              "cpuSubmitMs": 0.5999999046325684,
+              "culledGroups": 1235,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 1.507328,
+                "composite": 2.031616,
+                "shadow": 0.262144,
+                "bloom": 1.376256
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 332.2500000000265
+          },
+          "heap": 29183451,
+          "elapsedSeconds": 330.073
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.5,
+            "p99": 19.600000143051147
+          },
+          "performance": {
+            "renderedFrames": 21930,
+            "simulationSteps": 21945,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 43917,
+            "quality": "high",
+            "renderScale": 0.9,
+            "renderer": {
+              "frames": 21930,
+              "width": 1944,
+              "height": 1215,
+              "sceneTriangles": 457668,
+              "shadowTriangles": 202887,
+              "drawCalls": 444,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1178,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2361960,
+              "gpuMs": {
+                "scene": 3.407872,
+                "composite": 3.080192,
+                "shadow": 0.524288,
+                "bloom": 1.572864
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 362.2499999999992
+          },
+          "heap": 35413429,
+          "elapsedSeconds": 360.076
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.40000009536743,
+            "p99": 19.200000047683716
+          },
+          "performance": {
+            "renderedFrames": 23731,
+            "simulationSteps": 23746,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 47524,
+            "quality": "high",
+            "renderScale": 0.9500000000000001,
+            "renderer": {
+              "frames": 23731,
+              "width": 2052,
+              "height": 1282,
+              "sceneTriangles": 541997,
+              "shadowTriangles": 79502,
+              "drawCalls": 514,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 996,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2630664,
+              "gpuMs": {
+                "scene": 4.849664,
+                "composite": 5.046272,
+                "shadow": 0.196608,
+                "bloom": 3.866624
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 392.26666666663857
+          },
+          "heap": 41004406,
+          "elapsedSeconds": 390.082
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.799999952316284,
+            "p99": 19.899999856948853
+          },
+          "performance": {
+            "renderedFrames": 25531,
+            "simulationSteps": 25545,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "botDecisions": 51123,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 25531,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 303283,
+              "shadowTriangles": 189235,
+              "drawCalls": 522,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1118,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 2.424832,
+                "composite": 3.801088,
+                "shadow": 0.32768,
+                "bloom": 2.031616
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 422.24999999994463
+          },
+          "heap": 48630799,
+          "elapsedSeconds": 420.087
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.799999952316284,
+            "p99": 19.800000190734863
+          },
+          "performance": {
+            "renderedFrames": 27331,
+            "simulationSteps": 27345,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 54726,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 27331,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 327320,
+              "shadowTriangles": 216722,
+              "drawCalls": 551,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1095,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 3.2768,
+                "composite": 4.849664,
+                "shadow": 0.458752,
+                "bloom": 2.490368
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 452.24999999991735
+          },
+          "heap": 37475186,
+          "elapsedSeconds": 450.093
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.5,
+            "p99": 19.100000143051147
+          },
+          "performance": {
+            "renderedFrames": 29132,
+            "simulationSteps": 29146,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 58329,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 29132,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 458514,
+              "shadowTriangles": 213401,
+              "drawCalls": 447,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1179,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 2.883584,
+                "composite": 3.407872,
+                "shadow": 0.32768,
+                "bloom": 1.703936
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 482.2666666665567
+          },
+          "heap": 49279382,
+          "elapsedSeconds": 480.1
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.600000143051147,
+            "p95": 18.200000047683716,
+            "p99": 19
+          },
+          "performance": {
+            "renderedFrames": 30932,
+            "simulationSteps": 30946,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.001325996153916,
+            "targetFps": 60,
+            "botDecisions": 61930,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 30932,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 570831,
+              "shadowTriangles": 79229,
+              "drawCalls": 539,
+              "passes": 4,
+              "cpuSubmitMs": 0.5999999046325684,
+              "culledGroups": 969,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 4.25984,
+                "composite": 5.111808,
+                "shadow": 0.196608,
+                "bloom": 3.538944
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 512.2666666665294
+          },
+          "heap": 28329116,
+          "elapsedSeconds": 510.105
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.299999952316284,
+            "p99": 18.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 32733,
+            "simulationSteps": 32747,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "botDecisions": 65531,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 32733,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 308195,
+              "shadowTriangles": 189549,
+              "drawCalls": 525,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1114,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 4.849664,
+                "composite": 6.422528,
+                "shadow": 0.524288,
+                "bloom": 3.670016
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 542.2833333331688
+          },
+          "heap": 47443029,
+          "elapsedSeconds": 540.114
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.600000143051147,
+            "p95": 18.399999856948853,
+            "p99": 18.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 34533,
+            "simulationSteps": 34547,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 69135,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 34533,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 285630,
+              "shadowTriangles": 211870,
+              "drawCalls": 529,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1108,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 3.407872,
+                "composite": 4.784128,
+                "shadow": 0.458752,
+                "bloom": 2.424832
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 572.2833333331415
+          },
+          "heap": 39443436,
+          "elapsedSeconds": 570.119
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.399999856948853,
+            "p99": 19
+          },
+          "performance": {
+            "renderedFrames": 36333,
+            "simulationSteps": 36347,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00132599615276,
+            "targetFps": 60,
+            "botDecisions": 72736,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 36333,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 458082,
+              "shadowTriangles": 202531,
+              "drawCalls": 449,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1177,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 2.818048,
+                "composite": 2.883584,
+                "shadow": 0.32768,
+                "bloom": 1.572864
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 602.2833333331142
+          },
+          "heap": 42760523,
+          "elapsedSeconds": 600.122
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.200000047683716,
+            "p99": 18.800000190734863
+          },
+          "performance": {
+            "renderedFrames": 38134,
+            "simulationSteps": 38148,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00132599615276,
+            "targetFps": 60,
+            "botDecisions": 76342,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 38134,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 549243,
+              "shadowTriangles": 79235,
+              "drawCalls": 515,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 992,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 5.308416,
+                "composite": 6.291456,
+                "shadow": 0.196608,
+                "bloom": 3.60448
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 632.2999999997536
+          },
+          "heap": 35628177,
+          "elapsedSeconds": 630.128
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.600000143051147,
+            "p99": 19.5
+          },
+          "performance": {
+            "renderedFrames": 39934,
+            "simulationSteps": 39948,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 79943,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 39934,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 314533,
+              "shadowTriangles": 180163,
+              "drawCalls": 522,
+              "passes": 4,
+              "cpuSubmitMs": 0.6000001430511475,
+              "culledGroups": 1119,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 4.063232,
+                "composite": 6.22592,
+                "shadow": 0.393216,
+                "bloom": 3.211264
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 662.2999999997263
+          },
+          "heap": 32516157,
+          "elapsedSeconds": 660.133
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.700000047683716,
+            "p99": 19.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 41735,
+            "simulationSteps": 41749,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 83547,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 41735,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 267340,
+              "shadowTriangles": 229530,
+              "drawCalls": 487,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1147,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 4.128768,
+                "composite": 5.963776,
+                "shadow": 0.65536,
+                "bloom": 2.94912
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 692.3166666663657
+          },
+          "heap": 32718653,
+          "elapsedSeconds": 690.141
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.600000143051147,
+            "p95": 18.899999856948853,
+            "p99": 19.800000190734863
+          },
+          "performance": {
+            "renderedFrames": 43535,
+            "simulationSteps": 43549,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00132599615276,
+            "targetFps": 60,
+            "botDecisions": 87147,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 43535,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 458496,
+              "shadowTriangles": 204485,
+              "drawCalls": 449,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1181,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 3.407872,
+                "composite": 3.735552,
+                "shadow": 0.393216,
+                "bloom": 1.900544
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 722.3166666663384
+          },
+          "heap": 42293621,
+          "elapsedSeconds": 720.147
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.600000143051147,
+            "p99": 19.600000143051147
+          },
+          "performance": {
+            "renderedFrames": 45335,
+            "simulationSteps": 45349,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 90748,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 45335,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 511647,
+              "shadowTriangles": 79130,
+              "drawCalls": 482,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1024,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 5.89824,
+                "composite": 6.684672,
+                "shadow": 0.196608,
+                "bloom": 3.670016
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 752.3166666663111
+          },
+          "heap": 42776993,
+          "elapsedSeconds": 750.15
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.800000190734863,
+            "p99": 19.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 47136,
+            "simulationSteps": 47150,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "botDecisions": 94351,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 47136,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 317050,
+              "shadowTriangles": 175290,
+              "drawCalls": 515,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1126,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 3.080192,
+                "composite": 3.866624,
+                "shadow": 0.393216,
+                "bloom": 2.097152
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 782.3333333329505
+          },
+          "heap": 44357493,
+          "elapsedSeconds": 780.155
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.700000047683716,
+            "p99": 19.799999952316284
+          },
+          "performance": {
+            "renderedFrames": 48936,
+            "simulationSteps": 48950,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.005304336294465,
+            "targetFps": 60,
+            "botDecisions": 97953,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 48936,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 247538,
+              "shadowTriangles": 273026,
+              "drawCalls": 459,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1190,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 4.25984,
+                "composite": 5.832704,
+                "shadow": 0.786432,
+                "bloom": 2.94912
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 812.3333333329232
+          },
+          "heap": 44418337,
+          "elapsedSeconds": 810.161
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.799999952316284,
+            "p99": 19.800000190734863
+          },
+          "performance": {
+            "renderedFrames": 50737,
+            "simulationSteps": 50750,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60,
+            "targetFps": 60,
+            "botDecisions": 101555,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 50737,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 475315,
+              "shadowTriangles": 164749,
+              "drawCalls": 483,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1129,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 4.325376,
+                "composite": 4.718592,
+                "shadow": 0.32768,
+                "bloom": 2.62144
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 842.3333333328959
+          },
+          "heap": 39732625,
+          "elapsedSeconds": 840.169
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.600000143051147,
+            "p95": 18.799999952316284,
+            "p99": 19.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 52537,
+            "simulationSteps": 52550,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "botDecisions": 105157,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 52537,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 189714,
+              "shadowTriangles": 90192,
+              "drawCalls": 224,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1301,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 4.25984,
+                "composite": 6.946816,
+                "shadow": 0.196608,
+                "bloom": 3.801088
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 872.3333333328686
+          },
+          "heap": 35954301,
+          "elapsedSeconds": 870.175
+        },
+        {
+          "count": 1790,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.700000047683716,
+            "p99": 19.5
+          },
+          "performance": {
+            "renderedFrames": 54327,
+            "simulationSteps": 54340,
+            "droppedSeconds": 0.6831000000000118,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "botDecisions": 108738,
+            "quality": "high",
+            "renderScale": 1,
+            "renderer": {
+              "frames": 54327,
+              "width": 2160,
+              "height": 1350,
+              "sceneTriangles": 266038,
+              "shadowTriangles": 161701,
+              "drawCalls": 435,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1201,
+              "colorAttachments": 2,
+              "normalTargetPixels": 2916000,
+              "gpuMs": {
+                "scene": 3.866624,
+                "composite": 6.094848,
+                "shadow": 0.393216,
+                "bloom": 3.080192
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 902.1666666661748
+          },
+          "heap": 29699445,
+          "elapsedSeconds": 900.004
+        }
+      ],
+      "errors": [],
+      "thermalAfter": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded\n"
+    },
+    {
+      "variant": "current",
+      "adapter": {
+        "vendor": "apple",
+        "architecture": "metal-3",
+        "device": "",
+        "description": ""
+      },
+      "configuration": {
+        "planet": "halcyon",
+        "race": "halcyonites",
+        "seed": "efficiency-sustained",
+        "quality": "high"
+      },
+      "thermalBefore": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded\n",
+      "samples": [
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.799999952316284,
+            "p99": 19.59999990463257
+          },
+          "performance": {
+            "renderedFrames": 2162,
+            "simulationSteps": 2166,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00132599615457,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 4340,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.69999999999709,
+              "p95": 16.700000000004366,
+              "p99": 16.80000000000291
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.5999999046325684,
+              "p95": 3.4000000953674316,
+              "p99": 3.5999999046325684
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.8,
+            "renderer": {
+              "frames": 2162,
+              "width": 1728,
+              "height": 1080,
+              "sceneTriangles": 400024,
+              "shadowTriangles": 163313,
+              "drawCalls": 478,
+              "passes": 4,
+              "cpuSubmitMs": 0.6000001430511475,
+              "culledGroups": 1141,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1866240,
+              "gpuMs": {
+                "scene": 3.93216,
+                "composite": 3.93216,
+                "shadow": 0.524288,
+                "bloom": 2.29376
+              },
+              "gpuMedianMs": {
+                "scene": 3.93216,
+                "composite": 3.473408,
+                "shadow": 0.458752,
+                "bloom": 2.228224
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 32.59999999999943
+          },
+          "heap": 27657443,
+          "elapsedSeconds": 30.008
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.799999952316284,
+            "p99": 19.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 3963,
+            "simulationSteps": 3967,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 7941,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.69999999999709,
+              "p95": 16.700000000004366,
+              "p99": 16.80000000000291
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.799999952316284,
+              "p95": 3.5,
+              "p99": 3.8000001907348633
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.8,
+            "renderer": {
+              "frames": 3963,
+              "width": 1728,
+              "height": 1080,
+              "sceneTriangles": 169936,
+              "shadowTriangles": 96836,
+              "drawCalls": 234,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1303,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1866240,
+              "gpuMs": {
+                "scene": 3.080192,
+                "composite": 4.194304,
+                "shadow": 0.32768,
+                "bloom": 2.62144
+              },
+              "gpuMedianMs": {
+                "scene": 3.145728,
+                "composite": 4.194304,
+                "shadow": 0.32768,
+                "bloom": 2.752512
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 62.61666666666439
+          },
+          "heap": 41903195,
+          "elapsedSeconds": 60.021
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.600000143051147,
+            "p99": 19.600000143051147
+          },
+          "performance": {
+            "renderedFrames": 5764,
+            "simulationSteps": 5768,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 11547,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.69999999999709,
+              "p95": 16.70000000001164,
+              "p99": 16.80000000000291
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2,
+              "p95": 3.299999952316284,
+              "p99": 3.6000001430511475
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 5764,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 231199,
+              "shadowTriangles": 165297,
+              "drawCalls": 456,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1183,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.686976,
+                "composite": 2.94912,
+                "shadow": 0.458752,
+                "bloom": 1.703936
+              },
+              "gpuMedianMs": {
+                "scene": 2.686976,
+                "composite": 2.883584,
+                "shadow": 0.458752,
+                "bloom": 1.703936
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 92.63333333332936
+          },
+          "heap": 47807291,
+          "elapsedSeconds": 90.025
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.90000009536743,
+            "p99": 19.899999856948853
+          },
+          "performance": {
+            "renderedFrames": 7564,
+            "simulationSteps": 7568,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.0013259961545,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 15150,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.69999999999709,
+              "p95": 16.70000000001164,
+              "p99": 16.80000000000291
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 1.9000000953674316,
+              "p95": 3.1000001430511475,
+              "p99": 3.4000000953674316
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 7564,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 234490,
+              "shadowTriangles": 267306,
+              "drawCalls": 475,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1175,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.62144,
+                "composite": 2.818048,
+                "shadow": 0.786432,
+                "bloom": 1.572864
+              },
+              "gpuMedianMs": {
+                "scene": 3.080192,
+                "composite": 2.883584,
+                "shadow": 0.786432,
+                "bloom": 1.6384
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 122.63333333332766
+          },
+          "heap": 39250409,
+          "elapsedSeconds": 120.03
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.700000047683716,
+            "p99": 19.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 9364,
+            "simulationSteps": 9368,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 18753,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999982538,
+              "p95": 16.70000000001164,
+              "p99": 16.800000000017462
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.8999998569488525,
+              "p95": 3.3000001907348633,
+              "p99": 3.799999952316284
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 9364,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 437945,
+              "shadowTriangles": 151223,
+              "drawCalls": 511,
+              "passes": 4,
+              "cpuSubmitMs": 0.5999999046325684,
+              "culledGroups": 1096,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 3.60448,
+                "composite": 3.014656,
+                "shadow": 0.524288,
+                "bloom": 1.769472
+              },
+              "gpuMedianMs": {
+                "scene": 3.93216,
+                "composite": 3.145728,
+                "shadow": 0.458752,
+                "bloom": 2.031616
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 152.63333333334694
+          },
+          "heap": 41069180,
+          "elapsedSeconds": 150.035
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.799999952316284,
+            "p99": 19.600000143051147
+          },
+          "performance": {
+            "renderedFrames": 11165,
+            "simulationSteps": 11169,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.0013259961545,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 22355,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999982538,
+              "p95": 16.70000000001164,
+              "p99": 16.800000000017462
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.799999952316284,
+              "p95": 3.200000047683716,
+              "p99": 3.5999999046325684
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 11165,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 169294,
+              "shadowTriangles": 94438,
+              "drawCalls": 250,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1294,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.555904,
+                "composite": 3.211264,
+                "shadow": 0.32768,
+                "bloom": 2.031616
+              },
+              "gpuMedianMs": {
+                "scene": 2.62144,
+                "composite": 3.2768,
+                "shadow": 0.32768,
+                "bloom": 2.162688
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 182.6500000000375
+          },
+          "heap": 34124460,
+          "elapsedSeconds": 180.043
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.799999952316284,
+            "p99": 19.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 12965,
+            "simulationSteps": 12969,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.0013259961545,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 25957,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999982538,
+              "p95": 16.70000000001164,
+              "p99": 16.800000000017462
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 1.7000000476837158,
+              "p95": 3.200000047683716,
+              "p99": 3.4000000953674316
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 12965,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 229959,
+              "shadowTriangles": 159458,
+              "drawCalls": 428,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1204,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.62144,
+                "composite": 2.62144,
+                "shadow": 0.458752,
+                "bloom": 1.6384
+              },
+              "gpuMedianMs": {
+                "scene": 2.62144,
+                "composite": 2.883584,
+                "shadow": 0.458752,
+                "bloom": 1.703936
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 212.65000000006137
+          },
+          "heap": 42535549,
+          "elapsedSeconds": 210.048
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.799999952316284,
+            "p99": 19.799999952316284
+          },
+          "performance": {
+            "renderedFrames": 14766,
+            "simulationSteps": 14770,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 29560,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999982538,
+              "p95": 16.70000000001164,
+              "p99": 16.800000000017462
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 1.7000000476837158,
+              "p95": 3,
+              "p99": 3.1000001430511475
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 14766,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 242896,
+              "shadowTriangles": 264780,
+              "drawCalls": 482,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1160,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 1.245184,
+                "composite": 1.114112,
+                "shadow": 0.32768,
+                "bloom": 0.65536
+              },
+              "gpuMedianMs": {
+                "scene": 3.211264,
+                "composite": 2.883584,
+                "shadow": 0.786432,
+                "bloom": 1.6384
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 242.66666666675192
+          },
+          "heap": 44124295,
+          "elapsedSeconds": 240.052
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.59999990463257,
+            "p99": 19.59999990463257
+          },
+          "performance": {
+            "renderedFrames": 16566,
+            "simulationSteps": 16570,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 33162,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.70000000001164,
+              "p95": 16.70000000001164,
+              "p99": 16.79999999998836
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.8000001907348633,
+              "p95": 3.299999952316284,
+              "p99": 3.4000000953674316
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 16566,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 436577,
+              "shadowTriangles": 150797,
+              "drawCalls": 509,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1093,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 3.2768,
+                "composite": 1.900544,
+                "shadow": 0.458752,
+                "bloom": 1.31072
+              },
+              "gpuMedianMs": {
+                "scene": 3.866624,
+                "composite": 3.145728,
+                "shadow": 0.458752,
+                "bloom": 1.96608
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 272.66666666674735
+          },
+          "heap": 32757028,
+          "elapsedSeconds": 270.058
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.799999952316284,
+            "p99": 19.59999990463257
+          },
+          "performance": {
+            "renderedFrames": 18366,
+            "simulationSteps": 18370,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 36765,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000001164,
+              "p99": 16.79999999998836
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.700000047683716,
+              "p95": 3.4000000953674316,
+              "p99": 3.700000047683716
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 18366,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 170792,
+              "shadowTriangles": 94390,
+              "drawCalls": 252,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1290,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.62144,
+                "composite": 3.2768,
+                "shadow": 0.32768,
+                "bloom": 2.031616
+              },
+              "gpuMedianMs": {
+                "scene": 2.62144,
+                "composite": 3.211264,
+                "shadow": 0.32768,
+                "bloom": 2.162688
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 302.66666666672006
+          },
+          "heap": 35894346,
+          "elapsedSeconds": 300.064
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.899999856948853,
+            "p99": 19.899999856948853
+          },
+          "performance": {
+            "renderedFrames": 20167,
+            "simulationSteps": 20171,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00530433629562,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 40368,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000001164,
+              "p99": 16.79999999998836
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 1.7999999523162842,
+              "p95": 3.200000047683716,
+              "p99": 3.5999999046325684
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 20167,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 225525,
+              "shadowTriangles": 155786,
+              "drawCalls": 426,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1205,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.686976,
+                "composite": 2.883584,
+                "shadow": 0.458752,
+                "bloom": 1.6384
+              },
+              "gpuMedianMs": {
+                "scene": 2.555904,
+                "composite": 2.883584,
+                "shadow": 0.458752,
+                "bloom": 1.703936
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 332.6833333333594
+          },
+          "heap": 40975871,
+          "elapsedSeconds": 330.069
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.799999952316284,
+            "p99": 19.799999952316284
+          },
+          "performance": {
+            "renderedFrames": 21967,
+            "simulationSteps": 21971,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.001325996153916,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 43968,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.70000000001164,
+              "p95": 16.70000000001164,
+              "p99": 16.79999999998836
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2,
+              "p95": 3.3999998569488525,
+              "p99": 3.5
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 21967,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 296382,
+              "shadowTriangles": 256790,
+              "drawCalls": 564,
+              "passes": 4,
+              "cpuSubmitMs": 0.6000001430511475,
+              "culledGroups": 1076,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 3.2768,
+                "composite": 2.883584,
+                "shadow": 0.786432,
+                "bloom": 1.703936
+              },
+              "gpuMedianMs": {
+                "scene": 3.473408,
+                "composite": 2.94912,
+                "shadow": 0.720896,
+                "bloom": 1.703936
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 362.68333333333214
+          },
+          "heap": 36147282,
+          "elapsedSeconds": 360.074
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.700000047683716,
+            "p99": 19.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 23768,
+            "simulationSteps": 23772,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 47571,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000001164,
+              "p99": 16.79999999998836
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.799999952316284,
+              "p95": 3.5,
+              "p99": 3.700000047683716
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 23768,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 485172,
+              "shadowTriangles": 141557,
+              "drawCalls": 569,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1020,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 3.997696,
+                "composite": 3.342336,
+                "shadow": 0.458752,
+                "bloom": 2.097152
+              },
+              "gpuMedianMs": {
+                "scene": 4.128768,
+                "composite": 3.342336,
+                "shadow": 0.393216,
+                "bloom": 2.162688
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 392.6999999999715
+          },
+          "heap": 34575455,
+          "elapsedSeconds": 390.081
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.700000047683716,
+            "p99": 19.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 25568,
+            "simulationSteps": 25571,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.001325996153916,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 51174,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000001164,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.5,
+              "p95": 3.200000047683716,
+              "p99": 3.4000000953674316
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 25568,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 185045,
+              "shadowTriangles": 100898,
+              "drawCalls": 285,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1259,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.883584,
+                "composite": 3.080192,
+                "shadow": 0.32768,
+                "bloom": 2.359296
+              },
+              "gpuMedianMs": {
+                "scene": 3.014656,
+                "composite": 3.473408,
+                "shadow": 0.32768,
+                "bloom": 2.359296
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 422.6833333332776
+          },
+          "heap": 45168884,
+          "elapsedSeconds": 420.109
+        },
+        {
+          "count": 1802,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.299999952316284,
+            "p99": 18.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 27370,
+            "simulationSteps": 27373,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 54780,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.70000000001164,
+              "p95": 16.70000000001164,
+              "p99": 16.79999999998836
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 1.5,
+              "p95": 2.9000000953674316,
+              "p99": 3.200000047683716
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 27370,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 222848,
+              "shadowTriangles": 163335,
+              "drawCalls": 397,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1237,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.62144,
+                "composite": 2.883584,
+                "shadow": 0.524288,
+                "bloom": 2.097152
+              },
+              "gpuMedianMs": {
+                "scene": 2.555904,
+                "composite": 2.883584,
+                "shadow": 0.524288,
+                "bloom": 1.703936
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 452.7166666665836
+          },
+          "heap": 33247617,
+          "elapsedSeconds": 450.116
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.299999952316284,
+            "p99": 18.800000190734863
+          },
+          "performance": {
+            "renderedFrames": 29170,
+            "simulationSteps": 29173,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 58380,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.70000000001164,
+              "p95": 16.70000000001164,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 1.5,
+              "p95": 2.700000047683716,
+              "p99": 2.8000001907348633
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 29170,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 292160,
+              "shadowTriangles": 252976,
+              "drawCalls": 548,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1090,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 3.342336,
+                "composite": 2.94912,
+                "shadow": 0.786432,
+                "bloom": 1.835008
+              },
+              "gpuMedianMs": {
+                "scene": 3.473408,
+                "composite": 2.94912,
+                "shadow": 0.786432,
+                "bloom": 1.769472
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 482.7166666665563
+          },
+          "heap": 52162917,
+          "elapsedSeconds": 480.12
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.300000190734863,
+            "p99": 19
+          },
+          "performance": {
+            "renderedFrames": 30971,
+            "simulationSteps": 30974,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 61985,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.79999999998836,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.799999952316284,
+              "p95": 3.200000047683716,
+              "p99": 3.5999999046325684
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 30971,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 481696,
+              "shadowTriangles": 140127,
+              "drawCalls": 563,
+              "passes": 4,
+              "cpuSubmitMs": 0.5999999046325684,
+              "culledGroups": 1029,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 3.997696,
+                "composite": 3.2768,
+                "shadow": 0.458752,
+                "bloom": 2.818048
+              },
+              "gpuMedianMs": {
+                "scene": 4.194304,
+                "composite": 3.342336,
+                "shadow": 0.393216,
+                "bloom": 2.359296
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 512.7333333331957
+          },
+          "heap": 41625069,
+          "elapsedSeconds": 510.125
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.399999856948853,
+            "p99": 18.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 32771,
+            "simulationSteps": 32774,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 65587,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.700000047683716,
+              "p95": 3.200000047683716,
+              "p99": 3.299999952316284
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 32771,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 205940,
+              "shadowTriangles": 127739,
+              "drawCalls": 427,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1170,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.62144,
+                "composite": 3.080192,
+                "shadow": 0.458752,
+                "bloom": 2.097152
+              },
+              "gpuMedianMs": {
+                "scene": 2.752512,
+                "composite": 3.080192,
+                "shadow": 0.458752,
+                "bloom": 1.96608
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 542.7333333331684
+          },
+          "heap": 42995234,
+          "elapsedSeconds": 540.131
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.299999952316284,
+            "p99": 18.59999990463257
+          },
+          "performance": {
+            "renderedFrames": 34571,
+            "simulationSteps": 34574,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.005304336294465,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 69190,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.700000047683716,
+              "p95": 3.1000001430511475,
+              "p99": 3.3999998569488525
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 34571,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 296346,
+              "shadowTriangles": 180984,
+              "drawCalls": 628,
+              "passes": 4,
+              "cpuSubmitMs": 0.5999999046325684,
+              "culledGroups": 1013,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.883584,
+                "composite": 2.883584,
+                "shadow": 0.524288,
+                "bloom": 1.6384
+              },
+              "gpuMedianMs": {
+                "scene": 3.014656,
+                "composite": 2.94912,
+                "shadow": 0.589824,
+                "bloom": 1.769472
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 572.7333333331411
+          },
+          "heap": 33258796,
+          "elapsedSeconds": 570.136
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.600000143051147,
+            "p95": 18.200000047683716,
+            "p99": 18.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 36372,
+            "simulationSteps": 36375,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 72794,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 1.2999999523162842,
+              "p95": 2.799999952316284,
+              "p99": 3.0999999046325684
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 36372,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 360503,
+              "shadowTriangles": 252912,
+              "drawCalls": 595,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1050,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 3.407872,
+                "composite": 2.94912,
+                "shadow": 0.786432,
+                "bloom": 1.703936
+              },
+              "gpuMedianMs": {
+                "scene": 3.473408,
+                "composite": 2.94912,
+                "shadow": 0.786432,
+                "bloom": 1.703936
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 602.7499999997805
+          },
+          "heap": 51975656,
+          "elapsedSeconds": 600.141
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.100000143051147,
+            "p99": 18.59999990463257
+          },
+          "performance": {
+            "renderedFrames": 38172,
+            "simulationSteps": 38175,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.005304336294465,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 76400,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.700000047683716,
+              "p95": 3.0999999046325684,
+              "p99": 3.200000047683716
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 38172,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 451366,
+              "shadowTriangles": 75604,
+              "drawCalls": 762,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 758,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 4.128768,
+                "composite": 3.473408,
+                "shadow": 0.262144,
+                "bloom": 2.228224
+              },
+              "gpuMedianMs": {
+                "scene": 4.325376,
+                "composite": 3.735552,
+                "shadow": 0.262144,
+                "bloom": 2.883584
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 632.7499999997532
+          },
+          "heap": 39966525,
+          "elapsedSeconds": 630.147
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.299999952316284,
+            "p99": 18.799999952316284
+          },
+          "performance": {
+            "renderedFrames": 39972,
+            "simulationSteps": 39975,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 80004,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.79999999993015,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.6000001430511475,
+              "p95": 3,
+              "p99": 3.200000047683716
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 39972,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 215171,
+              "shadowTriangles": 131189,
+              "drawCalls": 448,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1153,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 1.900544,
+                "composite": 1.900544,
+                "shadow": 0.32768,
+                "bloom": 1.114112
+              },
+              "gpuMedianMs": {
+                "scene": 2.883584,
+                "composite": 3.080192,
+                "shadow": 0.458752,
+                "bloom": 1.96608
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 662.7499999997259
+          },
+          "heap": 31132938,
+          "elapsedSeconds": 660.149
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.300000190734863,
+            "p99": 18.799999952316284
+          },
+          "performance": {
+            "renderedFrames": 41773,
+            "simulationSteps": 41776,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 83608,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.6000001430511475,
+              "p95": 3,
+              "p99": 3.200000047683716
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 41773,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 298422,
+              "shadowTriangles": 187876,
+              "drawCalls": 647,
+              "passes": 4,
+              "cpuSubmitMs": 0.6000001430511475,
+              "culledGroups": 995,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.94912,
+                "composite": 2.883584,
+                "shadow": 0.524288,
+                "bloom": 1.6384
+              },
+              "gpuMedianMs": {
+                "scene": 3.014656,
+                "composite": 2.94912,
+                "shadow": 0.589824,
+                "bloom": 1.769472
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 692.7666666663653
+          },
+          "heap": 29668720,
+          "elapsedSeconds": 690.158
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.100000143051147,
+            "p99": 18.799999952316284
+          },
+          "performance": {
+            "renderedFrames": 43573,
+            "simulationSteps": 43576,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 87208,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.79999999993015,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 1.2999999523162842,
+              "p95": 2.5999999046325684,
+              "p99": 2.799999952316284
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 43573,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 359751,
+              "shadowTriangles": 261856,
+              "drawCalls": 570,
+              "passes": 4,
+              "cpuSubmitMs": 0.39999985694885254,
+              "culledGroups": 1074,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 3.473408,
+                "composite": 2.94912,
+                "shadow": 0.786432,
+                "bloom": 1.703936
+              },
+              "gpuMedianMs": {
+                "scene": 3.473408,
+                "composite": 2.94912,
+                "shadow": 0.786432,
+                "bloom": 1.769472
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 722.766666666338
+          },
+          "heap": 40888706,
+          "elapsedSeconds": 720.164
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18,
+            "p99": 18.700000047683716
+          },
+          "performance": {
+            "renderedFrames": 45374,
+            "simulationSteps": 45377,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 90812,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.79999999993015,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.6000001430511475,
+              "p95": 3.0999999046325684,
+              "p99": 3.200000047683716
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 45374,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 454990,
+              "shadowTriangles": 75907,
+              "drawCalls": 767,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 752,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 4.128768,
+                "composite": 3.60448,
+                "shadow": 0.262144,
+                "bloom": 2.359296
+              },
+              "gpuMedianMs": {
+                "scene": 4.25984,
+                "composite": 3.735552,
+                "shadow": 0.262144,
+                "bloom": 2.818048
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 752.7833333329773
+          },
+          "heap": 36332994,
+          "elapsedSeconds": 750.171
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.600000143051147,
+            "p95": 18.299999952316284,
+            "p99": 18.899999856948853
+          },
+          "performance": {
+            "renderedFrames": 47174,
+            "simulationSteps": 47177,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 94414,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.79999999993015,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.5,
+              "p95": 2.8999998569488525,
+              "p99": 3.1000001430511475
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 47174,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 236687,
+              "shadowTriangles": 136023,
+              "drawCalls": 473,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1125,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.752512,
+                "composite": 2.883584,
+                "shadow": 0.458752,
+                "bloom": 1.96608
+              },
+              "gpuMedianMs": {
+                "scene": 2.883584,
+                "composite": 3.211264,
+                "shadow": 0.458752,
+                "bloom": 2.031616
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 782.7833333329501
+          },
+          "heap": 33291136,
+          "elapsedSeconds": 780.175
+        },
+        {
+          "count": 1800,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.200000047683716,
+            "p99": 18.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 48974,
+            "simulationSteps": 48977,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 98017,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.79999999993015,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.6999998092651367,
+              "p95": 3.1000001430511475,
+              "p99": 4.6000001430511475
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 48974,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 280308,
+              "shadowTriangles": 176546,
+              "drawCalls": 616,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1022,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.883584,
+                "composite": 2.883584,
+                "shadow": 0.524288,
+                "bloom": 1.6384
+              },
+              "gpuMedianMs": {
+                "scene": 2.94912,
+                "composite": 2.883584,
+                "shadow": 0.524288,
+                "bloom": 1.703936
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 812.7833333329228
+          },
+          "heap": 43249871,
+          "elapsedSeconds": 810.181
+        },
+        {
+          "count": 1795,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.299999952316284,
+            "p99": 19.200000047683716
+          },
+          "performance": {
+            "renderedFrames": 50769,
+            "simulationSteps": 50777,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 101623,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.799999952316284,
+              "p95": 3.200000047683716,
+              "p99": 3.5999999046325684
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 50769,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 459373,
+              "shadowTriangles": 129113,
+              "drawCalls": 544,
+              "passes": 4,
+              "cpuSubmitMs": 0.5,
+              "culledGroups": 1050,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.097152,
+                "composite": 1.769472,
+                "shadow": 0.262144,
+                "bloom": 1.441792
+              },
+              "gpuMedianMs": {
+                "scene": 2.424832,
+                "composite": 2.031616,
+                "shadow": 0.262144,
+                "bloom": 1.6384
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 842.7833333328955
+          },
+          "heap": 36695468,
+          "elapsedSeconds": 840.191
+        },
+        {
+          "count": 1801,
+          "frameMs": {
+            "p50": 16.700000047683716,
+            "p95": 18.200000047683716,
+            "p99": 18.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 52570,
+            "simulationSteps": 52578,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.001325996155074,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 105226,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.6000001430511475,
+              "p95": 3.1000001430511475,
+              "p99": 3.6999998092651367
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 52570,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 168560,
+              "shadowTriangles": 83758,
+              "drawCalls": 261,
+              "passes": 4,
+              "cpuSubmitMs": 0.40000009536743164,
+              "culledGroups": 1280,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 1.835008,
+                "composite": 1.900544,
+                "shadow": 0.720896,
+                "bloom": 1.245184
+              },
+              "gpuMedianMs": {
+                "scene": 1.6384,
+                "composite": 2.162688,
+                "shadow": 0.196608,
+                "bloom": 1.31072
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 872.7999999995349
+          },
+          "heap": 33923114,
+          "elapsedSeconds": 870.2
+        },
+        {
+          "count": 1788,
+          "frameMs": {
+            "p50": 16.699999809265137,
+            "p95": 18.299999952316284,
+            "p99": 18.90000009536743
+          },
+          "performance": {
+            "renderedFrames": 54358,
+            "simulationSteps": 54366,
+            "droppedSeconds": 0.09989999999999996,
+            "fps": 60.00331510028178,
+            "targetFps": 60,
+            "displayHz": 60,
+            "botDecisions": 108803,
+            "frameMs": {
+              "count": 240,
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566
+            },
+            "cpuMs": {
+              "count": 240,
+              "p50": 2.5,
+              "p95": 3.299999952316284,
+              "p99": 3.6000001430511475
+            },
+            "frameRate": "60",
+            "quality": "high",
+            "renderScale": 0.7000000000000001,
+            "renderer": {
+              "frames": 54358,
+              "width": 1512,
+              "height": 945,
+              "sceneTriangles": 223904,
+              "shadowTriangles": 151499,
+              "drawCalls": 446,
+              "passes": 4,
+              "cpuSubmitMs": 0.6000001430511475,
+              "culledGroups": 1191,
+              "colorAttachments": 2,
+              "normalTargetPixels": 1428840,
+              "gpuMs": {
+                "scene": 2.62144,
+                "composite": 2.424832,
+                "shadow": 2.359296,
+                "bloom": 2.424832
+              },
+              "gpuMedianMs": {
+                "scene": 0.917504,
+                "composite": 1.179648,
+                "shadow": 0.262144,
+                "bloom": 0.720896
+              }
+            }
+          },
+          "race": {
+            "state": "racing",
+            "timer": -0.016666666666659235,
+            "results": null,
+            "elapsed": 902.5999999995078
+          },
+          "heap": 38835228,
+          "elapsedSeconds": 900.006
+        }
+      ],
+      "errors": [],
+      "thermalAfter": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded\n"
+    }
+  ]
+}

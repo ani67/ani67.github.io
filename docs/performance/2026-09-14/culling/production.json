@@ -1,0 +1,182 @@
+{
+  "rows": [
+    {
+      "quality": "eco",
+      "passes": 2,
+      "capture": [
+        336,
+        180
+      ],
+      "metrics": {
+        "frames": 51,
+        "width": 1001,
+        "height": 703,
+        "sceneTriangles": 238243,
+        "shadowTriangles": 0,
+        "drawCalls": 388,
+        "passes": 2,
+        "cpuSubmitMs": 0.5,
+        "totalRaceInstances": 441,
+        "visibleRaceInstances": 216,
+        "shadowRaceInstances": 0,
+        "culledGroups": 522,
+        "colorAttachments": 1,
+        "normalTargetPixels": 1
+      }
+    },
+    {
+      "quality": "balanced",
+      "passes": 4,
+      "capture": [
+        336,
+        180
+      ],
+      "metrics": {
+        "frames": 68,
+        "width": 1001,
+        "height": 703,
+        "sceneTriangles": 238273,
+        "shadowTriangles": 157168,
+        "drawCalls": 539,
+        "passes": 4,
+        "cpuSubmitMs": 0.5,
+        "totalRaceInstances": 441,
+        "visibleRaceInstances": 216,
+        "shadowRaceInstances": 12,
+        "culledGroups": 521,
+        "colorAttachments": 2,
+        "normalTargetPixels": 703703,
+        "gpuMs": {
+          "scene": 1.179648,
+          "composite": 1.048576,
+          "shadow": 0.262144,
+          "bloom": 0.786432
+        },
+        "gpuMedianMs": {
+          "scene": 1.179648,
+          "composite": 1.048576,
+          "shadow": 0.262144,
+          "bloom": 0.786432
+        }
+      }
+    },
+    {
+      "quality": "high",
+      "passes": 4,
+      "capture": [
+        336,
+        180
+      ],
+      "metrics": {
+        "frames": 86,
+        "width": 1001,
+        "height": 703,
+        "sceneTriangles": 248453,
+        "shadowTriangles": 162819,
+        "drawCalls": 539,
+        "passes": 4,
+        "cpuSubmitMs": 0.39999985694885254,
+        "totalRaceInstances": 441,
+        "visibleRaceInstances": 216,
+        "shadowRaceInstances": 12,
+        "culledGroups": 521,
+        "colorAttachments": 2,
+        "normalTargetPixels": 703703
+      }
+    },
+    {
+      "viewer": "craft",
+      "metrics": {
+        "frames": 4,
+        "width": 1280,
+        "height": 720,
+        "sceneTriangles": 1400,
+        "shadowTriangles": 1400,
+        "drawCalls": 7,
+        "passes": 4,
+        "cpuSubmitMs": 0.09999990463256836,
+        "totalRaceInstances": 1,
+        "visibleRaceInstances": 1,
+        "shadowRaceInstances": 1,
+        "culledGroups": 0,
+        "colorAttachments": 2,
+        "normalTargetPixels": 921600,
+        "gpuMs": {
+          "scene": 0.786432,
+          "composite": 1.6384,
+          "shadow": 0.065536,
+          "bloom": 0.98304
+        },
+        "gpuMedianMs": {
+          "scene": 0.786432,
+          "composite": 1.6384,
+          "shadow": 0.065536,
+          "bloom": 0.98304
+        }
+      }
+    },
+    {
+      "viewer": "design",
+      "metrics": {
+        "frames": 4,
+        "width": 940,
+        "height": 720,
+        "sceneTriangles": 1398,
+        "shadowTriangles": 1398,
+        "drawCalls": 5,
+        "passes": 4,
+        "cpuSubmitMs": 0.09999990463256836,
+        "totalRaceInstances": 1,
+        "visibleRaceInstances": 1,
+        "shadowRaceInstances": 1,
+        "culledGroups": 0,
+        "colorAttachments": 2,
+        "normalTargetPixels": 676800,
+        "gpuMs": {
+          "scene": 0.524288,
+          "composite": 1.179648,
+          "shadow": 0.065536,
+          "bloom": 0.65536
+        },
+        "gpuMedianMs": {
+          "scene": 0.524288,
+          "composite": 1.179648,
+          "shadow": 0.065536,
+          "bloom": 0.65536
+        }
+      }
+    },
+    {
+      "viewer": "hangar",
+      "metrics": {
+        "frames": 4,
+        "width": 1280,
+        "height": 720,
+        "sceneTriangles": 274788,
+        "shadowTriangles": 283938,
+        "drawCalls": 202,
+        "passes": 4,
+        "cpuSubmitMs": 0.2999999523162842,
+        "totalRaceInstances": 100,
+        "visibleRaceInstances": 97,
+        "shadowRaceInstances": 100,
+        "culledGroups": 0,
+        "colorAttachments": 2,
+        "normalTargetPixels": 921600,
+        "gpuMs": {
+          "scene": 4.849664,
+          "composite": 1.179648,
+          "shadow": 0.98304,
+          "bloom": 2.29376
+        },
+        "gpuMedianMs": {
+          "scene": 4.849664,
+          "composite": 1.179648,
+          "shadow": 0.98304,
+          "bloom": 2.29376
+        }
+      }
+    }
+  ],
+  "errors": []
+}
