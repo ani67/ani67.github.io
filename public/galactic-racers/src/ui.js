@@ -45,7 +45,6 @@ const UI = (() => {
   function makeCode() { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; let s = ''; for (let i = 0; i < 6; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
   function updateCoverLine() {
     const g = Game.ui;
-    $('coverWhere').innerHTML = `<b>${g.planet().name}</b> · ${g.desc().name} · seed <b>${g.seed()}</b>`;
   }
 
   // Current craft choice: a race family (archetype seed) or a kitbash generated for that race.
@@ -64,10 +63,21 @@ const UI = (() => {
     sel.race = Fleet.entries.indexOf(Fleet.forRace(Planets.RACES.find(r => r.planet === p.id)));
     show('cover');
   }
-  function goShip() {
+  function goShip(direction = 0) {
+    if (screen !== 'ship') {
+      const used = new Set();
+      for (const entry of Fleet.entries) {
+        const previous = shipPaints[entry.id];
+        const random = new Uint32Array(1);
+        let paint;
+        do { crypto.getRandomValues(random); paint = 1 + random[0] % (Fleet.paints.length + PALETTES.length); }
+        while (paint === previous || used.has(paint));
+        shipPaints[entry.id] = paint; used.add(paint);
+      }
+    }
     sel.archSeed=shipPaints[Fleet.forRace(Planets.RACES[sel.race]).id];
     const cc = currentCraft();
-    Game.ui.select({ raceId: cc.race.id, craft: cc.craft, craftSeed: cc.seed, mode: 'showcase' });
+    Game.ui.select({ raceId: cc.race.id, craft: cc.craft, craftSeed: cc.seed, mode: 'showcase', showcasePaints: shipPaints, showcaseDirection: direction });
     if (mp() && MP.connected()) pushPick();   // the lobby shows what everyone has picked
     show('ship');
     A(a => { a.init(); a.race('menu'); a.sfx.step(); });
@@ -118,7 +128,7 @@ const UI = (() => {
     if (!on) {
       $('roomNote').textContent = netNote;
       $('roomNote').classList.toggle('err', netErr);
-      $('roomStart').innerHTML = 'Start race <kbd>↵</kbd>'; $('roomStart').disabled = false;
+      $('roomStart').querySelector('.title-line').textContent = 'Start race'; $('roomStart').disabled = false;
       return;
     }
     $('roomCode').textContent = MP.code();
@@ -131,7 +141,7 @@ const UI = (() => {
       const race = Planets.race(p.raceId), craft = Fleet.forRace(race).name;
       return `<div class="r on${p.me ? ' me' : ''}"><span class="dot"></span><span class="who">${esc(p.name || 'racer')}${p.dropped ? ' · left' : ''}${p.me ? ' · you' : ''}</span><span>${craft} · ${esc(Fleet.paintName(p.archSeed))}</span><span class="ping num">${p.ping ? p.ping + ' ms' : ''}</span></div>`;
     }).join('') : '<div class="r"><span class="dot"></span><span class="who">waiting for players…</span><span></span><span></span></div>';
-    $('roomStart').innerHTML = MP.isHost() ? 'Start race <kbd>↵</kbd>' : 'Waiting for the host';
+    $('roomStart').querySelector('.title-line').textContent = MP.isHost() ? 'Start race' : 'Waiting for host';
     $('roomStart').disabled = !MP.isHost();
   }
   async function doHost() {
@@ -202,26 +212,25 @@ const UI = (() => {
   function renderShip() {
     const cc=currentCraft(),r=cc.race,e=Fleet.forRace(r);
     const st=Stats.compute(cc.recipe,1,r.ability);
-    $('heroName').textContent=e.name;
+    $('heroName').querySelector('.title-line').textContent=e.name;
     $('heroSub').textContent='Choose your ship and paint · race on any terrain';
     $('heroTag').textContent=`${r.ability.name} · ${r.ability.desc}`;
-    $('heroStats').innerHTML=STATS.map(k=>{const v=st.bars[k];return `<div class="st"><span class="k">${k}</span><span class="v num">${(v*10).toFixed(1)}</span><i style="--v:${v.toFixed(2)}"></i></div>`}).join('');
+    for (const row of $('heroStats').querySelectorAll('[data-stat]')) {
+      const value = st.bars[row.dataset.stat];
+      row.querySelector('.v').textContent = (value * 10).toFixed(1);
+      row.querySelector('i').style.setProperty('--v', value.toFixed(2));
+    }
     $('archName').textContent=Fleet.paintName(sel.archSeed);
     $('archHint').textContent='Paint · any terrain';
     const picker=$('paintSelect');picker.replaceChildren();
     for(const p of Fleet.paints){const option=document.createElement('option');option.value=p.id;option.textContent=p.name;picker.append(option)}
     if(sel.archSeed>Fleet.paints.length){const option=document.createElement('option');option.value=sel.archSeed;option.textContent=Fleet.paintName(sel.archSeed);picker.append(option)}
     picker.value=String(sel.archSeed);
-    const rail=$('shipRail');rail.innerHTML='';
-    Fleet.entries.forEach((ship,i)=>{
-      const race=Planets.RACES[i],paint=shipPaints[ship.id],key='fleet:'+ship.id+':'+paint;
-      const url=TH()?Thumbs.get(key):null;
-      const b=tile(ship.id===e.id?'on':'',url,key,ship.name,Fleet.paintName(paint));
-      if(!url&&TH())b.requestThumb=()=>Thumbs.craft(key,Fleet.recipe(ship.id,paint),1,race.hue);
-      b.dataset.i=i;b.onclick=()=>{sel.race=i;sel.kit=false;goShip()};rail.append(b);
-    });
-    scrollToOn(rail);
-    observeThumbs(rail);
+    const index = Fleet.entries.findIndex(ship => ship.id === e.id);
+    const previous = Fleet.entries[(index-1+Fleet.entries.length)%Fleet.entries.length];
+    const next = Fleet.entries[(index+1)%Fleet.entries.length];
+    $('shipPrev').setAttribute('aria-label', 'Choose '+previous.name);
+    $('shipNextTile').setAttribute('aria-label', 'Choose '+next.name);
   }
   function scrollToOn(rail) { const on = rail.querySelector('.tile.on'); if (on) on.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' }); }
 
@@ -275,22 +284,24 @@ const UI = (() => {
     const p = Planets.PLANETS[sel.planet];
     const shared = mp() && MP.isClient() && !!MP.world().descriptor;
     for (const id of ['seedField', 'seedRoll', 'planetPrev', 'planetNextTile']) $(id).disabled = shared;
-    $('planetName').textContent = p.name; $('planetSub').textContent = shared ? 'The host chooses the map for everyone in this room.' : p.tagline;
-    $('planetTag').textContent = `${p.medium} · ${p.laneStyle || (p.mode === 'corridor' ? 'sky lane' : 'terrain lane')}`;
-    const rail = $('planetRail'); rail.innerHTML = '';
-    Planets.PLANETS.forEach((pl, i) => {
-      const key = 'p:' + pl.id;
-      const url = TH() ? Thumbs.get(key) : null;
-      const b = tile(i === sel.planet ? 'on' : '', url, key, pl.name, (pl.laneStyle || (pl.mode === 'corridor' ? 'sky' : 'terrain')) + ' lane');
-      b.dataset.i = i;
-      if (!url && TH()) b.requestThumb = () => Thumbs.planet(pl);
-      if (!url) { const g = planetGlimpse(pl); const pic = b.querySelector('.pic'); pic.classList.remove('wait'); pic.appendChild(g); pic.classList.add('paint'); }
-      b.disabled = shared;
-      b.onclick = () => { sel.planet = i; goPlanet(); };
-      rail.appendChild(b);
-    });
-    scrollToOn(rail);
-    observeThumbs(rail);
+    $('planetName').querySelector('.title-line').textContent = p.name;
+    const points = Game.ui.trackOutline();
+    // Oblique view: rotate the footprint, foreshorten depth, and retain route elevation.
+    const angle = Math.PI / 7, ca = Math.cos(angle), sa = Math.sin(angle);
+    const tilted = points.map(p => [p[0]*ca-p[2]*sa,(p[0]*sa+p[2]*ca)*.48-p[1]*.35]);
+    const xs = tilted.map(p => p[0]), ys = tilted.map(p => p[1]);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+    const scale = Math.min(216 / Math.max(1,maxX-minX),76 / Math.max(1,maxY-minY));
+    const cx = (minX+maxX)/2, cy = (minY+maxY)/2;
+    $('planetTrack').querySelector('path').setAttribute('d',tilted.map((p,i) => `${i?'L':'M'}${(120+(p[0]-cx)*scale).toFixed(2)},${(50+(p[1]-cy)*scale).toFixed(2)}`).join(' ')+' Z');
+    $('planetTrack').setAttribute('aria-label', `${p.name} track outline`);
+    $('planetPrev').setAttribute('aria-label', 'Previous terrain');
+    $('planetNextTile').setAttribute('aria-label', 'Next terrain');
+  }
+  function movePlanet(d) {
+    if (mp() && MP.isClient() && MP.world().descriptor) return;
+    sel.planet = (sel.planet + d + Planets.PLANETS.length) % Planets.PLANETS.length;
+    goPlanet();
   }
 
   // ---------------------------------------------------------------- settings
@@ -355,19 +366,24 @@ const UI = (() => {
 
   // ---------------------------------------------------------------- keys
   function moveShip(d) {
+    if (Game.ui.showcaseBusy()) return;
     sel.race=(Fleet.entries.indexOf(Fleet.forRace(Planets.RACES[sel.race]))+d+Fleet.entries.length)%Fleet.entries.length;
     sel.kit=false;
-    goShip();
+    goShip(d);
   }
   function onKey(e) {
-    if (!screen) return;
+    if (e.key === 'Escape' && !screen && Game.ui.state() === 'race') {
+      e.preventDefault(); if (!e.repeat) openSettings(); return;
+    }
+    if (e.key === 'Escape' && e.repeat) { e.preventDefault(); return; }
+    if (!screen || (e.key !== 'Escape' && e.target?.closest?.('#qualityTabs'))) return;
     const tag = (e.target && e.target.tagName) || '';
     if (tag === 'INPUT' && e.key !== 'Enter' && e.key !== 'Escape') return;
     if (e.key === 'Enter') { e.preventDefault(); primary(); }
     else if (e.key === 'Escape') { e.preventDefault(); back(); }
     else if ((screen === 'ship' || screen === 'planet') && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
       e.preventDefault(); const d = e.key === 'ArrowLeft' ? -1 : 1;
-      if (screen === 'ship') moveShip(d); else { sel.planet = (sel.planet + d + Planets.PLANETS.length) % Planets.PLANETS.length; goPlanet(); }
+      if (screen === 'ship') moveShip(d); else movePlanet(d);
     }
     else if (screen === 'ship' && (e.key === '[' || e.key === ']')) { cycleSeed(e.key === ']' ? 1 : -1); }
   }
@@ -394,8 +410,14 @@ const UI = (() => {
     balanced: '60 FPS limit. Reduced shadows and adaptive resolution for smoother play.',
     high: '60 FPS limit. Sharper rendering and full effects, with a higher graphics workload.',
   };
-  function updateQualityNote() { $('qualityNote').textContent = QUALITY_NOTES[Game.ui.quality()]; }
+  function updateQualityNote() {
+    const quality = Game.ui.quality();
+    $('qualityNote').textContent = QUALITY_NOTES[quality];
+    for (const tab of document.querySelectorAll('#qualityTabs button')) { const selected = tab.dataset.quality === quality; tab.setAttribute('aria-checked',String(selected)); tab.tabIndex = selected ? 0 : -1; }
+  }
   function openSettings() {
+    releaseFlight();
+    window.dispatchEvent(new Event('ir:clear-input'));
     lastBefore = screen;
     Game.ui.setPaused(true);
     show('settings');
@@ -454,9 +476,38 @@ const UI = (() => {
     rail.addEventListener('pointerleave', () => { drag = null; });
   }
   function start() {
+    let lastCtaFeedback = -Infinity;
+    const ctaFeedback = (pressed = false) => {
+      const time = performance.now();
+      if (!pressed && time - lastCtaFeedback < 140) return;
+      lastCtaFeedback = time;
+      A(a => {
+        if (a.isMuted() || a.volumes().sfx <= 0) return;
+        if (!pressed) a.sfx.hover();
+        if (navigator.userActivation?.hasBeenActive && typeof navigator.vibrate === 'function') {
+          try { navigator.vibrate(pressed ? 12 : 6); } catch (e) {}
+        }
+      });
+    };
+    for (const button of document.querySelectorAll('#cover .wordmark-cta, :is(#ship,#planet) .wordmark-cta, #shipHome, #planetHome')) {
+      button.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') ctaFeedback(); });
+      button.addEventListener('focus', () => { if (button.matches(':focus-visible')) ctaFeedback(); });
+      button.addEventListener('pointerdown', () => ctaFeedback(true));
+      button.addEventListener('keydown', e => { if (!e.repeat && (e.key === 'Enter' || e.key === ' ')) ctaFeedback(true); });
+    }
+    $('planetHome').onclick = $('shipHome').onclick = () => { Game.ui.home(); show('cover'); A(a => a.sfx.step()); };
     $('btnStart').onclick = () => { A(a => a.init()); goShip(); };   // first user gesture: start the audio context here
     $('btnSettings').onclick = () => { A(a => { a.init(); a.sfx.click(); }); openSettings(); };
     for (const b of document.querySelectorAll('[data-back]')) b.onclick = () => { A(a => a.sfx.click()); back(); };
+    const qualityTabs = [...document.querySelectorAll('#qualityTabs button')];
+    qualityTabs.forEach((tab,index) => {
+      tab.onclick = () => { Game.ui.setQuality(tab.dataset.quality); updateQualityNote(); Game.ui.invalidate(); };
+      tab.onkeydown = e => {
+        const step = ['ArrowRight','ArrowDown'].includes(e.key) ? 1 : ['ArrowLeft','ArrowUp'].includes(e.key) ? -1 : 0;
+        if (!step) return;
+        e.preventDefault(); const next=qualityTabs[(index+step+qualityTabs.length)%qualityTabs.length]; next.focus(); next.click();
+      };
+    });
     $('setQuality').onchange = () => { Game.ui.setQuality($('setQuality').value); updateQualityNote(); Game.ui.invalidate(); };
     bindFlight();
     const look = (id, key, out) => { $(id).oninput = () => { Game.ui.setLook({ [key]: +$(id).value }); Game.ui.invalidate(); $(out).textContent = (+$(id).value).toFixed(2); }; };
@@ -469,8 +520,9 @@ const UI = (() => {
     $('archPrev').onclick = () => cycleSeed(-1);
     $('archNext').onclick = () => cycleSeed(1);
     $('shipNext').onclick = goPlanet;
-    bindRail('shipRail', 'shipPrev', 'shipNextTile', moveShip);
-    bindRail('planetRail', 'planetPrev', 'planetNextTile', d => { sel.planet = (sel.planet + d + Planets.PLANETS.length) % Planets.PLANETS.length; goPlanet(); });
+    $('shipPrev').onclick = () => moveShip(-1);
+    $('shipNextTile').onclick = () => moveShip(1);
+    $('planetPrev').onclick = () => movePlanet(-1); $('planetNextTile').onclick = () => movePlanet(1);
     $('seedRoll').onclick = () => { seed = Game.ui.randomSeed(); $('seedField').value = seed; goPlanet(); };
     $('seedField').onchange = () => { seed = $('seedField').value.trim() || seed; goPlanet(); };
     $('planetNext').onclick = () => { seed = $('seedField').value.trim() || seed; goRoom(); };

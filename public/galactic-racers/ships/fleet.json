@@ -1,153 +1,62 @@
 {
-  "current": "ship-06",
+  "current": "ship-08",
   "designs": [
     {
       "id": "ship-01",
-      "name": "Ship 01 \u00b7 Retro saucer",
-      "status": "Cel paint \u00b7 greyscale + palettes",
+      "name": "Ship 01 · Retro saucer",
+      "status": "Cel paint · greyscale + palettes",
       "notes": "Choose any terrain-inspired paint scheme, greyscale or your own custom colours. Paint is independent of the race terrain: every scheme is available everywhere. Use Custom colours to change body, wings, cockpit, underside and rim / exhaust separately.",
       "previewUrl": "ships/ship-01.html"
     },
     {
       "id": "ship-02",
-      "name": "Ship 02 \u00b7 Industrial tug",
-      "status": "First study \u00b7 for review",
+      "name": "Ship 02 · Industrial tug",
+      "status": "First study · for review",
       "notes": "Long armoured hull and large rear engine, with separate pods on swept, tapered airfoil supports. Clean cel shading, greyscale default and independent paint choices.",
       "previewUrl": "ships/ship-02.html"
     },
     {
       "id": "ship-03",
-      "name": "Ship 03 \u00b7 Orbital racer",
+      "name": "Ship 03 · Orbital racer",
       "status": "Reviewed",
       "notes": "An upright ring around a compact cockpit hub, long forward boom and two opposite pod stations joined by broad swept supports. Greyscale cel shading, all terrain-inspired palettes and custom colours, independent of terrain.",
       "previewUrl": "ships/ship-03.html"
     },
     {
       "id": "ship-04",
-      "name": "Ship 04 \u00b7 Splitwing",
+      "name": "Ship 04 · Splitwing",
       "status": "Reviewed",
       "notes": "Upright swept wings around a shorter bevelled hull, tapered toward the nose. Single cockpit and one centred rear jet, with all paint options available.",
       "previewUrl": "ships/ship-04.html"
     },
     {
       "id": "ship-05",
-      "name": "Ship 05 \u00b7 Twinfin",
+      "name": "Ship 05 · Twinfin",
       "status": "Reviewed",
-      "notes": "Three bevelled blocks arranged front to back: a large front body, a flat middle neck and a broad rear block one-sixth the front block\u2019s length. Wings and flaps share one shade. Twin rear engines and all paint options.",
+      "notes": "Three bevelled blocks arranged front to back: a large front body, a flat middle neck and a broad rear block one-sixth the front block’s length. Wings and flaps share one shade. Twin rear engines and all paint options.",
       "previewUrl": "ships/ship-05.html"
     },
     {
       "id": "ship-06",
-      "name": "Ship 06 \u00b7 Longtail",
-      "status": "First study \u00b7 for review",
+      "name": "Ship 06 · Longtail",
+      "status": "First study · for review",
       "notes": "Long tapered nose, slim raised cockpit and rear-weighted delta wings, with short forward canards and a single capped rear engine. Greyscale cel shading plus every terrain-inspired palette and custom colours.",
       "previewUrl": "ships/ship-06.html"
+    },
+    {
+      "id": "ship-07",
+      "name": "Ship 07 · Twinjet",
+      "status": "Saved · in game",
+      "notes": "A broad split nose, raised cockpit, twin cylindrical nacelles with recessed intakes, and wide swept wings. Greyscale, independent world palettes and custom paint controls.",
+      "previewUrl": "ships/ship-07.html"
+    },
+    {
+      "id": "ship-08",
+      "name": "Ship 08 · Trijet",
+      "status": "Saved · in game",
+      "notes": "Three extended forward prongs surround a shortened central body. Darker swept connectors, an aft cockpit clear of the upper support, and one rear exhaust per prong. Independent paint palettes; now available in the game.",
+      "previewUrl": "ships/ship-08.html"
     }
   ],
-  "legacy": [
-    {
-      "id": "falcon",
-      "name": "Falcon",
-      "status": "legacy",
-      "archetypes": [
-        "Dart",
-        "Canard",
-        "Sabre",
-        "Rapier",
-        "Harrier"
-      ],
-      "factions": [
-        "Vantari",
-        "Halcyonites"
-      ]
-    },
-    {
-      "id": "manta",
-      "name": "Manta",
-      "status": "legacy",
-      "archetypes": [
-        "Tin Saucer",
-        "Disc Racer",
-        "Lantern",
-        "Wide Disc",
-        "Bellhop"
-      ],
-      "factions": [
-        "Nereids",
-        "Verdani",
-        "Lumenari"
-      ]
-    },
-    {
-      "id": "needle",
-      "name": "Needle",
-      "status": "legacy",
-      "archetypes": [
-        "Lance",
-        "Javelin",
-        "Spindle",
-        "Stiletto",
-        "Pilum"
-      ],
-      "factions": [
-        "Kestrels",
-        "Vitrines"
-      ]
-    },
-    {
-      "id": "hulk",
-      "name": "Hulk",
-      "status": "legacy",
-      "archetypes": [
-        "Tanker",
-        "Barge",
-        "Crane",
-        "Freighter",
-        "Tug"
-      ],
-      "factions": [
-        "Voidborn",
-        "Cindral"
-      ]
-    },
-    {
-      "id": "dune",
-      "name": "Dune Skiff",
-      "status": "legacy",
-      "archetypes": [
-        "Speeder",
-        "Cargo Skiff",
-        "Bruiser",
-        "Rampart",
-        "Sandcat"
-      ],
-      "factions": [
-        "Sablekin",
-        "Emberkin",
-        "Redrunners"
-      ]
-    },
-    {
-      "id": "prism",
-      "name": "Prism",
-      "status": "legacy",
-      "archetypes": [
-        "Twin Hull",
-        "Scrapper",
-        "Kitbash",
-        "Bodge",
-        "Splice"
-      ],
-      "factions": [
-        "Glassmind",
-        "Meridians"
-      ]
-    }
-  ],
-  "legacyGenerator": {
-    "id": "kitbash",
-    "name": "Generated kitbash ships",
-    "status": "legacy"
-  },
-  "replacementPolicy": "Only reviewed new designs will enter the replacement fleet. All legacy families, archetypes and generated kitbash designs are marked for retirement. The existing game fleet remains available until replacements are integrated."
+  "replacementPolicy": "The studio contains the new authored collection. New studies enter the game fleet after review."
 }

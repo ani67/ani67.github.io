@@ -82,6 +82,7 @@ struct VOut {
 @group(0) @binding(2) var shadowSamp : sampler_comparison;
 
 override WITH_SHADOWS: bool = true;
+override PICKER_FADE: bool = false;
 // Cel shading with a shadow map: three bands (lit, half, shadow) and a hard terminator.
 fn shadowFactor(wp : vec3f, n : vec3f, ndl : f32) -> f32 {
   if (!WITH_SHADOWS) { return 1.0; }
@@ -206,7 +207,7 @@ fn carWorld(v : CarIn) -> VOut {
   let wp = v.ipos + v.iright * p.x + v.iup * p.y + v.ifwd * p.z;
   let wn = v.iright * n.x + v.iup * n.y + v.ifwd * n.z;
   o.wp = wp; o.n = wn; o.uv = v.uv; o.ex = v.ex; o.tint = vec4f(v.icol, v.iglow);
-  o.extra = vec4f(v.idmg, v.ishield, 0.0, 0.0);
+  o.extra = vec4f(v.idmg, v.ishield, clamp(-v.ishield,0.0,1.0), 0.0);
   o.localPos = v.p; o.localNormal = v.n;
   if (part == 9.0) {
     // A forward-moving wave follows spline distance, even around bends/climbs.
@@ -217,6 +218,21 @@ fn carWorld(v : CarIn) -> VOut {
 }
 @vertex fn vsCar(v : CarIn) -> VOut { var o = carWorld(v); o.pos = F.viewProj * vec4f(o.wp, 1.0); return o; }
 @vertex fn vsCarShadow(v : CarIn) -> @builtin(position) vec4f { let o = carWorld(v); return F.lightVP * vec4f(o.wp, 1.0); }
+struct FadeShadowOut { @builtin(position) position : vec4f, @location(0) @interpolate(flat) opacity : f32 };
+@vertex fn vsCarShadowFade(v : CarIn) -> FadeShadowOut {
+  let o = carWorld(v);
+  var result : FadeShadowOut;
+  result.position = F.lightVP * vec4f(o.wp, 1.0);
+  result.opacity = clamp(1.0 + min(v.ishield, 0.0), 0.0, 1.0);
+  return result;
+}
+@fragment fn fsCarShadowFade(v : FadeShadowOut) {
+  // Stable coverage in shadow-map pixels; existing PCF softens the stipple.
+  let cell = vec2u(v.position.xy) % vec2u(4u);
+  let ranks = array<f32,16>(0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
+  if (v.opacity <= (ranks[cell.y * 4u + cell.x] + .5) / 16.) { discard; }
+}
+
 
 @fragment fn fsScene(i : VOut) -> FsOut { return shadeScene(i); }
 @fragment fn fsSceneEco(i : VOut) -> @location(0) vec4f { return shadeScene(i).col; }
@@ -343,6 +359,8 @@ fn shadeScene(i : VOut) -> FsOut {
     let part = i.ex.y; let col = i.tint.xyz; let glow = i.tint.w;
     let tone2 = i.ex.z; let stripeF = i.ex.w; let wear = i.uv.y;
     if (part == 10.0) {
+      // Negative shield values carry opacity only for the picker fade pipeline.
+      if (PICKER_FADE && i.extra.z >= 1.0) { discard; }
       // Fleet vertex paint is independent of terrain colour remapping.
       let pattern = floor(i.ex.w / 1000.0);
       let flags = i.ex.w - pattern * 1000.0;
@@ -384,7 +402,7 @@ fn shadeScene(i : VOut) -> FsOut {
       if (grey) { c = vec3f(luma(c)); }
       let fog = 1.0-exp(-length(F.camPos.xyz-i.wp)*F.skyA.w);
       var painted : FsOut;
-      painted.col = vec4f(mix(c,F.skyA.xyz,fog),-1.0);
+      painted.col = vec4f(mix(c,F.skyA.xyz,fog),select(-1.0,1.0-i.extra.z,PICKER_FADE));
       painted.nd = vec4f(n,length(F.camPos.xyz-i.wp));
       return painted;
     }

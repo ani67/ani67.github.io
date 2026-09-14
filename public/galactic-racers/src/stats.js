@@ -3,13 +3,13 @@
 // bars are 0..1 for the designer; budget is the final weighted bar sum over the cap; rawBudget preserves the geometry diagnostic.
 const Stats = (() => {
   const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
-  const CENTRES = Object.freeze({ speedMul: 1.02, accelMul: 1, driftMul: 1.2, gripMul: 0.82, steerMul: 0.8, cornerMul: 1.12, massMul: 1.2, armour: 0.8, life: 120 });
+  const CENTRES = Object.freeze({ speedMul: 1.173, accelMul: 1.2, driftMul: 1.2, gripMul: 0.82, steerMul: 0.8, cornerMul: 1.12, massMul: 1.2, armour: 0.8, life: 120 });
   // Reference medians: all 14 stock factions, archetype seeds 1–32, before balancing.
   const REFERENCE = { speedMul: 1.0190036557703726, accelMul: 0.9913562407267794, driftMul: 1.2144430929168781, gripMul: 0.8123118628701913, steerMul: 0.7965259046365436, cornerMul: 1.1217528099272418, massMul: 1.2055713873911729, armour: 0.7962551420035149, life: 119 };
   // ±7% of a fixed centre guarantees <16% from ANY fleet median:
   // 1.07 / 0.93 - 1 = 15.06%. Hull/armour use ±3% to bound combined effective HP.
   const SPREAD = 0.07, DURABILITY_SPREAD = 0.03;
-  const DEFAULT = { ...CENTRES, budget: 0, perk: {}, ability: {}, bars: { speed: 0.5, accel: 0.5, drift: 0.5, defense: 0.5, life: 0.5 } };
+  const DEFAULT = { ...CENTRES, budget: 0, perk: {}, ability: {}, bars: { speed: 0.8, accel: 0.8, drift: 0.8, defense: 0.8, life: 0.8 } };
   // Race-relevant stats cost more budget than survivability, because speed, acceleration and cornering are what
   // decide a lap while armour and hull only pay off under fire. Without this a glass cannon buys the whole top end free.
   const COST = { speed: 1.35, accel: 1.25, drift: 0.9, defense: 0.75, life: 0.75 };
@@ -78,7 +78,7 @@ const Stats = (() => {
     return out;
   }
   function compute(recipe, seed = 1, ability = {}) {
-    if (recipe?.fleetId && typeof Fleet !== 'undefined') return compute(Planets.RECIPES[Fleet.entry(recipe.fleetId).family], 1, ability);
+    if (recipe?.fleetId && typeof Fleet !== 'undefined') return compute(Planets.RECIPES[Planets.RACES[Fleet.entry(recipe.fleetId).raceIndex].vehicle], 1, ability);
     const valid = recipe && (recipe.hull || recipe.archetypes) && typeof Craft !== 'undefined' && Craft.measure;
     const raw = valid ? rawCompute(recipe, seed) : { ...REFERENCE, budget: 0, perk: {} }, result = { ...raw, perk: {}, ability: boundedAbility(ability, raw.perk) };
     for (const key of Object.keys(CENTRES)) {
@@ -89,15 +89,16 @@ const Stats = (() => {
     // Steering perks are included in the final handling value, never multiplied again by physics.
     result.steerMul = clamp(result.steerMul * (result.ability.steer || 1), CENTRES.steerMul * (1 - SPREAD), CENTRES.steerMul * (1 + SPREAD));
     result.ability.steer = 1;
+    // Display ratings centre on 80%; the separate multipliers above drive physics.
     result.bars = {
-      speed: 0.5 * result.speedMul / CENTRES.speedMul,
-      accel: 0.5 * result.accelMul / CENTRES.accelMul,
-      drift: 0.5 * result.driftMul / CENTRES.driftMul,
-      defense: 0.5 * CENTRES.armour / result.armour,
-      life: 0.5 * result.life / CENTRES.life,
+      speed: 0.8 * result.speedMul / CENTRES.speedMul,
+      accel: 0.8 * result.accelMul / CENTRES.accelMul,
+      drift: 0.8 * result.driftMul / CENTRES.driftMul,
+      defense: 0.8 * CENTRES.armour / result.armour,
+      life: 0.8 * result.life / CENTRES.life,
     };
     result.rawBudget = raw.budget;
-    result.budget = Object.entries(COST).reduce((sum, [key, cost]) => sum + result.bars[key] * cost, 0) / CAP;
+    result.budget = Object.entries(COST).reduce((sum, [key, cost]) => sum + result.bars[key] * cost, 0) / (CAP * 1.6);
     return result;
   }
   return { compute, DEFAULT, CAP, CENTRES, SPREAD, DURABILITY_SPREAD };

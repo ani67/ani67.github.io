@@ -107,16 +107,17 @@ const Gpu = (() => {
     const postLayout = device.createPipelineLayout({ bindGroupLayouts: [postBGL] });
     const depth = (write, compare) => ({ format: 'depth24plus', depthWriteEnabled: write, depthCompare: compare });
     const targets = [{ format: 'rgba16float' }, { format: 'rgba16float' }];
-    const scenePipe = (vs, buffers, shadows = true, write = true, compare = 'less') => device.createRenderPipeline({
+    const scenePipe = (vs, buffers, shadows = true, write = true, compare = 'less', fade = false) => device.createRenderPipeline({
       layout: sceneLayout,
       vertex: { module: sceneMod, entryPoint: vs, buffers },
-      fragment: { module: sceneMod, entryPoint: shadows ? 'fsScene' : 'fsSceneEco', constants: { WITH_SHADOWS: shadows }, targets: shadows ? targets : targets.slice(0, 1) },
+      fragment: { module: sceneMod, entryPoint: shadows ? 'fsScene' : 'fsSceneEco', constants: { WITH_SHADOWS: shadows, PICKER_FADE: fade }, targets: (shadows ? targets : targets.slice(0, 1)).map((target,i) => fade && i === 0 ? {...target,blend:{color:{srcFactor:'src-alpha',dstFactor:'one-minus-src-alpha',operation:'add'},alpha:{srcFactor:'zero',dstFactor:'one',operation:'add'}}} : target) },
       primitive: { topology: 'triangle-list', cullMode: 'none' },
       depthStencil: depth(write, compare),
     });
-    const shadowPipe = (vs, buffers) => device.createRenderPipeline({
+    const shadowPipe = (vs, buffers, fade = false) => device.createRenderPipeline({
       layout: shadowLayout,
       vertex: { module: sceneMod, entryPoint: vs, buffers },
+      ...(fade ? { fragment: { module: sceneMod, entryPoint: 'fsCarShadowFade', targets: [] } } : {}),
       primitive: { topology: 'triangle-list', cullMode: 'none' },
       depthStencil: { format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less', depthBias: 2, depthBiasSlopeScale: 2.5 },
     });
@@ -134,6 +135,8 @@ const Gpu = (() => {
     pipes.staticEco = scenePipe('vsStatic', [vertLayout], false);
     pipes.propEco = scenePipe('vsProp', [vertLayout, propInstLayout], false);
     pipes.carEco = scenePipe('vsCar', [vertLayout, carInstLayout], false);
+    pipes.carFade = scenePipe('vsCar', [vertLayout, carInstLayout], true, true, 'less', true);
+    pipes.carFadeEco = scenePipe('vsCar', [vertLayout, carInstLayout], false, true, 'less', true);
     const waterPipe = eco => device.createRenderPipeline({
       layout: sceneLayout,
       vertex: { module: sceneMod, entryPoint: 'vsStatic', buffers: [vertLayout] },
@@ -172,6 +175,7 @@ const Gpu = (() => {
     pipes.staticShadow = shadowPipe('vsStaticShadow', [vertLayout]);
     pipes.propShadow = shadowPipe('vsPropShadow', [vertLayout, propInstLayout]);
     pipes.carShadow = shadowPipe('vsCarShadow', [vertLayout, carInstLayout]);
+    pipes.carShadowFade = shadowPipe('vsCarShadowFade', [vertLayout, carInstLayout], true);
     pipes.bloom = device.createRenderPipeline({
       layout: postLayout,
       vertex: { module: postMod, entryPoint: 'vsFull' },
@@ -361,6 +365,7 @@ const Gpu = (() => {
         p0.setPipeline(pipes.carShadow);
         for (const g of cars) {
           if (!g.count) continue;
+          p0.setPipeline(g.fade ? pipes.carShadowFade : pipes.carShadow);
           p0.setVertexBuffer(0, g.mesh.vb); p0.setVertexBuffer(1, g.inst);
           p0.setIndexBuffer(g.mesh.ib, 'uint32'); p0.drawIndexed(g.mesh.count, g.count);
         }
@@ -387,6 +392,7 @@ const Gpu = (() => {
       p1.setPipeline(settings.shadowSize ? pipes.car : pipes.carEco);
       for (const g of cars) {
         if (!g.count) continue;
+        p1.setPipeline(g.fade ? (settings.shadowSize ? pipes.carFade : pipes.carFadeEco) : (settings.shadowSize ? pipes.car : pipes.carEco));
         p1.setVertexBuffer(0, g.mesh.vb); p1.setVertexBuffer(1, g.inst);
         p1.setIndexBuffer(g.mesh.ib, 'uint32'); p1.drawIndexed(g.mesh.count, g.count);
       }

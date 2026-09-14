@@ -20,11 +20,13 @@
 <link rel="icon" href="data:,">
 <link rel="preload" href="fonts/HVKiloV2.otf" as="font" type="font/otf" crossorigin>
 <style>
-  @font-face { font-family: "Kilo"; src: url("fonts/HVKiloV2.otf") format("opentype"); font-weight: 400; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Kilo"; src: url("fonts/HVKiloV2.otf") format("opentype"); font-weight: 400; font-style: normal; font-display: swap; unicode-range: U+0000-002A,U+002C,U+003B-10FFFF; }
 
+  @font-face { font-family: "Kilo"; src: url("fonts/GalacticNumerals-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; unicode-range: U+002B,U+002D-003A; }
   @font-face { font-family: "Mori"; src: url("/fonts/PPMori-Book.woff") format("woff"); font-weight: 400; font-display: swap; }
   @font-face { font-family: "Mori"; src: url("/fonts/PPMori-Semibold.woff") format("woff"); font-weight: 600; font-display: swap; }
-  #coverShip { position: absolute; left: 40%; top: 6%; width: 60%; height: 76%; pointer-events: none; filter: drop-shadow(0 22px 24px rgba(0,0,0,.55)); }
+  @font-face { font-family: "Mori"; src: url("/fonts/PPMori-Black.woff") format("woff"); font-weight: 900; font-display: swap; }
+
   :root {
     color-scheme: dark;
     --accent: #ffb04a;
@@ -37,6 +39,9 @@
     --sans: "Mori", sans-serif;
     --mono: "Mori", monospace;
   }
+  #portfolioLink { position: fixed; top: max(16px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); z-index: 1000; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; filter: drop-shadow(0 2px 5px rgba(0,0,0,.5)); }
+  #portfolioLink img { display: block; }
+  #portfolioLink:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   [hidden] { display: none !important; }
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: var(--sans); color: var(--ink); font-size: 17px; -webkit-font-smoothing: antialiased; }
   canvas#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
@@ -71,7 +76,7 @@
   @media (prefers-reduced-motion: reduce) { #hud { --speed-warp: 0 !important; } #brand, #board, #dash, #minimap { transition: none; } }
   #hud > * { position: absolute; }
   #hud, #ui .head, #ui .steps, #cover .where, #cover .foot, #ui .tools .label { text-shadow: 0 1px 2px rgba(0,0,0,.5), 0 2px 18px rgba(0,0,0,.35); }
-  #brand { left: 0; top: 0; padding: 24px 80px 40px 28px; background: radial-gradient(120% 100% at 0% 0%, rgba(0,0,0,.42), rgba(0,0,0,0) 70%); }
+  #brand { left: 0; top: 0; padding: 24px 80px 40px 84px; background: radial-gradient(120% 100% at 0% 0%, rgba(0,0,0,.42), rgba(0,0,0,0) 70%); }
   #brand .name { font-size: 15px; letter-spacing: .12em; color: var(--muted); }
   #brand .planet { font-size: 30px; margin-top: 4px; }
   #brand .where { margin-top: 4px; color: var(--muted); font-size: 16px; }
@@ -114,18 +119,37 @@
   #minimap { right: 24px; bottom: 20px; width: 250px; height: 174px; }
 
   /* ---------- screens ---------- */
-  #ship, #planet { touch-action: none; cursor: grab; }
-  #ship .rail, #planet .rail { touch-action: pan-x; cursor: auto; }
+  :is(#ship,#planet), #planet { touch-action: none; cursor: grab; }
+  :is(#ship,#planet) .rail, #planet .rail { touch-action: pan-x; cursor: auto; }
   #ui { position: fixed; inset: 0; pointer-events: none; }
   .screen { position: absolute; inset: 0; display: none; pointer-events: auto; }
   .screen.on { display: block; }
   .scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%); }
-  #cover .title { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-58%); text-align: center; font-family: "Kilo", sans-serif; font-size: clamp(44px, 11vw, 180px); letter-spacing: -.045em; line-height: .76; text-shadow: 0 6px 60px rgba(0,0,0,.45); }
-  #cover .title small { display: block; font-family: var(--sans); font-size: 15px; letter-spacing: .34em; text-transform: uppercase; color: var(--muted); margin-bottom: 22px; }
-  #cover .actions { position: absolute; left: 0; right: 0; top: calc(50% + 16vh); display: flex; justify-content: center; gap: 12px; }
-  #cover .where { position: absolute; left: 32px; bottom: 28px; color: var(--muted); font-size: 16px; }
-  #cover .where b { color: var(--ink); font-weight: 500; }
-  #cover .foot { position: absolute; right: 32px; bottom: 28px; display: flex; gap: 18px; font-size: 16px; }
+  #cover .main { position: absolute; inset-inline: 0; top: 52%; transform: translateY(-50%); display: grid; justify-items: center; gap: clamp(72px, 11vh, 120px); }
+  #cover .title { width: 100%; text-align: center; font-family: "Kilo", sans-serif; font-size: clamp(88px, 22vw, 360px); letter-spacing: -.3em; line-height: .55; position: relative; z-index: 0; color: transparent; text-shadow: none; }
+  #cover .title-line { display: block; }
+  #cover .title::before, #cover .wordmark-cta::before { content: ""; position: absolute; inset: calc(-1 * var(--title-blur-pad, 0px)); z-index: -1; background: rgba(255,255,255,.7); pointer-events: none; backdrop-filter: blur(60px); -webkit-backdrop-filter: blur(60px); mask-image: var(--title-mask, linear-gradient(transparent,transparent)); -webkit-mask-image: var(--title-mask, linear-gradient(transparent,transparent)); mask-size: 100% 100%; -webkit-mask-size: 100% 100%; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; }
+  #cover .title::after, #cover .wordmark-cta::after { content: ""; position: absolute; inset: calc(-1 * var(--title-blur-pad, 0px)); pointer-events: none; background: rgba(0,0,0,.2); mask: var(--title-outline, linear-gradient(transparent,transparent)) center / 100% 100% no-repeat; -webkit-mask: var(--title-outline, linear-gradient(transparent,transparent)) center / 100% 100% no-repeat; }
+  #cover .title small { display: block; font-family: var(--sans); font-size: 13px; line-height: 1.4; font-weight: 400; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; }
+  #cover .actions { width: 72%; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  #cover .actions .wordmark-cta { display: block; position: relative; z-index: 0; width: 6.5em; height: 1.3em; min-height: 44px; padding: 0; font-family: "Kilo", sans-serif; font-size: clamp(28px, 3.6vw, 58px); font-weight: 400; letter-spacing: -.3em; word-spacing: -.12em; line-height: 1.3; color: transparent; background: transparent; border: 0; border-radius: 8px; text-shadow: none; cursor: pointer; transition: transform .18s ease; }
+  #cover .actions #btnStart { width: 8.6em; }
+  #cover .actions #btnSettings { opacity: .5; }
+  @media (max-width: 600px) { #cover .actions { width: 94%; gap: 12px; } #cover .actions .wordmark-cta { font-size: clamp(18px, 5.6vw, 30px); } }
+  #cover .actions .wordmark-cta:hover { background: transparent; filter: none; transform: translateY(-2px) scale(1.025); }
+  #cover .actions #btnStart::before { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  #cover .actions .wordmark-cta:active { transform: translateY(1px) scale(.98); }
+  #cover .cta-echoes { position: absolute; inset: 0; pointer-events: none; z-index: -2; }
+  #cover .cta-echo { position: absolute; inset: calc(-1 * var(--title-blur-pad, 0px)); background: #fff; mask: var(--echo-mask) center / 100% 100% no-repeat; -webkit-mask: var(--echo-mask) center / 100% 100% no-repeat; opacity: 0; transition: opacity .25s ease; }
+  #cover .wordmark-cta:is(:hover, :focus-visible) .cta-echo { opacity: var(--echo-opacity); transition-delay: var(--echo-delay); }
+  #cover .actions #btnSettings:is(:hover, :focus-visible) { opacity: 1; }
+  #cover .actions #btnSettings:hover::before { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  #cover .actions:has(#btnSettings:hover) #btnStart { opacity: .5; }
+  @media (prefers-reduced-motion: reduce) { #cover .cta-echo { transition: none; } #cover .actions .wordmark-cta:is(:hover, :active) { transform: none; } }
+  #cover .actions .wordmark-cta:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+  #cover .where { position: absolute; left: 32px; bottom: 26px; max-width: 44vw; color: var(--muted); font-size: 13px; font-weight: 600; line-height: 1.5; }
+  #cover .where b { color: var(--ink); font-weight: 600; }
+  #cover .foot { position: absolute; right: 32px; bottom: 26px; display: flex; gap: 18px; font-size: 13px; font-weight: 600; line-height: 1.5; }
   #cover .foot a { color: var(--muted); text-decoration: none; }
   #cover .foot a:hover { color: var(--ink); }
   .center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(1040px, calc(100vw - 64px)); }
@@ -142,7 +166,7 @@
   .cards.ten .card .t { font-size: 22px; }
   .cards.ten .bars { margin-top: 9px; gap: 4px; }
   .cards.ten .bars .b { grid-template-columns: 44px 1fr; font-size: 9px; }
-  .setup .head.top { position: absolute; left: 32px; right: 32px; top: 28px; margin: 0; }
+  .setup .head.top { position: absolute; left: 84px; right: 32px; top: 28px; margin: 0; }
   .setup .head.top h2 { font-size: 28px; }
   .setup .hero { position: absolute; right: 32px; bottom: 300px; text-align: right; max-width: 46vw; padding: 18px 8px 18px 64px; background: radial-gradient(130% 160% at 100% 50%, rgba(6,6,10,.62) 0%, rgba(6,6,10,.30) 48%, rgba(6,6,10,0) 80%); border-radius: 22px; }
   .setup .hero .hname { font-size: clamp(24px, 3.5vw, 54px); text-shadow: 0 4px 40px rgba(0,0,0,.45); }
@@ -254,7 +278,7 @@
     #raceTools { left: auto; right: max(12px, env(safe-area-inset-right)); transform: none; }
     #touchControls:not([hidden]) { display: flex; }
     .touch-note { display: block; }
-    #brand { top: max(12px, env(safe-area-inset-top)); left: 12px; }
+    #brand { top: max(12px, env(safe-area-inset-top)); left: 68px; padding-left: 0; }
     #brand .name { display: none; }
     #brand .where { max-width: 135px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #legend, #board { display: none; }
@@ -262,8 +286,12 @@
     #minimap { bottom: 178px; right: 10px; width: 110px; height: 77px; }
   }
   @media (max-width: 600px) {
-    #coverShip { left: 30%; top: 18%; width: 70%; height: 52%; }
-    #cover .where { left: 18px; right: 18px; bottom: 70px; }
+    #portfolioLink { left: max(12px, env(safe-area-inset-left)); top: max(8px, env(safe-area-inset-top)); }
+
+    #cover .where { left: 18px; right: 18px; bottom: 74px; max-width: none; font-size: 13px; }
+
+    #cover .title::after, #cover .wordmark-cta::after { content: ""; position: absolute; inset: calc(-1 * var(--title-blur-pad, 0px)); pointer-events: none; background: rgba(0,0,0,.2); mask: var(--title-outline, linear-gradient(transparent,transparent)) center / 100% 100% no-repeat; -webkit-mask: var(--title-outline, linear-gradient(transparent,transparent)) center / 100% 100% no-repeat; }
+  #cover .title small { font-size: 12px; letter-spacing: .14em; margin-bottom: 20px; }
     #cover .foot { left: 18px; right: 18px; bottom: 18px; flex-wrap: wrap; gap: 8px 18px; }
     .setup .head.top { top: 58px; left: 18px; right: 18px; align-items: flex-start; flex-direction: column; gap: 12px; }
     .setup .head.top h2 { font-size: 22px; }
@@ -295,17 +323,403 @@
     #dash { bottom: 104px; --hud-scale: .4; }
     #minimap { bottom: 112px; width: 90px; height: 63px; }
   }
+  :is(#ship,#planet) .ship-title::before, :is(#ship,#planet) .wordmark-cta::before { content: ""; position: absolute; inset: calc(-1 * var(--title-blur-pad, 0px)); z-index: -1; background: rgba(255,255,255,.7); pointer-events: none; backdrop-filter: blur(60px); -webkit-backdrop-filter: blur(60px); mask-image: var(--title-mask, linear-gradient(transparent,transparent)); -webkit-mask-image: var(--title-mask, linear-gradient(transparent,transparent)); mask-size: 100% 100%; -webkit-mask-size: 100% 100%; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; }
+  :is(#ship,#planet) .ship-title::after, :is(#ship,#planet) .wordmark-cta::after { content: ""; position: absolute; inset: calc(-1 * var(--title-blur-pad, 0px)); pointer-events: none; background: rgba(0,0,0,.2); mask: var(--title-outline, linear-gradient(transparent,transparent)) center / 100% 100% no-repeat; -webkit-mask: var(--title-outline, linear-gradient(transparent,transparent)) center / 100% 100% no-repeat; }
+  :is(#ship,#planet) .title small { display: block; font-family: var(--sans); font-size: 13px; line-height: 1.4; font-weight: 400; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; }
+  :is(#ship,#planet) .actions { width: 72%; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  :is(#ship,#planet) .actions .wordmark-cta { display: block; position: relative; z-index: 0; width: 6.5em; height: 1.3em; min-height: 44px; padding: 0; font-family: "Kilo", sans-serif; font-size: clamp(28px, 3.6vw, 58px); font-weight: 400; letter-spacing: -.3em; word-spacing: -.12em; line-height: 1.3; color: transparent; background: transparent; border: 0; border-radius: 8px; text-shadow: none; cursor: pointer; transition: transform .18s ease; }
+  :is(#ship,#planet) .actions :is(#shipNext,#planetNext) { width: 8.6em; }
+  :is(#ship,#planet) .actions :is(#shipBack,#planetBack) { opacity: .5; }
+  @media (max-width: 600px) { :is(#ship,#planet) .actions { width: 94%; gap: 12px; } :is(#ship,#planet) .actions .wordmark-cta { font-size: clamp(18px, 5.6vw, 30px); } }
+  :is(#ship,#planet) .actions .wordmark-cta:hover { background: transparent; filter: none; transform: translateY(-2px) scale(1.025); }
+  :is(#ship,#planet) .actions :is(#shipNext,#planetNext)::before { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  :is(#ship,#planet) .actions .wordmark-cta:active { transform: translateY(1px) scale(.98); }
+  :is(#ship,#planet) .cta-echoes { position: absolute; inset: 0; pointer-events: none; z-index: -2; }
+  :is(#ship,#planet) .cta-echo { position: absolute; inset: calc(-1 * var(--title-blur-pad, 0px)); background: #fff; mask: var(--echo-mask) center / 100% 100% no-repeat; -webkit-mask: var(--echo-mask) center / 100% 100% no-repeat; opacity: 0; transition: opacity .25s ease; }
+  :is(#ship,#planet) .wordmark-cta:is(:hover, :focus-visible) .cta-echo { opacity: var(--echo-opacity); transition-delay: var(--echo-delay); }
+  :is(#ship,#planet) .actions :is(#shipBack,#planetBack):is(:hover, :focus-visible) { opacity: 1; }
+  :is(#ship,#planet) .actions :is(#shipBack,#planetBack):hover::before { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  :is(#ship,#planet) .actions:has(:is(#shipBack,#planetBack):hover) :is(#shipNext,#planetNext) { opacity: .5; }
+  @media (prefers-reduced-motion: reduce) { :is(#ship,#planet) .cta-echo { transition: none; } :is(#ship,#planet) .actions .wordmark-cta:is(:hover, :active) { transform: none; } }
+  :is(#ship,#planet) .actions .wordmark-cta:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+
+  :is(#ship,#planet) .hero { display: block; top: 100px; bottom: auto; left: 8%; right: 8%; max-width: none; text-align: center; padding: 0; background: none; }
+  :is(#ship,#planet) .hero .ship-title { font-family: "Kilo", sans-serif; font-size: clamp(32px, 5.5vw, 84px); font-weight: 400; line-height: 1; letter-spacing: -.3em; color: transparent; text-shadow: none; position: relative; z-index: 0; }
+  :is(#ship,#planet) #heroSub { display: none; }
+  :is(#ship,#planet) #heroTag { margin-top: 18px; font-size: 13px; }
+  :is(#ship,#planet) .statrow { left: 22%; right: 22%; bottom: 178px; grid-template-columns: repeat(5,minmax(0,1fr)); }
+  :is(#ship,#planet) .tools.bottom { bottom: 118px; justify-content: center; }
+  :is(#ship,#planet) .tools .left { width: auto; justify-content: center; }
+  :is(#ship,#planet) .ship-actions { position: absolute; left: 4%; right: 4%; bottom: 24px; width: auto; }
+  :is(#ship,#planet) .actions :is(#shipBack,#planetBack) { width: 3.8em; }
+  :is(#ship,#planet) .actions :is(#shipNext,#planetNext) { width: 9em; font-size: clamp(24px,3vw,48px); }
+  :is(#ship,#planet) .ship-neighbour { position: absolute; top: 32%; width: 24%; height: 33%; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+  :is(#ship,#planet) .ship-neighbour.previous { left: 0; }
+  :is(#ship,#planet) .ship-neighbour.next { right: 0; }
+  :is(#ship,#planet) .ship-neighbour span { position: absolute; bottom: 0; left: 0; right: 0; font: 600 14px var(--sans); text-shadow: 0 1px 4px #000; }
+  :is(#ship,#planet) .ship-neighbour:hover span { text-decoration: underline; text-underline-offset: 5px; }
+  :is(#ship,#planet) .ship-neighbour:focus-visible { outline: 1px solid white; outline-offset: -8px; border-radius: 16px; }
+  @media (max-width: 600px) {
+    :is(#ship,#planet) .hero { top: 128px; left: 5%; right: 5%; }
+    :is(#ship,#planet) .hero .ship-title { font-size: clamp(24px,6.5vw,38px); }
+    :is(#ship,#planet) #heroTag { font-size: 10px; letter-spacing: .04em; }
+    :is(#ship,#planet) .statrow { left: 18px; right: 18px; bottom: 178px; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 8px; }
+    :is(#ship,#planet) .statrow .st .k { font-size: 10px; }
+    :is(#ship,#planet) .statrow .st .v { font-size: 13px; }
+    :is(#ship,#planet) .tools.bottom { bottom: 102px; left: 8px; right: 8px; }
+    :is(#ship,#planet) .tools .left { gap: 5px; flex-wrap: wrap; }
+    :is(#ship,#planet) #archHint { display: none; }
+    :is(#ship,#planet) #paintRandom { font-size: 13px; padding: 0 8px; }
+    :is(#ship,#planet) .ship-actions { bottom: 24px; left: 12px; right: 12px; }
+    :is(#ship,#planet) .actions :is(#shipNext,#planetNext) { font-size: 24px; }
+    :is(#ship,#planet) .ship-neighbour span { font-size: 11px; padding: 0 4px; }
+  }
+
+
+  :is(#ship,#planet) { cursor: default; }
+  :is(#ship,#planet) .hero, :is(#ship,#planet) .statrow, :is(#ship,#planet) .tools.bottom { display: none; }
+  :is(#ship,#planet) .head.top { left: 84px; top: 26px; right: auto; }
+  :is(#ship,#planet) .ship-brand { position: relative; z-index: 0; width: 400px; margin: 0; font: 400 42px/1 "Kilo",sans-serif; letter-spacing: -.3em; color: transparent; text-shadow: none; }
+  :is(#ship,#planet) .title-line { display: block; }
+  :is(#ship,#planet) .ship-neighbour { top: 61%; width: 64px; height: 64px; }
+  :is(#ship,#planet) .ship-neighbour.previous { left: 10%; }
+  :is(#ship,#planet) .ship-neighbour.next { right: 10%; }
+  :is(#ship,#planet) .ship-neighbour svg { width: 100%; height: 100%; fill: rgba(255,255,255,.7); stroke: rgba(0,0,0,.2); stroke-width: 2; transition: transform .18s ease, fill .18s ease; }
+  :is(#ship,#planet) .ship-neighbour.next svg { transform: scaleX(-1); }
+  :is(#ship,#planet) .ship-neighbour:hover svg { fill: white; }
+  :is(#ship,#planet) .ship-neighbour:active svg { scale: .94; }
+  :is(#ship,#planet) .actions :is(#shipNext,#planetNext) { width: 3.8em; font-size: clamp(28px,3.6vw,58px); }
+  @media (max-width:600px) {
+    :is(#ship,#planet) .head.top { left: 62px; top: 20px; }
+    :is(#ship,#planet) .ship-brand { width: 260px; font-size: 28px; }
+    :is(#ship,#planet) .ship-neighbour { width: 46px; height: 46px; }
+    :is(#ship,#planet) .ship-neighbour.previous { left: 7%; }
+    :is(#ship,#planet) .ship-neighbour.next { right: 7%; }
+    :is(#ship,#planet) .actions :is(#shipNext,#planetNext) { font-size: 28px; }
+  }
+
+  /* Home composition: stronger foreground lettering over a deeper scenic view. */
+  #cover .scrim { background: linear-gradient(180deg,rgba(5,8,14,.12),rgba(5,8,14,.28) 48%,rgba(5,8,14,.57)); }
+  #cover .title::before { background: rgba(232,234,236,.96); }
+  #cover .title::after { background: rgba(0,0,0,.4); }
+  #cover .actions { width: min(66%,1000px); gap: 40px; }
+  #cover .actions .wordmark-cta { letter-spacing: -.14em; }
+  #cover .actions #btnSettings { opacity: .85; }
+  #cover .actions #btnSettings::before { background: rgba(255,255,255,.94); }
+  #cover .actions:has(#btnSettings:hover) #btnStart { opacity: .8; }
+  @media (max-width:600px) { #cover .actions { width: 94%; gap: 12px; } }
+  /* Frosted title with a directional, fading outline. */
+  #cover .title { filter: none; }
+  #cover .title::before {
+    background: rgba(255,255,255,.2);
+    backdrop-filter: blur(60px); -webkit-backdrop-filter: blur(60px);
+  }
+  #cover .title::after {
+    background: var(--title-outline) center / 100% 100% no-repeat;
+    mask: none; -webkit-mask: none;
+    opacity: .6;
+  }
+  #cover .wordmark-cta::before { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  #cover .actions .wordmark-cta { letter-spacing: -.3em; }
+  #cover .actions #btnSettings { opacity: .75; }
+  #cover .actions #btnStart { width: 9.2em; }
+  #cover .actions { width: min(62%,940px); gap: 32px; }
+  @media (max-width:600px) {
+    #cover .actions { width: 94%; gap: 12px; }
+  }
+  /* Dim CTAs share the title's frosted material; active CTAs stay solid white. */
+  #cover .actions #btnSettings,
+  #cover .actions:has(#btnSettings:is(:hover,:focus-visible)) #btnStart { opacity: 1; }
+  #cover .actions #btnSettings:is(:hover,:focus-visible)::before { background: #fff; }
+  #cover .actions #btnSettings:not(:hover):not(:focus-visible)::before,
+  #cover .actions:has(#btnSettings:is(:hover,:focus-visible)) #btnStart::before {
+    background: rgba(255,255,255,.2);
+    backdrop-filter: blur(60px); -webkit-backdrop-filter: blur(60px);
+  }
+  #cover .actions #btnSettings:not(:hover):not(:focus-visible)::after,
+  #cover .actions:has(#btnSettings:is(:hover,:focus-visible)) #btnStart::after {
+    background: var(--dim-outline) center / 100% 100% no-repeat;
+    mask: none; -webkit-mask: none; opacity: .6;
+  }
+  body:has(:is(#ship,#planet).on) #portfolioLink { display: none; }
+  :is(#ship,#planet) .head.top { left: max(24px, env(safe-area-inset-left)); top: max(32px, env(safe-area-inset-top)); }
+  :is(#ship,#planet) .ship-brand { width: 240px; font-size: 48px; line-height: .55; }
+  @media (max-width:600px) {
+    :is(#ship,#planet) .head.top { left: max(16px, env(safe-area-inset-left)); top: max(24px, env(safe-area-inset-top)); }
+    :is(#ship,#planet) .ship-brand { width: 180px; font-size: 36px; }
+  }
+  /* Match the home lettering material throughout craft selection. */
+  :is(#ship,#planet) .ship-brand::before {
+    background: rgba(255,255,255,.2);
+    backdrop-filter: blur(60px); -webkit-backdrop-filter: blur(60px);
+  }
+  :is(#ship,#planet) .ship-brand::after {
+    background: var(--title-outline) center / 100% 100% no-repeat;
+    mask: none; -webkit-mask: none; opacity: .6;
+  }
+  :is(#ship,#planet) .actions :is(#shipBack,#planetBack), :is(#ship,#planet) .actions :is(#shipNext,#planetNext) { font-size: clamp(24px,3vw,49px); }
+  :is(#ship,#planet) .actions :is(#shipBack,#planetBack),
+  :is(#ship,#planet) .actions:has(:is(#shipBack,#planetBack):is(:hover,:focus-visible)) :is(#shipNext,#planetNext) { opacity: 1; }
+  :is(#ship,#planet) .actions :is(#shipBack,#planetBack):is(:hover,:focus-visible)::before { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  :is(#ship,#planet) .actions :is(#shipBack,#planetBack):not(:hover):not(:focus-visible)::before,
+  :is(#ship,#planet) .actions:has(:is(#shipBack,#planetBack):is(:hover,:focus-visible)) :is(#shipNext,#planetNext)::before {
+    background: rgba(255,255,255,.2);
+    backdrop-filter: blur(60px); -webkit-backdrop-filter: blur(60px);
+  }
+  :is(#ship,#planet) .actions :is(#shipBack,#planetBack):not(:hover):not(:focus-visible)::after,
+  :is(#ship,#planet) .actions:has(:is(#shipBack,#planetBack):is(:hover,:focus-visible)) :is(#shipNext,#planetNext)::after {
+    background: var(--dim-outline) center / 100% 100% no-repeat;
+    mask: none; -webkit-mask: none; opacity: .6;
+  }
+  @media (max-width:600px) {
+    :is(#ship,#planet) .actions :is(#shipBack,#planetBack), :is(#ship,#planet) .actions :is(#shipNext,#planetNext) { font-size: 24px; }
+  }
+  :is(#ship,#planet) { cursor: grab; touch-action: none; }
+  :is(#ship,#planet) .head.top { left: max(40px, env(safe-area-inset-left)); top: max(48px, env(safe-area-inset-top)); }
+  :is(#ship,#planet) :is(#shipHome,#planetHome) { border: 0; padding: 12px; background: transparent; cursor: pointer; transition: transform .18s ease; }
+  :is(#ship,#planet) :is(#shipHome,#planetHome)::before { transition: background .18s ease; }
+  :is(#ship,#planet) :is(#shipHome,#planetHome):is(:hover,:focus-visible)::before { background: rgba(255,255,255,.95); }
+  :is(#ship,#planet) :is(#shipHome,#planetHome):is(:hover,:focus-visible) { transform: translateY(-2px) scale(1.025); }
+  :is(#ship,#planet) :is(#shipHome,#planetHome):active { transform: translateY(1px) scale(.98); }
+  :is(#ship,#planet) :is(#shipHome,#planetHome):focus-visible { outline: 2px solid white; outline-offset: 8px; border-radius: 8px; }
+  @media (max-width:600px) { :is(#ship,#planet) .head.top { left: max(24px, env(safe-area-inset-left)); top: max(32px, env(safe-area-inset-top)); } }
+  @media (prefers-reduced-motion:reduce) { :is(#ship,#planet) :is(#shipHome,#planetHome) { transition: none; } :is(#ship,#planet) :is(#shipHome,#planetHome):is(:hover,:focus-visible,:active) { transform: none; } }
+  :is(#ship,#planet) .head.top {
+    left: max(32px, env(safe-area-inset-left));
+    top: max(32px, env(safe-area-inset-top));
+  }
+  :is(#ship,#planet) :is(#shipHome,#planetHome) { translate: var(--brand-offset-x,0px) var(--brand-offset-y,0px); }
+  @media (max-width:600px) {
+    :is(#ship,#planet) .head.top { left: max(24px, env(safe-area-inset-left)); top: max(24px, env(safe-area-inset-top)); }
+  }
+  :is(#ship,#planet) :is(#shipHome,#planetHome):is(:hover,:focus-visible) .cta-echo {
+    opacity: var(--echo-opacity);
+    transition-delay: var(--echo-delay);
+  }
+  :is(#ship,#planet) .hero { display: block; top: 32px; left: 30%; right: 30%; bottom: auto; padding: 0; background: none; }
+  :is(#ship,#planet) .hero .ship-title { font-size: clamp(28px,3.2vw,48px); line-height: 1; }
+  :is(#ship,#planet) #heroSub, :is(#ship,#planet) #heroTag { display: none; }
+  :is(#ship,#planet) .statrow { display: grid; top: 36px; right: 32px; left: auto; bottom: auto; width: 22%; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+  :is(#ship,#planet) .statrow .st { grid-template-columns: 1fr; gap: 5px; }
+  :is(#ship,#planet) .statrow .st .k { font-size: 11px; letter-spacing: .05em; }
+  :is(#ship,#planet) .statrow .st .v { font-size: 20px; }
+  :is(#ship,#planet) .statrow .st i { grid-column: 1; }
+  @media (max-width:900px) {
+    :is(#ship,#planet) .hero { top: 118px; left: 18%; right: 18%; }
+    :is(#ship,#planet) .statrow { top: 30px; right: 24px; width: 36%; gap: 10px; }
+    :is(#ship,#planet) .statrow .st .k { font-size: 10px; }
+    :is(#ship,#planet) .statrow .st .v { font-size: 16px; }
+    :is(#ship,#planet) .ship-brand { width: 155px; font-size: 31px; }
+  }
+  :is(#ship,#planet) .hero { top: 18%; left: 20%; right: 20%; z-index: 2; pointer-events: none; }
+  :is(#ship,#planet) .hero .ship-title { font-size: clamp(56px,6.4vw,96px); }
+  @media (max-width:900px) { :is(#ship,#planet) .hero { top: 19%; left: 10%; right: 10%; } :is(#ship,#planet) .hero .ship-title { font-size: clamp(40px,8vw,72px); } }
+  :is(#ship,#planet) .statrow { width: 215px; display: grid; grid-template-columns: 1fr; gap: 13px; }
+  :is(#ship,#planet) .statrow .st { grid-template-columns: 1fr auto; gap: 7px 12px; }
+  :is(#ship,#planet) .statrow .st .stat-label { position: relative; z-index: 0; width: 112px; font: 400 24px/1 Kilo,sans-serif; letter-spacing: -.15em; text-transform: none; color: transparent; }
+  :is(#ship,#planet) .statrow .st .v { font: 600 13px/1 var(--sans); align-self: center; }
+  :is(#ship,#planet) .statrow .st i { grid-column: 1 / -1; height: 9px; border-radius: 999px; background: rgba(255,255,255,.14); }
+  :is(#ship,#planet) .statrow .st i::after { border-radius: inherit; background: rgba(255,255,255,.7); }
+  :is(#ship,#planet) :is(#heroName,#planetName)::before, :is(#ship,#planet) .stat-label::before { background: rgba(255,255,255,.2); backdrop-filter: blur(60px); -webkit-backdrop-filter: blur(60px); }
+  :is(#ship,#planet) :is(#heroName,#planetName)::after, :is(#ship,#planet) .stat-label::after { background: var(--title-outline) center / 100% 100% no-repeat; mask: none; -webkit-mask: none; opacity: .6; }
+  @media (max-width:900px) {
+    :is(#ship,#planet) .statrow { width: 132px; gap: 10px; }
+    :is(#ship,#planet) .statrow .st .stat-label { width: 86px; font-size: 19px; }
+    :is(#ship,#planet) .statrow .st i { height: 7px; }
+    :is(#ship,#planet) .hero { top: 24%; }
+  }
+  body:has(#hud.on) #portfolioLink { display: none; }
+  #brand { left: max(32px,env(safe-area-inset-left)); top: max(32px,env(safe-area-inset-top)); padding: 0; background: none; }
+  #brand .race-brand { position: relative; z-index: 0; width: 240px; font: 400 48px/.55 Kilo,sans-serif; letter-spacing: -.3em; color: transparent; text-shadow: none; }
+  #brand .title-line { display: block; }
+  #brand .race-brand { translate: var(--brand-offset-x,0px) var(--brand-offset-y,0px); }
+  #legend { top: 172px; left: 32px; }
+  #brand .race-brand::before, #brand .race-brand::after { content: ''; position: absolute; inset: calc(-1 * var(--title-blur-pad,0px)); pointer-events: none; }
+  #brand .race-brand::before { z-index: -1; background: rgba(255,255,255,.2); backdrop-filter: blur(60px); -webkit-backdrop-filter: blur(60px); mask: var(--title-mask) center / 100% 100% no-repeat; -webkit-mask: var(--title-mask) center / 100% 100% no-repeat; }
+  #brand .race-brand::after { background: var(--title-outline) center / 100% 100% no-repeat; opacity: .6; }
+  #brand .planet { margin-top: 28px; font-size: 20px; }
+  #brand .where { font-size: 12px; max-width: 260px; }
+  #dash { left: auto; right: 0; transform-origin: right bottom; transform: perspective(500px) rotateY(calc(var(--speed-warp) * 24deg)) rotateX(calc(var(--speed-warp) * 12deg)) scale(calc(var(--hud-scale) * (1 + var(--speed-warp) * .06))); }
+  #speedo { left: auto; right: 0; }
+  #dash .side { left: auto; right: 236px; }
+  #minimap { right: auto; left: max(24px,env(safe-area-inset-left)); transform-origin: left bottom; transform: perspective(500px) rotateY(calc(var(--speed-warp) * -24deg)) rotateX(calc(var(--speed-warp) * 12deg)) scale(calc(1 + var(--speed-warp) * .06)); }
+  @media (max-width:600px), (any-pointer:coarse) {
+    #brand { left: max(24px,env(safe-area-inset-left)); top: max(24px,env(safe-area-inset-top)); }
+    #brand .race-brand { width: 155px; font-size: 31px; }
+    #brand .planet { margin-top: 20px; font-size: 16px; }
+    #minimap { left: max(12px,env(safe-area-inset-left)); right: auto; }
+  }
+  #brand .planet, #brand .where { display: none; }
+  #board { width: 310px; }
+  #board .row { height: 34px; grid-template-columns: 22px minmax(0,1fr) auto; }
+  #board .row .who { font: 400 22px/1.4 Kilo,sans-serif; letter-spacing: -.12em; color: rgba(255,255,255,.2); -webkit-text-stroke: .6px rgba(255,255,255,.45); text-shadow: 0 1px 1px rgba(0,0,0,.35); }
+  #board .row.me .who { color: #fff; -webkit-text-stroke-color: rgba(255,255,255,.8); }
+  #board .row.me .who::after { content: none; }
+  #board .row.decoy .who { font-style: normal; }
+  #dash { right: max(24px,env(safe-area-inset-right)); bottom: max(24px,env(safe-area-inset-bottom)); width: 180px; height: auto; display: grid; gap: 12px; --hud-scale: 1; }
+  #speedo { position: static; width: 180px; height: 90px; }
+  #dash .side { position: static; display: grid; gap: 10px; }
+  #dash .meter, #dash #item { width: 100%; }
+  #dash .meter .label, #dash #item { font: 400 20px/1.3 Kilo,sans-serif; letter-spacing: -.1em; text-transform: none; color: rgba(255,255,255,.7); -webkit-text-stroke: .5px rgba(0,0,0,.2); }
+  #dash .meter .bar { height: 6px; border-radius: 999px; }
+  #dash #item { border: 0; border-radius: 8px; height: 32px; background: rgba(255,255,255,.08); }
+  #dash #item.has { color: #fff; background: color-mix(in srgb,var(--accent) 35%,transparent); }
+  #board .lap .pos, #board .lap .lapn, #board .row .n, #board .row .gap { font-family: Kilo,sans-serif; font-weight: 400; letter-spacing: -.06em; -webkit-text-stroke: .5px rgba(0,0,0,.2); }
+  #board .lap .pos { font-size: 42px; }
+  #board .lap .lapn { font-size: 18px; }
+  #board .row .n, #board .row .gap { font-size: 18px; }
+  #board .row.me .n, #board .row.me .gap { color: #fff; }
+  @media (max-width:600px), (any-pointer:coarse) {
+    #dash { width: 130px; right: max(12px,env(safe-area-inset-right)); bottom: max(168px,env(safe-area-inset-bottom)); gap: 8px; }
+    #speedo { width: 130px; height: 65px; }
+    #dash .meter .label, #dash #item { font-size: 18px; }
+  }
+  @media (any-pointer:coarse) and (max-height:500px) { #dash { bottom: 108px; } }
+  @media (max-width:600px), (any-pointer:coarse) { #minimap { width: 150px; height: 104px; } }
+  #raceTools { top: max(112px,env(safe-area-inset-top)); left: max(32px,env(safe-area-inset-left)); right: auto; transform: none; gap: 8px; }
+  #raceTools .btn { width: 44px; height: 44px; min-height: 44px; padding: 10px; border: 0; background: transparent; color: rgba(255,255,255,.7); border-radius: 8px; }
+  #raceTools .btn:hover { color: #fff; background: rgba(255,255,255,.1); transform: translateY(-2px); }
+  #raceTools .btn:active { transform: translateY(1px) scale(.94); }
+  #raceTools .btn:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+  @media (max-width:600px), (any-pointer:coarse) { #raceTools { top: 84px; left: max(24px,env(safe-area-inset-left)); right: auto; } }
+  #planetTrack { display: block; width: 240px; height: 100px; margin: 24px auto 0; overflow: visible; filter: drop-shadow(0 1px 3px rgba(0,0,0,.3)); }
+  #planet.on #planetTrack { animation: track-reveal .6s ease both; }
+  @keyframes track-reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width:900px) { #planetTrack { width: 180px; height: 75px; margin-top: 18px; } }
+  @media (prefers-reduced-motion:reduce) { #planet.on #planetTrack { animation: none; } }
+  #planetTrack { position: absolute; left: 50%; top: 80%; width: 260px; height: 110px; margin: 0; transform: translate(-50%,-50%); pointer-events: none; }
+  #planet.on #planetTrack { animation: track-position-reveal .6s ease both; }
+  @keyframes track-position-reveal { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+  @media (max-width:900px) { #planetTrack { width: 210px; height: 90px; top: 80%; margin: 0; } }
+  @media (max-height:550px) { #planetTrack { width: 175px; height: 74px; top: 77%; } }
+  @media (prefers-reduced-motion:reduce) { #planet.on #planetTrack { animation: none; } }
+  /* Dialogs share the floating typography and restrained glass of the selectors. */
+  :is(#room,#settings,#results) .scrim { background: radial-gradient(ellipse at center,rgba(5,10,18,.46),rgba(5,10,18,.24)); }
+  :is(#room,#settings,#results) .panel { background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.16); border-radius: 24px; box-shadow: none; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 32px; max-height: calc(100dvh - 80px); overflow: auto; scrollbar-width: thin; }
+  :is(#room,#settings) h2, #results .verdict { font: 400 clamp(38px,5vw,64px)/1.1 Kilo,sans-serif; letter-spacing: -.18em; text-transform: none; color: rgba(255,255,255,.8); -webkit-text-stroke: 1px rgba(0,0,0,.25); text-shadow: none; }
+  :is(#room,#settings,#results) .btn { border-radius: 8px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.05); color: rgba(255,255,255,.8); transition: background .18s,transform .18s,color .18s; }
+  :is(#room,#settings,#results) .btn:hover { background: rgba(255,255,255,.14); color: #fff; transform: translateY(-2px); }
+  :is(#room,#settings,#results) .btn:active { transform: translateY(1px) scale(.97); }
+  :is(#room,#settings,#results) .btn:focus-visible { outline: 2px solid white; outline-offset: 4px; }
+  :is(#room,#settings,#results) .btn:disabled { opacity: .4; transform: none; cursor: default; }
+  :is(#room,#results) .tools .right .btn, #resHome, #roomHost, #roomJoinOpen, #joinGo { font: 400 clamp(24px,2.8vw,36px)/1.3 Kilo,sans-serif; letter-spacing: -.15em; border: 0; background: transparent; -webkit-text-stroke: .7px rgba(0,0,0,.25); text-shadow: none; padding: 10px 16px; }
+  :is(#room,#results) .tools .right .primary { color: #fff; }
+  :is(#room,#results) .tools .right .btn:hover, #resHome:hover, #roomHost:hover, #roomJoinOpen:hover, #joinGo:hover { color: #fff; background: rgba(255,255,255,.06); }
+  :is(#room,#results) .tools .right kbd { display: none; }
+  #room .panel { background: transparent; border: 0; backdrop-filter: none; -webkit-backdrop-filter: none; overflow: auto; }
+  #room > .panel > .head { justify-content: center; margin-bottom: 28px; }
+  #room h2 { font-size: clamp(54px,7vw,88px); margin: 0; }
+  #room .steps { display: none; }
+  #room .opts { gap: 28px; padding: 22px 0; flex-wrap: wrap; }
+  #room .note { font-size: 15px; line-height: 1.6; color: rgba(255,255,255,.72); }
+  #room .tools { margin-top: 40px; gap: 16px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,.16); padding-top: 20px; }
+  #room .tools .left .btn { font-size: 12px; background: transparent; border: 0; padding: 8px; }
+  #roomSkip { display: none; }
+  #room .field { border-radius: 8px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.25); }
+  #room .code .c { font-family: var(--sans); font-weight: 600; color: #fff; }
+  #room .manual .label { font-family: var(--sans); text-transform: none; letter-spacing: normal; font-size: 14px; }
+  @media (max-width:600px) {
+    :is(#room,#settings,#results) .panel { width: calc(100vw - 32px) !important; padding: 20px; max-height: calc(100dvh - 48px); }
+    #room .opts { flex-direction: column; gap: 12px; padding: 12px 0 24px; }
+    #room .tools { margin-top: 24px; }
+    #room .tools .right { width: 100%; justify-content: space-between; }
+    #room .lobby .r { grid-template-columns: 12px 1fr; height: auto; min-height: 48px; padding: 8px 0; }
+    #room .lobby .r > :nth-child(3) { grid-column: 2; font-size: 12px; }
+    #room .lobby .r .ping { display: none; }
+    #results .r { grid-template-columns: 28px 1fr 70px; gap: 6px; }
+    #results .r .gap { display: none; }
+  }
+  @media (prefers-reduced-motion:reduce) { :is(#room,#settings,#results) .btn { transition: none; } :is(#room,#settings,#results) .btn:is(:hover,:active) { transform: none; } }
+  #room :is(#roomHost,#roomJoinOpen,#joinGo) { border: 0; background: transparent; }
+  #room :is(#roomHost,#roomJoinOpen,#joinGo):hover { background: rgba(255,255,255,.06); }
+  #room > .panel > .head { display: flex; justify-content: center; text-align: center; }
+  #room > .panel > .head h2 { width: 100%; }
+  #settings .head { margin-bottom: 28px; }
+  #qualityTabs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; padding: 6px; border: 1px solid rgba(255,255,255,.16); border-radius: 16px; background: rgba(0,0,0,.12); }
+  #qualityTabs button { cursor: pointer; padding: 14px 6px; border: 1px solid transparent; border-radius: 10px; color: rgba(255,255,255,.5); background: transparent; transition: background .18s,color .18s; }
+  #qualityTabs button span { display: block; font: 400 clamp(22px,3vw,36px)/1.3 Kilo,sans-serif; letter-spacing: -.14em; }
+  #qualityTabs button small { display: block; font: 12px/1.4 var(--sans); margin-top: 5px; }
+  #qualityTabs button[aria-checked="true"] { color: #fff; border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.14); }
+  #qualityTabs button:hover { color: #fff; background: rgba(255,255,255,.08); }
+  #qualityTabs button:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+  #settings .flight-guide { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px; }
+  #settings .flight-guide section { text-align: center; }
+  #settings .key-cluster { display: grid; grid-template-columns: repeat(3,44px); grid-template-rows: repeat(2,40px); justify-content: center; gap: 6px; margin-bottom: 14px; }
+  #settings .key-cluster .up { grid-column: 2; }
+  #settings .key-cluster kbd:nth-child(2) { grid-column: 1; }
+  #settings .flight-guide kbd { display: grid; place-items: center; min-height: 34px; padding: 4px 10px; font: 600 15px/1 var(--sans); border: 1px solid rgba(255,255,255,.35); border-bottom-width: 3px; border-radius: 8px; background: rgba(255,255,255,.07); color: #fff; }
+  #settings .flight-guide strong { font: 600 15px/1.4 var(--sans); }
+  #settings .flight-guide p { font: 13px/1.6 var(--sans); margin: 5px 0 0; color: rgba(255,255,255,.65); }
+  #settings .key-actions { grid-column: 1/-1; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; border-top: 1px solid rgba(255,255,255,.14); padding-top: 22px; }
+  #settings .key-actions > div { display: flex; align-items: center; gap: 10px; }
+  #settings .key-actions span { font: 12px/1.4 var(--sans); color: rgba(255,255,255,.72); }
+  @media (max-width:600px) {
+    #settings .head h2 { font-size: 36px; }
+    #settings .head { gap: 10px; }
+    #settings .head .btn { padding: 8px; }
+    #qualityTabs { gap: 2px; padding: 4px; }
+    #qualityTabs button span { font-size: 21px; }
+    #qualityTabs button small { font-size: 10px; }
+    #settings .flight-guide { gap: 18px 12px; margin-top: 22px; }
+    #settings .key-cluster { grid-template-columns: repeat(3,34px); grid-template-rows: repeat(2,34px); gap: 4px; }
+    #settings .key-actions { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+  }
+  #settings .head { align-items: center; margin-bottom: 24px; }
+  #settings .head h2 { margin: 0; font-size: clamp(34px,4.6vw,58px); }
+  #settings .head .btn { border: 0; background: transparent; color: rgba(255,255,255,.7); }
+  #qualityTabs { gap: 6px; padding: 5px; border-radius: 12px; }
+  #qualityTabs button { min-width: 0; padding: 16px 8px 12px; border-radius: 8px; }
+  #qualityTabs button span { font-size: clamp(18px,2.1vw,27px); letter-spacing: -.18em; line-height: 1.5; white-space: nowrap; }
+  #qualityTabs button small { margin-top: 2px; color: rgba(255,255,255,.6); }
+  #settings .flight-guide { gap: 22px; margin-top: 26px; }
+  #settings .key-actions { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 18px 12px; padding-top: 20px; }
+  #settings .key-actions > div { flex-direction: column; align-items: center; text-align: center; gap: 7px; }
+  #settings .key-actions > div:last-child { grid-column: auto; }
+  #settings .key-actions kbd { min-width: 44px; }
+  #settings .key-actions span { font-size: 12px; }
+  @media (max-width:600px) {
+    #settings .head h2 { font-size: 32px; }
+    #settings .head .btn kbd { display: none; }
+    #qualityTabs button { padding: 12px 3px 10px; }
+    #qualityTabs button span { font-size: 15px; letter-spacing: -.2em; }
+    #qualityTabs button small { font-size: 9px; }
+    #settings .flight-guide { gap: 20px 10px; margin-top: 22px; }
+    #settings .key-actions { gap: 16px 8px; }
+    #settings .key-actions span { font-size: 11px; }
+    #settings .key-actions kbd { min-width: 36px; font-size: 13px; padding: 4px 7px; }
+  }
+  #settings .panel { box-sizing: border-box; }
+  #qualityTabs button { container-type: inline-size; }
+  #qualityTabs button span { font-size: clamp(9px,9cqw,25px); }
+  #settings .key-actions { grid-template-columns: repeat(8,minmax(0,1fr)); }
+  #settings .key-actions > div { grid-column: span 2; }
+  #settings .key-actions > div:nth-child(5) { grid-column: 2 / span 2; }
+  #settings .key-actions > div:nth-child(6) { grid-column: 4 / span 2; }
+  #settings .key-actions > div:nth-child(7) { grid-column: 6 / span 2; }
+  #room > .panel { box-sizing: border-box; background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.18); border-radius: 24px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 32px; }
+  #room .scrim { background: rgba(5,10,18,.35); }
+  #room .tools { margin-top: 28px; }
+  @media (max-width:600px) { #room > .panel { padding: 24px 20px; } }
+
+  /* Use the title's per-letter occlusion instead of overlapping native text strokes. */
+  #room .panel .dialog-title.dialog-title { position: relative; isolation: isolate; color: transparent; -webkit-text-stroke: 0; text-shadow: none; letter-spacing: -.3em; }
+  #room .panel .dialog-title.dialog-title .title-line { display: block; white-space: nowrap; }
+  #room .panel .dialog-title.dialog-title::before, #room .panel .dialog-title.dialog-title::after { content: ""; position: absolute; inset: calc(-1 * var(--title-blur-pad, 0px)); pointer-events: none; }
+  #room .panel .dialog-title.dialog-title::before { z-index: -1; background: rgba(255,255,255,.7); mask: var(--title-mask, linear-gradient(transparent,transparent)) center / 100% 100% no-repeat; -webkit-mask: var(--title-mask, linear-gradient(transparent,transparent)) center / 100% 100% no-repeat; transition: background .18s ease; }
+  #room .panel .dialog-title.dialog-title::after { background: var(--title-outline) center / 100% 100% no-repeat; opacity: .6; }
+  #room .panel button.dialog-title.dialog-title:hover, #room .panel button.dialog-title.dialog-title:focus-visible { color: transparent; background: transparent; }
+  #room .panel button.dialog-title.dialog-title:hover::before, #room .panel button.dialog-title.dialog-title:focus-visible::before, #room .panel .dialog-title.dialog-title.primary::before { background: white; }
 </style>
 <script defer src="src/analytics.js?v=20260913"></script>
 </head>
 <body>
-<a href="/?piece=galactic-racers" aria-label="Back to Ani Dalal’s portfolio" style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:1000;color:#f2f0ea;font:16px var(--sans);text-decoration:none;padding:8px 12px;border-radius:20px;background:rgba(12,12,16,.7)">← Portfolio</a>
+<a id="portfolioLink" href="/" aria-label="Back to Ani Dalal’s portfolio"><img src="/icon.svg" width="25" height="29" alt="Ani Dalal"></a>
 <noscript><div style="position:fixed;inset:0;z-index:999;background:#101014;color:#f2f0ea;display:grid;place-content:center;padding:32px;font:18px var(--sans)"><h1>Galactic Racers</h1><p>A procedural hover racing game by Ani Dalal.</p><p>Enable JavaScript to play in a browser with WebGPU support.</p><a href="/" style="color:inherit">Return to the portfolio</a></div></noscript>
 <canvas id="gl"></canvas>
 <div id="vignette"></div>
 
 <div id="hud">
-  <div id="brand"><div class="name display">Galactic Racers</div><div class="planet display" id="hudPlanet"></div><div class="where" id="hudWhere"></div></div>
+  <div id="brand"><div class="ship-title race-brand" aria-label="Galactic Racers"><span class="title-line">Galactic</span><span class="title-line">Racers</span></div><div class="planet display" id="hudPlanet"></div><div class="where" id="hudWhere"></div></div>
   <div id="legend"></div>
   <div id="board"><div class="lap"><div class="pos display num" id="pos">—</div><div class="lapn num" id="lap"></div></div><div class="rows" id="rows"></div></div>
   <div id="msg" class="display"></div>
@@ -314,7 +728,7 @@
   <div id="muted" hidden>MUTED</div>
   <div id="netind" hidden></div>
   <div id="dash">
-    <canvas id="speedo" width="500" height="500"></canvas>
+    <canvas id="speedo" width="360" height="180" aria-label="Speed in kilometres per hour"></canvas>
     <div class="side">
       <div class="meter" id="lifebar"><div class="label">Hull</div><div class="bar"><div class="fill" id="life"></div></div></div>
       <div id="item"></div>
@@ -323,7 +737,7 @@
   <canvas id="minimap" width="500" height="348"></canvas>
 </div>
 
-<div id="raceTools" hidden><button class="btn" id="raceSettings">Settings</button><button class="btn" id="raceRestart">Restart</button><button class="btn" id="raceHome">Home</button></div>
+<div id="raceTools" hidden><button class="btn" id="raceSettings" aria-label="Settings (Esc)" title="Settings (Esc)"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 17H5M19 7h-9"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></button><button class="btn" id="raceRestart" aria-label="Restart race" title="Restart race"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5"/></svg></button><button class="btn" id="raceHome" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button></div>
 <div id="touchControls" hidden aria-label="Flight controls">
   <div class="touch-bank"><button data-flight="ArrowLeft" aria-label="Steer left">←</button><button data-flight="ArrowRight" aria-label="Steer right">→</button><button data-flight="ArrowUp" aria-label="Pitch up">Pitch ↑</button><button data-flight="ArrowDown" aria-label="Pitch down">Pitch ↓</button><button data-flight="Space">Rise</button><button data-flight="KeyC">Camera</button></div>
   <div class="touch-bank"><button data-flight="KeyW">Go</button><button data-flight="KeyS">Brake</button><button data-flight="ShiftLeft">Drift</button><button data-flight="KeyE">Item</button><button data-flight="KeyR">To lane</button><button data-flight="KeyM">Mute</button></div>
@@ -333,18 +747,31 @@
 <div id="ui">
   <div class="screen" id="cover">
     <div class="scrim"></div>
-    <h1 class="title display" style="margin:0"><small>A parametric hover racer</small>Galactic<br>Racers</h1>
-    <canvas id="coverShip" aria-label="Angled 3D Longtail spacecraft"></canvas>
-    <div class="actions"><button class="btn primary" id="btnStart">Start <kbd>↵</kbd></button><button class="btn" id="btnSettings">Settings</button></div>
-    <div class="where" id="coverWhere"></div>
-    <div class="foot"><a href="design.html?mode=vehicle">Craft designer</a><a href="design.html?mode=terrain">Planet designer</a><a href="design.html?mode=track">Track designer</a></div>
+    <div class="main">
+      <h1 class="title display" style="margin:0"><span class="title-line">Galactic</span><span class="title-line">Racers</span></h1>
+      <div class="actions">
+        <button class="btn wordmark-cta" id="btnSettings"><span class="title-line">Settings</span><span class="cta-echoes" aria-hidden="true"></span></button>
+        <button class="btn wordmark-cta" id="btnStart" aria-label="Start game"><span class="title-line">Startgame</span><span class="cta-echoes" aria-hidden="true"></span></button>
+      </div>
+    </div>
   </div>
 
   <div class="screen" id="settings">
     <div class="scrim"></div>
     <div class="center panel pad" style="width:min(820px, calc(100vw - 64px))">
       <div class="head"><h2 class="display">Settings</h2><button class="btn ghost" data-back>Back <kbd>esc</kbd></button></div>
-      <div class="grid">
+      <div id="qualityTabs" role="radiogroup" aria-label="Rendering quality">
+        <button type="button" role="radio" data-quality="eco" aria-checked="false"><span>Eco</span><small>Lower power</small></button>
+        <button type="button" role="radio" data-quality="balanced" aria-checked="false"><span>Balanced</span><small>Everyday play</small></button>
+        <button type="button" role="radio" data-quality="high" aria-checked="false"><span>High</span><small>More detail</small></button>
+      </div>
+      <div class="flight-guide" aria-label="Keyboard controls">
+        <section><div class="key-cluster"><kbd class="up">W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div><strong>Fly</strong><p>W accelerate · S brake<br>A / D steer</p></section>
+        <section><div class="key-cluster"><kbd class="up">↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></div><strong>Steer & pitch</strong><p>← / → steer<br>↑ / ↓ climb and dive</p></section>
+        <div class="key-actions"><div><kbd>Shift</kbd><span>Hold to drift<br>Release to boost</span></div><div><kbd>Space</kbd><span>Rise</span></div><div><kbd>E</kbd><span>Use item</span></div><div><kbd>R</kbd><span>Return to route</span></div><div><kbd>C</kbd><span>Camera</span></div><div><kbd>M</kbd><span>Mute</span></div><div><kbd>Esc</kbd><span>Pause / resume</span></div></div>
+      </div>
+      <p class="touch-note note">On touchscreens, use the flight controls along the bottom. Hold Go to accelerate; hold Drift and release to boost.</p>
+      <div style="display:none" aria-hidden="true">      <div class="grid">
         <div>
           <div class="label">Rendering</div>
           <div class="row"><label for="setQuality">Graphics</label><select id="setQuality" aria-describedby="qualityNote"><option value="eco">Eco</option><option value="balanced">Balanced</option><option value="high">High</option></select><span></span></div>
@@ -363,45 +790,44 @@
           <div class="label" style="margin-bottom:12px">Controls</div>
           <p class="note touch-note">Use the on-screen flight buttons. Hold Go to accelerate, steer with the arrows, and hold Drift then release to boost. Landscape gives you more room.</p><div class="ctl" id="setControls"></div>
         </div>
-      </div>
+      </div></div>
     </div>
   </div>
 
   <div class="screen setup" id="ship">
     <div class="scrim"></div>
-    <div class="head top"><h2 class="display">Choose your craft</h2><div class="steps"><span class="on">1 Craft</span><span>2 Planet</span><span>3 Room</span></div></div>
-    <div class="hero"><div class="hname display" id="heroName"></div><div class="hsub" id="heroSub"></div><div class="htag" id="heroTag"></div></div>
-    <div class="statrow" id="heroStats"></div>
-    <div class="railwrap"><button class="railbtn" id="shipPrev">‹</button><div class="rail" id="shipRail"></div><button class="railbtn" id="shipNextTile">›</button></div>
+    <div class="head top"><button id="shipHome" class="ship-title ship-brand" aria-label="Galactic Racers: back to home"><span class="title-line">Galactic</span><span class="title-line">Racers</span><span class="cta-echoes" aria-hidden="true"></span></button></div>
+    <div class="hero"><div class="hname display ship-title" id="heroName"><span class="title-line"></span></div><div class="hsub" id="heroSub"></div><div class="htag" id="heroTag"></div></div>
+    <div class="statrow" id="heroStats"><div class="st" data-stat="speed"><span class="k ship-title stat-label"><span class="title-line">Speed</span></span><span class="v num"></span><i></i></div><div class="st" data-stat="accel"><span class="k ship-title stat-label"><span class="title-line">Accel</span></span><span class="v num"></span><i></i></div><div class="st" data-stat="drift"><span class="k ship-title stat-label"><span class="title-line">Drift</span></span><span class="v num"></span><i></i></div></div>
+    <button class="ship-neighbour previous" id="shipPrev"><svg aria-hidden="true" viewBox="0 0 64 64"><path d="M8 27 30 9Q36 5 38 12L34 23H53Q60 23 58 32L55 36Q53 41 47 41H31L28 53Q26 60 20 54L7 38Q2 32 8 27Z"/></svg></button><button class="ship-neighbour next" id="shipNextTile"><svg aria-hidden="true" viewBox="0 0 64 64"><path d="M8 27 30 9Q36 5 38 12L34 23H53Q60 23 58 32L55 36Q53 41 47 41H31L28 53Q26 60 20 54L7 38Q2 32 8 27Z"/></svg></button>
     <div class="tools bottom">
       <div class="left"><div class="arch"><button class="iconbtn" id="archPrev">‹</button><select id="paintSelect" aria-label="Ship colour" style="max-width:190px;color:inherit;background:#182126;padding:8px;border:1px solid #697579;border-radius:6px"></select><span id="archName" hidden></span><button class="iconbtn" id="archNext">›</button></div><span class="label" id="archHint">Paint · any terrain</span><button class="btn ghost" id="paintRandom">Random colour</button></div>
-      <div class="right"><button class="btn ghost" data-back>Back <kbd>esc</kbd></button><button class="btn primary" id="shipNext">Next <kbd>↵</kbd></button></div>
+      </div><div class="actions ship-actions"><button class="btn wordmark-cta" id="shipBack" data-back><span class="title-line">Back</span><span class="cta-echoes" aria-hidden="true"></span></button><button class="btn wordmark-cta" id="shipNext" aria-label="Next: select terrain"><span class="title-line">Next</span><span class="cta-echoes" aria-hidden="true"></span></button>
     </div>
   </div>
 
   <div class="screen setup" id="planet">
     <div class="scrim"></div>
-    <div class="head top"><h2 class="display">Pick a planet</h2><div class="steps"><span class="done">1 Craft</span><span class="on">2 Planet</span><span>3 Room</span></div></div>
-    <div class="hero"><div class="hname display" id="planetName"></div><div class="hsub" id="planetSub"></div><div class="htag" id="planetTag"></div></div>
-    <div class="railwrap"><button class="railbtn" id="planetPrev">‹</button><div class="rail" id="planetRail"></div><button class="railbtn" id="planetNextTile">›</button></div>
-    <div class="tools bottom">
-      <div class="left"><div class="field"><span class="label">Seed</span><input id="seedField" spellcheck="false"><button class="iconbtn" id="seedRoll" title="Reroll">↻</button></div></div>
-      <div class="right"><button class="btn ghost" data-back>Back <kbd>esc</kbd></button><button class="btn primary" id="planetNext">Next <kbd>↵</kbd></button></div>
+    <div class="head top"><button id="planetHome" class="ship-title ship-brand" aria-label="Galactic Racers: back to home"><span class="title-line">Galactic</span><span class="title-line">Racers</span><span class="cta-echoes" aria-hidden="true"></span></button></div>
+    <div class="hero"><div class="hname display ship-title" id="planetName"><span class="title-line"></span></div><div class="hsub" id="planetSub"></div><div class="htag" id="planetTag"></div></div>
+    <button class="ship-neighbour previous" id="planetPrev"><svg aria-hidden="true" viewBox="0 0 64 64"><path d="M8 27 30 9Q36 5 38 12L34 23H53Q60 23 58 32L55 36Q53 41 47 41H31L28 53Q26 60 20 54L7 38Q2 32 8 27Z"/></svg></button><button class="ship-neighbour next" id="planetNextTile"><svg aria-hidden="true" viewBox="0 0 64 64"><path d="M8 27 30 9Q36 5 38 12L34 23H53Q60 23 58 32L55 36Q53 41 47 41H31L28 53Q26 60 20 54L7 38Q2 32 8 27Z"/></svg></button>
+    <svg id="planetTrack" viewBox="0 0 240 100" role="img" aria-label="Selected track outline"><path fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div hidden><input id="seedField"><button id="seedRoll"></button></div><div class="actions ship-actions"><button class="btn wordmark-cta" id="planetBack" data-back><span class="title-line">Back</span><span class="cta-echoes" aria-hidden="true"></span></button><button class="btn wordmark-cta" id="planetNext" aria-label="Next: choose room"><span class="title-line">Next</span><span class="cta-echoes" aria-hidden="true"></span></button>
     </div>
   </div>
 
   <div class="screen" id="room">
     <div class="scrim"></div>
     <div class="center panel pad" style="width:min(760px, calc(100vw - 64px))">
-      <div class="head"><h2 class="display">Room</h2><div class="steps"><span class="done">1 Craft</span><span class="done">2 Planet</span><span class="on">3 Room</span></div></div>
+      <div class="head"><h2 class="display dialog-title"><span class="title-line">Room</span></h2><div class="steps"><span class="done">1 Craft</span><span class="done">2 Planet</span><span class="on">3 Room</span></div></div>
       <div id="roomPick">
         <div class="opts">
-          <button class="btn" id="roomHost">Host a room</button>
-          <button class="btn" id="roomJoinOpen">Join with a code</button>
+          <button class="btn dialog-title" id="roomHost"><span class="title-line">Host a room</span></button>
+          <button class="btn dialog-title" id="roomJoinOpen"><span class="title-line">Join with a code</span></button>
         </div>
         <div class="joinrow" id="joinRow" hidden>
           <div class="field"><input id="joinCode" spellcheck="false" maxlength="6" placeholder="CODE"></div>
-          <button class="btn primary" id="joinGo">Join</button>
+          <button class="btn primary dialog-title" id="joinGo"><span class="title-line">Join</span></button>
         </div>
         <div class="note" id="roomNote" style="text-align:center">Race on your own, or open a room and share the code.</div>
       </div>
@@ -411,14 +837,14 @@
       </div>
       <div class="tools">
         <div class="left"><button class="btn ghost" id="roomCopy" hidden>Copy code</button><button class="btn ghost" id="roomManual">No connection?</button><button class="btn ghost" id="roomLeave" hidden>Leave room</button></div>
-        <div class="right"><button class="btn ghost" data-back>Back <kbd>esc</kbd></button><button class="btn ghost" id="roomSkip">Skip</button><button class="btn primary" id="roomStart">Start race <kbd>↵</kbd></button></div>
+        <div class="right"><button class="btn ghost dialog-title" data-back><span class="title-line">Back</span></button><button class="btn ghost" id="roomSkip">Skip</button><button class="btn primary dialog-title" id="roomStart"><span class="title-line">Start race</span></button></div>
       </div>
       <div class="manual" id="roomManualBox" hidden>
-        <div class="label">No broker? Paste these two blobs between the two browsers.</div>
+        <div class="label">Connect directly by exchanging an invite and a reply.</div>
         <div class="joinrow"><button class="btn ghost" id="manOffer">I host: make an invite</button><button class="btn ghost" id="manJoinMode">I join: paste an invite</button></div>
-        <textarea id="manOut" spellcheck="false" placeholder="your blob appears here"></textarea>
-        <textarea id="manIn" spellcheck="false" placeholder="paste the other side's blob here"></textarea>
-        <div class="joinrow"><button class="btn" id="manApply">Apply pasted blob</button></div>
+        <textarea id="manOut" spellcheck="false" placeholder="Your invite or reply appears here"></textarea>
+        <textarea id="manIn" spellcheck="false" placeholder="Paste the other player’s invite or reply"></textarea>
+        <div class="joinrow"><button class="btn" id="manApply">Connect</button></div>
       </div>
     </div>
   </div>
@@ -437,43 +863,48 @@
   </div>
 </div>
 <div id="err"></div>
-<script src="src/math.js?v=galactic-20260913-4"></script>
-<script src="src/palettes.js?v=galactic-20260913-4"></script>
-<script src="src/planets.js?v=galactic-20260913-4"></script>
-<script src="src/craft.js?v=galactic-20260913-4"></script>
-<script src="src/kitbash.js?v=galactic-20260913-4"></script>
-<script src="src/stats.js?v=galactic-20260913-4"></script>
-<script src="src/tracks.js?v=galactic-20260913-4"></script>
-<script src="src/weapons.js?v=galactic-20260913-4"></script>
-<script src="src/particles.js?v=galactic-20260913-4"></script>
-<script src="src/biomes.js?v=galactic-20260913-4"></script>
-<script src="src/world.js?v=galactic-20260913-4"></script>
-<script src="ships/ship-01.js?v=galactic-20260913-4"></script>
-<script src="ships/ship-02.js?v=galactic-20260913-4"></script>
-<script src="ships/ship-03.js?v=galactic-20260913-4"></script>
-<script src="ships/ship-04.js?v=galactic-20260913-4"></script>
-<script src="ships/ship-05.js?v=galactic-20260913-4"></script>
-<script src="ships/ship-06.js?v=galactic-20260913-4"></script>
-<script src="src/cover-ship.js?v=galactic-20260913-4"></script>
-<script src="src/fleet.js?v=galactic-20260913-4"></script>
-<script src="src/geometry.js?v=galactic-20260913-4"></script>
-<script src="src/flora.js?v=galactic-20260913-4"></script>
-<script src="src/propsets.js?v=galactic-20260913-4"></script>
-<script src="src/shaders.js?v=galactic-20260913-4"></script>
-<script src="src/gpu.js?v=galactic-20260913-4"></script>
-<script src="src/frame.js?v=galactic-20260913-4"></script>
-<script src="src/names.js?v=galactic-20260913-4"></script>
-<script src="src/radio.js?v=galactic-20260913-4"></script>
-<script src="src/audio.js?v=galactic-20260913-4"></script>
-<script src="src/net.js?v=galactic-20260913-4"></script>
-<script src="src/mp.js?v=galactic-20260913-4"></script>
-<script src="src/thumbs.js?v=galactic-20260913-4"></script>
-<script src="src/game.js?v=galactic-20260913-4"></script>
-<script src="src/ui.js?v=galactic-20260913-4"></script>
+<script src="src/math.js?v=galactic-20260913-10"></script>
+<script src="src/palettes.js?v=galactic-20260913-10"></script>
+<script src="src/planets.js?v=galactic-20260913-10"></script>
+<script src="src/craft.js?v=galactic-20260913-10"></script>
+<script src="src/kitbash.js?v=galactic-20260913-10"></script>
+<script src="src/stats.js?v=galactic-20260913-10"></script>
+<script src="src/tracks.js?v=galactic-20260913-10"></script>
+<script src="src/weapons.js?v=galactic-20260913-10"></script>
+<script src="src/particles.js?v=galactic-20260913-10"></script>
+<script src="src/biomes.js?v=galactic-20260913-10"></script>
+<script src="src/world.js?v=galactic-20260913-10"></script>
+<script src="ships/ship-01.js?v=galactic-20260913-10"></script>
+<script src="ships/ship-02.js?v=galactic-20260913-10"></script>
+<script src="ships/ship-03.js?v=galactic-20260913-10"></script>
+<script src="ships/ship-04.js?v=galactic-20260913-10"></script>
+<script src="ships/ship-05.js?v=galactic-20260913-10"></script>
+<script src="ships/ship-06.js?v=galactic-20260913-10"></script>
+<script src="ships/ship-07.js?v=20260914-1"></script>
+<script src="ships/ship-08.js?v=20260914-1"></script>
+<script src="src/fleet.js?v=galactic-20260913-10"></script>
+<script src="src/geometry.js?v=galactic-20260913-10"></script>
+<script src="src/flora.js?v=galactic-20260913-10"></script>
+<script src="src/propsets.js?v=galactic-20260913-10"></script>
+<script src="src/shaders.js?v=galactic-20260913-10"></script>
+<script src="src/gpu.js?v=galactic-20260913-10"></script>
+<script src="src/frame.js?v=galactic-20260913-10"></script>
+<script src="src/names.js?v=galactic-20260913-10"></script>
+<script src="src/radio.js?v=galactic-20260913-10"></script>
+<script src="src/audio.js?v=galactic-20260913-10"></script>
+<script src="src/net.js?v=galactic-20260913-10"></script>
+<script src="src/mp.js?v=galactic-20260913-10"></script>
+<script src="src/thumbs.js?v=galactic-20260913-10"></script>
+<script src="src/cover-world.js?v=20260913-1"></script>
+<script src="src/dock.js?v=20260913-1"></script>
+<script src="src/game.js?v=galactic-20260913-10"></script>
+<script src="src/title-glass.js?v=20260913-1"></script>
+<script src="src/ui.js?v=galactic-20260913-10"></script>
 <script>
   if (new URLSearchParams(location.search).get('preview') === '1') {
     document.querySelector('a[aria-label="Back to Ani Dalal’s portfolio"]')?.remove();
   }
+  document.fonts.load('16px Kilo', '0123456789').catch(console.warn);
   Game.start(document.getElementById('gl')).then(() => UI.start()).catch(e => {
     console.error(e);
     const el = document.getElementById('err');

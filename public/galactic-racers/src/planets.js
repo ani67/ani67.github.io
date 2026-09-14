@@ -426,6 +426,8 @@ const Planets = (() => {
     { id: 'voidborn', name: 'Voidborn', planet: 'nullsector', vehicle: 'hulk', hue: 0.72, ability: { name: 'Bulwark', desc: 'Slightly quicker recovery', crashResist: 0.5 } },
     { id: 'sablekin', name: 'Sablekin', planet: 'sablewaste', vehicle: 'dune', hue: 0.1, ability: { name: 'Dustrunner', desc: 'Full speed off road', offroad: 1.0 } },
     { id: 'glassmind', name: 'Glassmind', planet: 'glasshold', vehicle: 'prism', hue: 0.85, ability: { name: 'Refract', desc: 'Sharper steering', steer: 1.25 } },
+    { id: 'twinjet', name: 'Twinjet', planet: 'vantera', vehicle: 'falcon', hue: 0.48, ability: { name: 'Vector', desc: 'Responsive steering', steer: 1.1 } },
+    { id: 'trijet', name: 'Trijet', planet: 'nullsector', vehicle: 'hulk', hue: 0.16, ability: { name: 'Triad', desc: 'Steady boost recovery', driftCharge: 1.1 } },
   ];
 
   const byId = (list, id) => list.find(x => x.id === id);

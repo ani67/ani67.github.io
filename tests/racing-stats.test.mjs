@@ -39,8 +39,8 @@ test('custom craft and extreme stacked perks cannot escape the envelope; bars re
       assert.equal(s.ability.steer, 1);
       assert(s.ability.boostMul <= 1.07);
       assert(s.ability.crashResist >= 0.93 - 1e-12);
-      assert.equal(s.bars.speed, 0.5 * s.speedMul / Stats.CENTRES.speedMul);
-      assert.equal(s.bars.defense, 0.5 * Stats.CENTRES.armour / s.armour);
+      assert.equal(s.bars.speed, 0.8 * s.speedMul / Stats.CENTRES.speedMul);
+      assert.equal(s.bars.defense, 0.8 * Stats.CENTRES.armour / s.armour);
     }
   }
 });
@@ -51,5 +51,5 @@ test('same seed and faction give identical stats without mutating recipes or sha
   const a = Stats.compute(null, 1, { steer: 999 });
   assert.equal(a.ability.steer, 1);
   a.bars.speed = 0;
-  assert.equal(Stats.compute(null).bars.speed, 0.5);
+  assert.equal(Stats.compute(null).bars.speed, 0.8);
 });

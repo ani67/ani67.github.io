@@ -568,6 +568,7 @@ const Audio = (() => {
   }
 
   const sfx = {
+    hover() { if (!ac || ac.state !== 'running' || vol.muted || vol.sfx <= 0) return; blip(680, 0.055, 'sine', 0.035, 0, 920); bump('hover'); },
     routePassed() { blip(660, 0.18, 'sine', 0.035, 0, 880); },
     boost(pan) { noiseBurst(0.75, 300, 4200, 0.3, 0.7, pan); blip(90, 0.5, 'sawtooth', 0.14, pan, 260); bump('boost'); },
     thrust(pan) { blip(150, 0.28, 'square', 0.16, pan, 520); noiseBurst(0.3, 800, 200, 0.18, 1.4, pan); bump('thrust'); },

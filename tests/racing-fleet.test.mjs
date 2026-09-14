@@ -4,10 +4,10 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 const ctx=vm.createContext({console});
 const root=new URL('../public/galactic-racers/',import.meta.url);
-for(const file of ['src/math.js','src/palettes.js','src/planets.js','src/craft.js','src/biomes.js','src/world.js',...Array.from({length:6},(_,i)=>`ships/ship-0${i+1}.js`),'src/fleet.js','src/stats.js','src/geometry.js']) vm.runInContext(fs.readFileSync(new URL(file,root),'utf8'),ctx);
+for(const file of ['src/math.js','src/palettes.js','src/planets.js','src/craft.js','src/biomes.js','src/world.js',...Array.from({length:8},(_,i)=>`ships/ship-0${i+1}.js`),'src/fleet.js','src/stats.js','src/geometry.js']) vm.runInContext(fs.readFileSync(new URL(file,root),'utf8'),ctx);
 const {Fleet,Stats,Planets,Geo}=vm.runInContext('({Fleet,Stats,Planets,Geo})',ctx);
-test('six replacement ships produce finite meshes and truly neutral greyscale',()=>{
-  assert.equal(new Set(Fleet.entries.map(e=>e.id)).size,6);
+test('eight replacement ships produce finite meshes and truly neutral greyscale',()=>{
+  assert.equal(new Set(Fleet.entries.map(e=>e.id)).size,8);
   for(const entry of Fleet.entries){
     const mesh=Fleet.build(Fleet.recipe(entry.id,1));
     assert([...mesh.verts].every(Number.isFinite));
@@ -15,7 +15,7 @@ test('six replacement ships produce finite meshes and truly neutral greyscale',(
     for(let i=0;i<mesh.verts.length;i+=12){
       assert.equal(mesh.verts[i+6],mesh.verts[i+7]);assert.equal(mesh.verts[i+6],mesh.verts[i+10]);
       assert.equal(mesh.verts[i+9],10);
-      for(let k=0;k<3;k++)assert(Math.abs(mesh.verts[i+k])<3.02);
+      for(let k=0;k<3;k++)assert(Math.abs(mesh.verts[i+k])<3.02*entry.visualScale);
     }
     const lod=Geo.withLods(mesh);assert(lod.lods.length>0);
   }

@@ -4,6 +4,11 @@ const Game = (() => {
   const SPD = (typeof Planets !== 'undefined' && Planets.SPD) || 1; // global speed scale; speed-relative thresholds derive from it
   const NUM_CARS = Planets.MAX_RACERS; let LAPS = 3;
   let desc, tab, terrain, cars = [], player, scene, planet = null, raceDef = null, seedText, overrides = null, craftOverride = null;
+  let coverMesh = null;
+  let showcaseDirection = 0, showcaseStarted = -Infinity;
+  let showcaseView = null, showcaseEntering = false, previewSnap = false;
+  let terrainZoom = 1, terrainZoomFrom = 1, terrainZoomStarted = -Infinity;
+  let showcasePaints = {}, dockMesh = null, dockDesc = null, showcaseGroups = [];
   let carGroups = [], gateGroup = null, boostGates = [], routeRings = [], routePrevious = null;
   let input = { steer: 0, throttle: 0, brake: 0, drift: false, pitch: 0 };
   let cam = { pos: [0, 30, 0], look: [0, 0, 0], fov: 52, up: [0, 1, 0] };
@@ -175,7 +180,11 @@ const Game = (() => {
 
   function loadWorld(seedInput, sharedDescriptor = null) {
     Gpu.destroyScene(scene);
+    // Terrain changes retain the selected craft and its GPU buffers.
+    if (app.state !== 'gallery') { Gpu.destroyGroups(showcaseGroups); showcaseGroups = []; }
+    if (dockMesh) Gpu.destroyGroups([{mesh:dockMesh}]); dockMesh = null; dockDesc = null;
     scene = null; carGroups = []; gateGroup = null;
+    if (coverMesh) Gpu.destroyGroups([{mesh:coverMesh}]); coverMesh = null;
     seedText = String(seedInput);
     desc = sharedDescriptor ? JSON.parse(JSON.stringify(sharedDescriptor)) : World.generate(seedText, planet, overrides);
     tab = World.buildSamples(desc, 800);
@@ -222,13 +231,14 @@ const Game = (() => {
     drawMinimapBase();
     A(a => a.planet(desc));   // retune the generative music to this world
     cam.pos = [player.x, player.y + 24, player.z - 36]; cam.look = [player.x, player.y, player.z];
+    if (app.state === 'gallery') previewSnap = true;
     resetClock();
   }
   // Race state and camera for the current app state (cover, showcase, gallery, race).
   function beginPhase() {
     paused = false;
     if (app.state === 'race') { rs = { state: 'countdown', timer: 3.5, results: null, elapsed: 0 }; camMode = 'chase'; lastCount = -1; A(a => { a.init(); a.race('countdown'); }); }
-    else { rs = { state: 'idle', timer: 0, results: null, elapsed: 0 }; camMode = app.state === 'showcase' ? 'showcase' : 'gallery'; A(a => { a.engineStopAll(); a.wind(0); a.race('menu'); }); }
+    else { rs = { state: 'idle', timer: 0, results: null, elapsed: 0 }; camMode = (app.state === 'showcase' || app.state === 'gallery') ? 'showcase' : 'gallery'; A(a => { a.engineStopAll(); a.wind(0); a.race('menu'); }); }
     resetClock();
   }
 
@@ -339,7 +349,7 @@ const Game = (() => {
 
   function craftParams(race) {
     const e=Fleet.forRace(race);
-    const paint=race===raceDef?(craftOverride?.paint||craftSeed||1):2+Planets.RACES.indexOf(race)%Planets.PLANETS.length;
+    const paint=race===raceDef?(craftOverride?.paint||craftSeed||1):(app.state === 'showcase' ? showcasePaints[e.id] || e.defaultPaint : 2+Planets.RACES.indexOf(race)%Planets.PLANETS.length);
     return {recipe:Fleet.recipe(e.id,paint),seed:1};
   }
   function getPlayerName() {
@@ -377,6 +387,11 @@ const Game = (() => {
     routePrevious = null; for (const ring of routeRings) { ring.flash = 0; ring.focus = 0; }
     // The environment and gates survive craft changes, but craft and weapon buffers do not.
     Gpu.destroyGroups(carGroups);
+    const persistentShip = app.state === 'gallery' ? showcaseGroups.find(g => !g.outgoing) : null;
+    const outgoing = app.state === 'showcase' && showcaseDirection && !reducedMotion.matches ? showcaseGroups.find(g => !g.outgoing) : null;
+    Gpu.destroyGroups(showcaseGroups.filter(g => g !== outgoing && g !== persistentShip));
+    showcaseGroups = persistentShip ? [persistentShip] : outgoing ? [outgoing] : [];
+    if (outgoing) outgoing.outgoing = true;
     if (typeof Weapons !== 'undefined') Gpu.destroyGroups(Weapons.groups());
     cars = []; carGroups = [];
     const rnd = mulberry32(desc.seed ^ 0x51A7);
@@ -435,6 +450,17 @@ const Game = (() => {
       hit: (c, s, sp) => { if (authoritative()) hit(c, s, sp); },
     });
     scene.carGroups = [...carGroups, ...(gateGroup || []), ...Weapons.groups()];
+    if ((app.state === 'showcase' || app.state === 'gallery')) {
+      const selected = Fleet.forRace(raceDef).raceIndex;
+      showcaseStarted = outgoing || showcaseEntering ? performance.now() : -Infinity;
+      for (const slot of persistentShip ? [] : [0]) {
+        const entry = Fleet.entries[(selected+slot+Fleet.entries.length)%Fleet.entries.length];
+        const paint = slot === 0 ? (craftOverride?.paint || craftSeed || 1) : (showcasePaints[entry.id] || entry.defaultPaint);
+        const raw = preparedCraft({recipe:Fleet.recipe(entry.id,paint),seed:1});
+        const data = new Float32Array(Gpu.CAR_FLOATS);
+        showcaseGroups.push({mesh:Gpu.createMesh(raw),inst:Gpu.createInstances(data),data,count:1,slot,lodDistance:0});
+      }
+    }
   }
   function hsl(h, s, l) {
     const f = n => { const k = (n + h * 12) % 12, a = s * Math.min(l, 1 - l); return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); };
@@ -445,7 +471,7 @@ const Game = (() => {
   const keys = {};
   function bindInput() {
     window.addEventListener('keydown', e => {
-      if (app.state !== 'race' || paused) return; // menus own the keyboard elsewhere
+      if (app.state !== 'race' || paused || document.querySelector('#settings.on')) return; // menus own the keyboard elsewhere
       if (e.target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
       keys[e.code] = true;
       const sharedMap = typeof MP !== 'undefined' && MP.connected();
@@ -490,6 +516,7 @@ const Game = (() => {
     const touches = new Map(), tc = hud.canvas;
     const clearInput = () => { for (const key of Object.keys(keys)) delete keys[key]; touches.clear(); readInput(); };
     window.addEventListener('blur', clearInput);
+    window.addEventListener('ir:clear-input', clearInput);
     document.addEventListener('visibilitychange', () => { if (document.hidden) clearInput(); });
     const upd = () => {
       let steer = 0, gas = 0, drift = false;
@@ -969,19 +996,47 @@ const Game = (() => {
       const orbit = menuOrbit[camMode];
       const moving = menuOrbit.pointer === null && performance.now() > menuOrbit.holdUntil;
       menuOrbit.speed = mix(menuOrbit.speed,moving?1:0,1-Math.exp(-dt*2));
-      if (orbit) orbit.yaw += dt*(camMode==='showcase'?0.12:0.035)*menuOrbit.speed;
+      if (orbit && camMode !== 'showcase') orbit.yaw += dt*.035*menuOrbit.speed;
     }
-    if (camMode === 'showcase') {
-      // Fit the entire rotating silhouette, including upright wings, above the selection rail.
-      const aspect = innerWidth / Math.max(1, innerHeight);
-      const halfFov = Math.atan(Math.tan(Math.PI / 12) * Math.min(1, aspect));
-      const az = menuOrbit.showcase.yaw, el = menuOrbit.showcase.pitch;
-      const r = (c.previewRadius || c.extent || 4) / (Math.sin(halfFov) * 0.55);
-      const cy = c.y + (c.vcen === undefined ? 0.8 : c.vcen);   // orbit the hull's middle, not the hover origin
-      target = [c.x + Math.cos(az) * Math.cos(el) * r, cy + Math.sin(el) * r, c.z + Math.sin(az) * Math.cos(el) * r];
-      lookT = [c.x, cy - r * 0.067, c.z];  // a touch below the hull: the craft sits just above centre, clear of the stats row
-      cam.pos = M.lerp3(cam.pos, target, 1 - Math.exp(-dt * 8)); cam.look = M.lerp3(cam.look, lookT, 1 - Math.exp(-dt * 10));
-      cam.fov = mix(cam.fov, 30, k); cam.speed01 = 0;
+    if (app.state === 'cover' || app.state === 'showcase' || app.state === 'gallery') {
+      // Match the first starting-grid slot and its stationary chase-camera heading.
+      const start = World.sampleAt(tab, .99);
+      const origin = add(start.p, scale(start.right, -.45 * desc.corridor.radius * .45));
+      const heading = Math.atan2(start.tan[0], start.tan[2]);
+      const forward = [Math.sin(heading), 0, Math.cos(heading)];
+      const back = camCfg.back + 3;
+      target = [origin[0] - forward[0] * back, origin[1] + 2.6, origin[2] - forward[2] * back];
+      if (!desc.noTerrain && terrain?.heightAt) {
+        target[1] = Math.max(target[1], terrain.heightAt(target[0], target[2]) + 1.5, desc.waterLevel + 1.5);
+      }
+      for (let step = 1; step <= 10; step++) {
+        const u = step / 10;
+        const q = [mix(origin[0], target[0], u), mix(origin[1] + 1.5, target[1], u), mix(origin[2], target[2], u)];
+        if (!pointFree(q[0], q[1], q[2])) {
+          const safe = Math.max(0, (step - 1.5) / 10);
+          target = [mix(origin[0], target[0], safe), mix(origin[1] + 1.5, target[1], safe), mix(origin[2], target[2], safe)];
+          break;
+        }
+      }
+      lookT = [origin[0] + forward[0] * camCfg.ahead, origin[1] + .6, origin[2] + forward[2] * camCfg.ahead];
+      const zoomProgress = reducedMotion.matches ? 1 : clamp((performance.now()-terrainZoomStarted)/1300,0,1);
+      terrainZoom = mix(terrainZoomFrom, app.state === 'gallery' ? 3.4 : 1, zoomProgress*zoomProgress*(3-2*zoomProgress));
+      if ((app.state === 'showcase' || app.state === 'gallery')) {
+        const direction = norm(sub(lookT, target));
+        const distance = 14 / Math.min(1, innerWidth / Math.max(1, innerHeight));
+        const pivot = add(target, scale(direction, distance));
+        const orbitDistance = distance * terrainZoom;
+        showcaseView = { pivot, heading };
+        const orbit = menuOrbit.showcase;
+        const yaw = Math.atan2(-direction[0], -direction[2]) + orbit.yaw;
+        const pitch = clamp(Math.asin(-direction[1]) + orbit.pitch, -.35, 1.25);
+        target = [pivot[0] + Math.sin(yaw) * Math.cos(pitch) * orbitDistance, pivot[1] + Math.sin(pitch) * orbitDistance, pivot[2] + Math.cos(yaw) * Math.cos(pitch) * orbitDistance];
+        if (app.state !== 'gallery' && !desc.noTerrain && terrain?.heightAt) target[1] = Math.max(target[1], terrain.heightAt(target[0], target[2]) + 1.5);
+        lookT = pivot;
+      }
+      const previewEase = app.state === 'showcase' && performance.now() - showcaseStarted < 1800 && menuOrbit.pointer === null ? 1 - Math.exp(-dt * 2.3) : k;
+      cam.pos = M.lerp3(cam.pos, target, previewSnap ? 1 : previewEase); cam.look = M.lerp3(cam.look, lookT, previewSnap ? 1 : previewEase); previewSnap = false;
+      cam.fov = mix(cam.fov, 56, k); cam.speed01 = 0;
       return;
     }
     if (camMode === 'gallery') {
@@ -991,6 +1046,9 @@ const Game = (() => {
       const ahead = wide ? World.sampleAt(tab, c.t + 0.03).p : [c.x, c.y, c.z];
       target = [ahead[0] + Math.cos(az) * Math.cos(el) * r, ahead[1] + Math.sin(el) * r, ahead[2] + Math.sin(az) * Math.cos(el) * r];
       lookT = [ahead[0], ahead[1] + 1, ahead[2]];
+      if (app.state === 'cover' && terrain?.heightAt) {
+        target[1] = Math.max(target[1],terrain.heightAt(target[0],target[2])+28);
+      }
       cam.pos = M.lerp3(cam.pos, target, k); cam.look = M.lerp3(cam.look, lookT, 1 - Math.exp(-dt * 10));
       cam.fov = mix(cam.fov, wide ? 34 : 26, k); cam.speed01 = speed01 * 0.3;
       return;
@@ -1083,158 +1141,98 @@ const Game = (() => {
 
   // ---------------------------------------------------------------- speedometer
   function drawSpeedo(c) {
-    // Quarter-circle "slice" anchored at the bottom-left corner: the arc centre is the corner itself.
-    const g = spCtx, W = hud.speedo.width, H = hud.speedo.height, cx = 0, cy = H, R = Math.min(W, H) - 14;
-    const a0 = -Math.PI / 2, a1 = 0, span = a1 - a0, maxK = 320 * SPD; // dial tops out above the fastest craft
-    const kph = Math.abs(c.speed || 0) * 3.2, f = clamp(kph / maxK, 0, 1);
+    const g = spCtx, W = hud.speedo.width, H = hud.speedo.height;
+    const kph = Math.abs(c.speed || 0) * 3.2;
+    const fraction = clamp(kph / (320 * SPD), 0, 1);
+    const charge = clamp(c.drifting ? c.charge / 2.2 : (c.boost > 0 ? c.boost / 1.4 : 0), 0, 1);
     const accent = cssColor(c.color);
     g.clearRect(0, 0, W, H);
-    // Slice fill.
-    g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, R, a0, a1); g.closePath();
-    g.fillStyle = 'rgba(8,8,12,0.42)'; g.fill();
-    g.lineCap = 'round';
-    g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,0.2)';
-    g.beginPath(); g.arc(cx, cy, R, a0, a1); g.stroke();
-    if (f > 0.002) { g.lineWidth = 4; g.strokeStyle = 'rgba(242,240,234,0.92)'; g.beginPath(); g.arc(cx, cy, R, a0, a0 + span * f); g.stroke(); }
-    for (let k = 0; k <= maxK; k += 20) {
-      const a = a0 + span * (k / maxK), major = k % 100 === 0, l = major ? 18 : 9;
-      g.strokeStyle = major ? 'rgba(242,240,234,0.6)' : 'rgba(242,240,234,0.22)'; g.lineWidth = major ? 2 : 1.5;
-      g.beginPath(); g.moveTo(cx + Math.cos(a) * (R - 8), cy + Math.sin(a) * (R - 8)); g.lineTo(cx + Math.cos(a) * (R - 8 - l), cy + Math.sin(a) * (R - 8 - l)); g.stroke();
-      if (major && k > 0 && k < maxK) { g.fillStyle = 'rgba(242,240,234,0.45)'; g.font = '400 18px Mori, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(k), cx + Math.cos(a) * (R - 46), cy + Math.sin(a) * (R - 46)); }
-    }
-    // Boost charge as an inner arc.
-    const charge = clamp(c.drifting ? c.charge / 2.2 : (c.boost > 0 ? c.boost / 1.4 : 0), 0, 1);
-    const Ri = R - 74;
-    g.lineWidth = 5; g.strokeStyle = 'rgba(255,255,255,0.08)'; g.beginPath(); g.arc(cx, cy, Ri, a0, a1); g.stroke();
-    if (charge > 0.01) { g.strokeStyle = c.boost > 0 ? '#ff7a3d' : accent; g.beginPath(); g.arc(cx, cy, Ri, a0, a0 + span * charge); g.stroke(); }
-    // Needle from the corner.
-    const na = a0 + span * f;
-    g.strokeStyle = accent; g.lineWidth = 3;
-    g.beginPath(); g.moveTo(cx + Math.cos(na) * 30, cy + Math.sin(na) * 30); g.lineTo(cx + Math.cos(na) * (R - 30), cy + Math.sin(na) * (R - 30)); g.stroke();
-    g.fillStyle = accent; g.beginPath(); g.arc(cx + 22, cy - 22, 5, 0, TAU); g.fill();
-    // Number inside the slice, along the diagonal.
-    const nx = cx + R * 0.44, ny = cy - R * 0.36;
-    g.fillStyle = 'rgba(242,240,234,0.95)'; g.font = '400 60px Mori, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
-    g.fillText(String(Math.round(kph)), nx, ny);
-    g.fillStyle = 'rgba(242,240,234,0.45)'; g.font = '400 16px Mori, sans-serif'; g.fillText('K P H', nx, ny + 20);
+    g.font = '400 100px Kilo, sans-serif';
+    g.textAlign = 'right'; g.textBaseline = 'alphabetic';
+    g.lineJoin = 'round'; g.lineWidth = 3;
+    g.strokeStyle = 'rgba(0,0,0,.2)'; g.fillStyle = 'rgba(255,255,255,.85)';
+    const value = String(Math.round(kph));
+    g.strokeText(value, W - 10, 100, W - 24);
+    g.fillText(value, W - 10, 100, W - 24);
+    g.font = '600 18px Mori, sans-serif';
+    g.fillStyle = 'rgba(255,255,255,.65)'; g.fillText('KPH', W - 12, 125);
+    const bar = (y, height, progress, colour) => {
+      g.fillStyle = 'rgba(255,255,255,.16)'; g.beginPath(); g.roundRect(10,y,W-20,height,height/2); g.fill();
+      if (progress > .001) { g.fillStyle = colour; g.beginPath(); g.roundRect(10,y,(W-20)*progress,height,height/2); g.fill(); }
+    };
+    bar(H-32, 10, fraction, 'rgba(255,255,255,.8)');
+    bar(H-13, 5, charge, accent);
   }
 
-  // ---------------------------------------------------------------- minimap (holographic elevation map)
-  let mmBase, mmProj, mmRibbonW = 5;
-  const HOLO = 'rgba(130,205,255,';
+  // ---------------------------------------------------------------- local 3D route map
+  let mapLastDraw = -Infinity, mapHeading = null, mapRange = 230;
   function drawMinimapBase() {
-    const W = minimap.width, H = minimap.height;
-    const ext = tab.maxR * 1.18;
-    const scX = (W - 36) / (2 * ext), scZ = (H - 70) / (2 * ext * 0.58);
-    const sc = Math.min(scX, scZ);
-    let ymin = 1e9, ymax = -1e9; for (const s of tab.S) { ymin = Math.min(ymin, s.p[1]); ymax = Math.max(ymax, s.p[1]); }
-    const G = 44, hs = new Float32Array((G + 1) * (G + 1));
-    let tmin = 1e9, tmax = -1e9;
-    const hasTerrain = !desc.noTerrain;
-    for (let j = 0; j <= G; j++) for (let i = 0; i <= G; i++) {
-      const x = -ext + i / G * ext * 2, z = -ext + j / G * ext * 2;
-      const h = hasTerrain ? terrain.heightAt(x, z) : ymin - 40;
-      hs[j * (G + 1) + i] = h; tmin = Math.min(tmin, h); tmax = Math.max(tmax, h);
-    }
-    const lo = Math.min(ymin, tmin), hi = Math.max(ymax, tmax);
-    const ymid = (lo + hi) / 2, yk = Math.min(0.55, 46 / Math.max(1, hi - lo)) * sc * 0.5;
-    mmProj = p => [W / 2 - p[0] * sc, H * 0.58 + p[2] * sc * 0.58 - (p[1] - ymid) * yk];
-    mmBase = document.createElement('canvas'); mmBase.width = W; mmBase.height = H;
-    const g = mmBase.getContext('2d');
-    // Plate: translucent rhombus at the lowest terrain height, faint grid.
-    const corner = (x, z) => mmProj([x, tmin, z]);
-    const c0 = corner(-ext, -ext), c1 = corner(ext, -ext), c2 = corner(ext, ext), c3 = corner(-ext, ext);
-    g.beginPath(); g.moveTo(c0[0], c0[1]); g.lineTo(c1[0], c1[1]); g.lineTo(c2[0], c2[1]); g.lineTo(c3[0], c3[1]); g.closePath();
-    g.fillStyle = 'rgba(6,10,18,0.55)'; g.fill();
-    g.strokeStyle = HOLO + '0.35)'; g.lineWidth = 1; g.stroke();
-    g.strokeStyle = HOLO + '0.10)';
-    for (let k = 1; k < 6; k++) {
-      const u = -ext + k / 6 * ext * 2;
-      let a = corner(u, -ext), b = corner(u, ext); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
-      a = corner(-ext, u); b = corner(ext, u); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
-    }
-    // Contours by marching squares, drawn at their own height so relief reads.
-    if (hasTerrain && tmax - tmin > 2) {
-      const levels = 7, step = (tmax - tmin) / levels, cs = ext * 2 / G;
-      g.lineWidth = 1; g.lineCap = 'round';
-      for (let l = 1; l < levels; l++) {
-        const lv = tmin + l * step;
-        g.strokeStyle = HOLO + (0.22 + 0.06 * l).toFixed(2) + ')';
-        g.beginPath();
-        for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
-          const a = hs[j * (G + 1) + i], b = hs[j * (G + 1) + i + 1], c = hs[(j + 1) * (G + 1) + i + 1], d = hs[(j + 1) * (G + 1) + i];
-          if ((a < lv) === (b < lv) && (b < lv) === (c < lv) && (c < lv) === (d < lv)) continue;
-          const x0 = -ext + i * cs, z0 = -ext + j * cs, pts = [];
-          const edge = (v0, v1, px0, pz0, px1, pz1) => { if ((v0 < lv) !== (v1 < lv)) { const f = (lv - v0) / (v1 - v0); pts.push([px0 + (px1 - px0) * f, pz0 + (pz1 - pz0) * f]); } };
-          edge(a, b, x0, z0, x0 + cs, z0); edge(b, c, x0 + cs, z0, x0 + cs, z0 + cs); edge(c, d, x0 + cs, z0 + cs, x0, z0 + cs); edge(d, a, x0, z0 + cs, x0, z0);
-          for (let k = 0; k + 1 < pts.length; k += 2) { const q0 = mmProj([pts[k][0], lv, pts[k][1]]), q1 = mmProj([pts[k + 1][0], lv, pts[k + 1][1]]); g.moveTo(q0[0], q0[1]); g.lineTo(q1[0], q1[1]); }
-        }
-        g.stroke();
-      }
-    }
-    // Drop lines from the lane to the plate so elevation reads.
-    g.strokeStyle = HOLO + '0.22)'; g.lineWidth = 1;
-    const dropEvery = Math.max(8, Math.round(tab.N / 44));
-    for (let i = 0; i < tab.N; i += dropEvery) {
-      const s = tab.S[i], base = hasTerrain ? Math.min(s.p[1], terrain.heightAt(s.p[0], s.p[2])) : tmin;
-      const a = mmProj(s.p), b = mmProj([s.p[0], base, s.p[2]]);
-      g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
-      g.fillStyle = HOLO + '0.5)'; g.beginPath(); g.arc(b[0], b[1], 1.4, 0, TAU); g.fill();
-    }
-    // Lane ribbon: glowing line.
-    mmRibbonW = Math.max(4, Math.min(6, sc * 6));
-    const path = () => { g.beginPath(); for (let i = 0; i <= tab.N; i++) { const q = mmProj(tab.S[i % tab.N].p); g[i ? 'lineTo' : 'moveTo'](q[0], q[1]); } };
-    g.lineCap = 'round'; g.lineJoin = 'round';
-    g.shadowColor = 'rgba(150,215,255,0.9)'; g.shadowBlur = 10;
-    path(); g.strokeStyle = HOLO + '0.55)'; g.lineWidth = mmRibbonW + 3; g.stroke();
-    g.shadowBlur = 0;
-    path(); g.strokeStyle = 'rgba(236,246,255,0.95)'; g.lineWidth = mmRibbonW; g.stroke();
-    // Gates as ticks across the ribbon, boost gates in the accent.
-    const gates = tab.gateTs || [], boosts = tab.boostTs || [];
-    const tick = (t, col, len, lw) => {
-      const q = mmProj(World.sampleAt(tab, t).p), q2 = mmProj(World.sampleAt(tab, t + 0.002).p);
-      let dx = q2[0] - q[0], dy = q2[1] - q[1]; const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
-      g.strokeStyle = col; g.lineWidth = lw; g.beginPath(); g.moveTo(q[0] - dy * len, q[1] + dx * len); g.lineTo(q[0] + dy * len, q[1] - dx * len); g.stroke();
-    };
-    for (const t of gates) tick(t, HOLO + '0.8)', mmRibbonW + 2, 1.5);
-    for (const t of boosts) tick(t, cssColor(player ? player.color : [1, 0.7, 0.3]), mmRibbonW + 4, 2.5);
-    tick(0, 'rgba(255,255,255,0.95)', mmRibbonW + 5, 3);
-    minimap._sc = sc;
+    // No full-world terrain sampling: this map only needs the existing route samples.
+    mapLastDraw = -Infinity; mapHeading = null; mapRange = 230;
   }
   function drawMinimap() {
-    const W = minimap.width, H = minimap.height, sc = minimap._sc, g = mmCtx;
-    g.clearRect(0, 0, W, H); g.drawImage(mmBase, 0, 0);
-    // Route guidance: when off the lane, light the next segment and a dashed link from the craft.
-    const off = rs.state === 'racing' && (player.offLane !== undefined ? !!player.offLane : player.outShow > 1.2);
-    if (off) {
-      const accent = cssColor(player.color);
-      g.save(); g.shadowColor = accent; g.shadowBlur = 12; g.strokeStyle = accent; g.lineWidth = mmRibbonW + 1; g.lineCap = 'round';
-      g.beginPath();
-      for (let k = 0; k <= 24; k++) { const q = mmProj(World.sampleAt(tab, player.t + k / 24 * 0.06).p); g[k ? 'lineTo' : 'moveTo'](q[0], q[1]); }
-      g.stroke(); g.restore();
-      const q = mmProj([player.x, player.y, player.z]), n = mmProj(World.sampleAt(tab, player.laneTargetT !== undefined ? player.laneTargetT : player.t + 0.01).p);
-      g.setLineDash([4, 4]); g.strokeStyle = accent; g.lineWidth = 1.5; g.beginPath(); g.moveTo(q[0], q[1]); g.lineTo(n[0], n[1]); g.stroke(); g.setLineDash([]);
+    const now = performance.now();
+    if (now - mapLastDraw < 1000 / 15) return;
+    const dt = Math.min(.2, (now - mapLastDraw) / 1000 || .067);
+    mapLastDraw = now;
+    if (mapHeading === null) mapHeading = player.heading;
+    const turn = Math.atan2(Math.sin(player.heading-mapHeading),Math.cos(player.heading-mapHeading));
+    mapHeading += turn * (1-Math.exp(-dt*7));
+    mapRange = mix(mapRange, clamp(Math.abs(player.speed || 0)*3.5,180,420),1-Math.exp(-dt*2));
+    const g = mmCtx, W = minimap.width, H = minimap.height;
+    const sn = Math.sin(mapHeading), cs = Math.cos(mapHeading), sc = H*.95/mapRange;
+    const project = p => {
+      const dx=p[0]-player.x, dz=p[2]-player.z, up=p[1]-player.y;
+      // Match the right-handed chase camera: screen-right is forward × world-up.
+      const x=-dx*cs+dz*sn, ahead=dx*sn+dz*cs;
+      const perspective=clamp(1/(1+ahead/mapRange*.42),.55,1.5);
+      return [W*.5+x*sc*perspective,H*.73-(ahead*.65+up*.8)*sc*perspective];
+    };
+    g.clearRect(0,0,W,H); g.save();
+    g.beginPath(); g.roundRect(0,0,W,H,24); g.clip();
+    g.fillStyle='rgba(8,16,24,.72)'; g.fillRect(0,0,W,H);
+    // Stable reference plane beneath the ship makes route altitude visible.
+    const plane=player.y-25;
+    g.strokeStyle='rgba(130,205,255,.12)';g.lineWidth=1;
+    const line=(a,b)=>{g.beginPath();g.moveTo(...a);g.lineTo(...b);g.stroke();};
+    const local=(x,z)=>[player.x+x*cs+z*sn,plane,player.z-x*sn+z*cs];
+    for(let n=-2;n<=2;n++)line(project(local(n*mapRange/4,-mapRange/4)),project(local(n*mapRange/4,mapRange)));
+    for(let n=0;n<=4;n++)line(project(local(-mapRange/2,n*mapRange/4)),project(local(mapRange/2,n*mapRange/4)));
+    const start=((Math.floor(player.t*tab.N)%tab.N)+tab.N)%tab.N;
+    const collect=(direction,distance)=>{
+      const pts=[tab.S[start].p];let travelled=0,last=pts[0];
+      for(let k=1;k<tab.N&&travelled<distance;k++){
+        const p=tab.S[(start+direction*k+tab.N)%tab.N].p;
+        travelled+=len(sub(p,last));pts.push(p);last=p;
+      }return pts;
+    };
+    const ahead=collect(1,mapRange*1.55), behind=collect(-1,mapRange*.3);
+    const path=(pts,flat=false)=>{g.beginPath();pts.forEach((p,i)=>{const q=project(flat?[p[0],plane,p[2]]:p);g[i?'lineTo':'moveTo'](...q);});};
+    g.lineCap='round';g.lineJoin='round';
+    g.setLineDash([5,7]);g.strokeStyle='rgba(130,205,255,.28)';g.lineWidth=2;path(ahead,true);g.stroke();g.setLineDash([]);
+    const stride=Math.max(1,Math.floor(ahead.length/9));
+    g.strokeStyle='rgba(130,205,255,.28)';
+    for(let i=0;i<ahead.length;i+=stride){const p=ahead[i];line(project([p[0],plane,p[2]]),project(p));}
+    g.lineWidth=4;g.strokeStyle='rgba(220,239,255,.25)';path(behind);g.stroke();
+    g.lineWidth=11;g.strokeStyle='rgba(120,205,255,.18)';path(ahead);g.stroke();
+    g.lineWidth=4;g.strokeStyle='rgba(242,250,255,.95)';path(ahead);g.stroke();
+    // Only nearby opponents and upcoming gates, to avoid full-course clutter.
+    for(const t of tab.gateTs || []){
+      if(((t-player.t+1)%1)*(tab.length||2000)>mapRange*1.5)continue;
+      const q=project(World.sampleAt(tab,t).p);g.strokeStyle=cssColor(player.color);g.lineWidth=2;g.beginPath();g.arc(...q,7,0,TAU);g.stroke();
     }
-    if (typeof Weapons !== 'undefined' && Weapons.decoys) for (const d of Weapons.decoys()) { const q = mmProj([d.x, d.y, d.z]); g.fillStyle = 'rgba(200,220,240,0.35)'; g.beginPath(); g.arc(q[0], q[1], mmRibbonW * 0.7, 0, TAU); g.fill(); }
-    const r = mmRibbonW * 0.95;
-    const sorted = [...cars].sort((a, b) => a.z - b.z);
-    for (const c of sorted) {
-      const q = mmProj([c.x, c.y, c.z]);
-      if (c === player) {
-        const dx = -Math.sin(c.heading), dz = Math.cos(c.heading);
-        let sx = dx * sc, sy = dz * sc * 0.58; const l = Math.hypot(sx, sy) || 1; sx /= l; sy /= l;
-        const accent = cssColor(c.color);
-        g.save(); g.shadowColor = accent; g.shadowBlur = 10;
-        g.strokeStyle = accent; g.lineWidth = 2.5; g.lineCap = 'round';
-        g.beginPath(); g.moveTo(q[0], q[1]); g.lineTo(q[0] + sx * (r + 10), q[1] + sy * (r + 10)); g.stroke();
-        g.fillStyle = accent; g.beginPath(); g.arc(q[0], q[1], r + 1, 0, TAU); g.fill();
-        g.restore();
-        g.strokeStyle = 'rgba(0,0,0,0.6)'; g.lineWidth = 1.5; g.beginPath(); g.arc(q[0], q[1], r + 1, 0, TAU); g.stroke();
-      } else {
-        g.fillStyle = 'rgba(150,152,158,0.95)'; g.beginPath(); g.arc(q[0], q[1], r, 0, TAU); g.fill();
-        g.strokeStyle = 'rgba(0,0,0,0.55)'; g.lineWidth = 1; g.stroke();
-      }
-    }
+    for(const c of cars){if(c===player||Math.hypot(c.x-player.x,c.y-player.y,c.z-player.z)>mapRange)continue;
+      const q=project([c.x,c.y,c.z]);g.fillStyle='rgba(180,210,230,.8)';g.beginPath();g.arc(...q,4,0,TAU);g.fill();}
+    if(player.offLane){g.setLineDash([5,5]);g.strokeStyle=cssColor(player.color);g.lineWidth=2;line(project([player.x,player.y,player.z]),project(World.sampleAt(tab,player.laneTargetT??player.t).p));g.setLineDash([]);}
+    const x=W*.5,y=H*.73;
+    g.fillStyle='#fff';g.strokeStyle='rgba(0,0,0,.7)';g.lineWidth=2;
+    g.beginPath();g.moveTo(x,y-13);g.lineTo(x+9,y+8);g.lineTo(x,y+4);g.lineTo(x-9,y+8);g.closePath();g.fill();g.stroke();
+    const next=ahead[Math.min(ahead.length-1,Math.max(1,Math.floor(ahead.length*.4)))];
+    const altitude=next[1]-player.y;
+    g.font='600 18px Mori,sans-serif';g.textAlign='left';g.fillStyle='rgba(225,240,255,.85)';
+    g.fillText(Math.abs(altitude)>8?(altitude>0?'↑ Climb':'↓ Dive'):'→ Level',18,28);
+    g.textAlign='right';g.fillStyle='rgba(225,240,255,.55)';g.fillText(Math.round(mapRange)+' m',W-18,28);
+    g.restore();
   }
 
   // ---------------------------------------------------------------- draw
@@ -1266,7 +1264,40 @@ const Game = (() => {
     updateSpeedWarp(dt);
     updateRouteCues(dt);
     const t = performance.now() / 1000;
-    for (const g of carGroups) {
+    const showcasing = (app.state === 'showcase' || app.state === 'gallery');
+    if (showcasing) {
+      const viewForward = norm(sub(cam.look, cam.pos));
+      const az = showcaseView?.heading ?? Math.atan2(viewForward[0], viewForward[2]), tilt = 0;
+      const distance = 14 / Math.min(1, innerWidth / Math.max(1, innerHeight));
+      const elapsed = (performance.now()-showcaseStarted)/1000;
+      if (elapsed >= .8 && showcaseGroups.some(g => g.outgoing)) {
+        Gpu.destroyGroups(showcaseGroups.filter(g => g.outgoing));
+        showcaseGroups = showcaseGroups.filter(g => !g.outgoing);
+      }
+      for (const g of showcaseGroups) {
+        const bounds = g.mesh.bounds;
+        // Fleet dimensions carry the same visual proportions into both selectors.
+        const size = 1.4;
+        const center = bounds.min.map((value, axis) => (value + bounds.max[axis]) / 2);
+        const right = [Math.cos(az)*size,0,-Math.sin(az)*size];
+        const up = [Math.sin(az)*Math.sin(tilt)*size,Math.cos(tilt)*size,Math.cos(az)*Math.sin(tilt)*size];
+        const fwd = [Math.sin(az)*Math.cos(tilt)*size,-Math.sin(tilt)*size,Math.cos(az)*Math.cos(tilt)*size];
+        g.data.set(right,0); g.data.set(up,3); g.data.set(fwd,6);
+        const sideAxis = norm(cross(norm(sub(cam.look,cam.pos)),[0,1,0]));
+        const phase = app.state === 'gallery' ? 1 : showcaseEntering ? clamp(elapsed/1.2,0,1) : g.outgoing ? clamp(elapsed/.36,0,1) : clamp((elapsed-.36)/.44,0,1);
+        const eased = phase*phase*(3-2*phase);
+        const opacity = g.outgoing ? 1-eased : eased;
+        const offset = app.state === 'gallery' || reducedMotion.matches ? 0 : (g.outgoing ? -eased : 1-eased)*showcaseDirection*8;
+        const position = add(showcaseView?.pivot || add(cam.pos, scale(viewForward, distance)), scale(sideAxis, offset));
+        for (let axis = 0; axis < 3; axis++) position[axis] -= right[axis] * center[0] + up[axis] * center[1] + fwd[axis] * center[2];
+        position[1] += reducedMotion.matches ? 0 : Math.sin(t*1.1)*.1;
+        g.data[22] = -(1-opacity);
+        g.fade = opacity < .999;
+        g.data.set(position,9); g.data.set([1,1,1],12); g.data.set([1,1,1],17);
+        Gpu.updateInstances(g.inst,g.data);
+      }
+    }
+    for (const g of app.state === 'cover' || showcasing ? [] : carGroups) {
       // A shared craft group retains detail if any instance is nearby. Keep the
       // player's craft full quality, including cockpit and selection views.
       let distance = Infinity;
@@ -1276,7 +1307,7 @@ const Game = (() => {
       }
       g.lodDistance = distance; g.lodThresholds = [100, 240];
       g.ids.forEach((ci, k) => {
-        const c = cars[ci], b = craftBasis(c, t), o = k * Gpu.CAR_FLOATS;
+        const c = cars[ci], b = craftBasis(showcasing ? player : c, t), o = k * Gpu.CAR_FLOATS;
         g.data.set(b.right, o); g.data.set(b.up, o + 3); g.data.set(b.fwd, o + 6); g.data.set(b.pos, o + 9); g.data.set(c.color, o + 12);
         g.data[o + 15] = c.spin; g.data[o + 16] = c.steer; g.data.set(c.body, o + 17); g.data[o + 20] = c.glow; g.data[o + 21] = c.dmg; g.data[o + 22] = c.shield > 0 ? 1 : 0;
       });
@@ -1286,7 +1317,8 @@ const Game = (() => {
     const aspect = hud.canvas.clientWidth / hud.canvas.clientHeight;
     Frame.fill(frame, desc, { pos: cam.pos, look: cam.look, fov: cam.fov, aspect, time: t, shadowCenter: [player.x, player.y, player.z], shadowSize: 180 },
       { routeTime: reducedMotion.matches ? 0 : t, speed01: speedWarp, drift: player.drifting, glow: player.glow, flash: player.flash });
-    Gpu.render(scene);
+    // Show the generated environment on home, excluding all craft, rings and route markers.
+    Gpu.render(app.state === 'cover' ? { ...scene, carGroups:[], particles:false } : showcasing ? { ...scene, carGroups:showcaseGroups, particles:false } : scene);
   }
 
   // ---------------------------------------------------------------- flow API for the UI
@@ -1298,6 +1330,12 @@ const Game = (() => {
     return JSON.parse(JSON.stringify({ planetId, seed, overrides: settings, descriptor }));
   }
   function select(o) {
+    if (o.mode && o.mode !== app.state && ['showcase','gallery'].includes(o.mode)) { terrainZoomFrom = terrainZoom; terrainZoomStarted = performance.now(); }
+    showcaseEntering = o.mode === 'showcase' && !['showcase','gallery'].includes(app.state);
+    if (showcaseEntering) { menuOrbit.showcase.yaw = -2.2; menuOrbit.showcase.pitch = .48; showcaseView = null; }
+    const stayingInShowcase = ['showcase','gallery','cover'].includes(app.state) && ['showcase','gallery'].includes(o.mode);
+    showcaseDirection = Math.sign(o.showcaseDirection || 0);
+    if (o.showcasePaints) showcasePaints = { ...o.showcasePaints };
     if (o.world) {
       // A room snapshot replaces all local world settings, even with the same seed.
       const w = o.world;
@@ -1316,17 +1354,19 @@ const Game = (() => {
     if (o.craftSeed !== undefined) craftSeed = o.craftSeed;
     if (o.mode) app.state = o.mode;
     if (reload) loadWorld(o.seed !== undefined ? o.seed : seedText);
-    else { setupCars(); beginPhase(); writeHash(); cam.pos = [player.x + 6, player.y + 8, player.z - 12]; }
+    else { setupCars(); beginPhase(); writeHash(); if (!stayingInShowcase) cam.pos = [player.x + 6, player.y + 8, player.z - 12]; }
     if (app.state === 'race') emit('race');
   }
   const ui = {
     invalidate: () => invalidate(), quality, setQuality, setPaused, paused: () => paused,
     performance: () => ({ ...perf, quality: quality(), renderScale: Gpu.renderScale || 1, renderer: Gpu.metrics || null }),
     on: (ev, f) => { (listeners[ev] = listeners[ev] || []).push(f); },
+    showcaseBusy: () => app.state === 'showcase' && performance.now()-showcaseStarted < 800,
     state: () => app.state, planet: () => planet, desc: () => desc, seed: () => seedText, race: () => raceDef,
     randomSeed: randomSeedName, hashQuery: parseHash, playerName: getPlayerName,
     setPlayerName: n => { if (!n) return; playerName = n; try { localStorage.setItem('ir.name', n); } catch (e) {} if (player) player.name = n; },
     order: () => [...cars].sort((a, b) => b.prog - a.prog), finalOrder, trackLength: () => tab.length || 2000,
+    trackOutline: () => tab.S.filter((_,i) => i % 4 === 0).map(s => s.p.slice()),
     worldConfig, select, restart: () => { app.state = 'race'; setupCars(); beginPhase(); writeHash(); emit('race'); },
     home: () => { app.state = 'cover'; beginPhase(); writeHash(); },
     setLook: o => { if (desc && desc.look) Object.assign(desc.look, o); invalidate(); },
