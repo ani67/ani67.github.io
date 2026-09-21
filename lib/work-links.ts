@@ -1,5 +1,6 @@
 /** Reuse existing articles and playable pages rather than duplicate their content. */
 export const PROJECT_LINKS: Record<string, string> = {
+  pomodoro: '/pomodoro/',
   'urban-trees-in-india': '/work/urban-trees-in-india/',
   veha: '/work/veha/',
   'terra-nova': '/work/terra-nova/',

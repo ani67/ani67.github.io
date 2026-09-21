@@ -34,7 +34,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-    ...['/instrument/', '/canvas/', '/work/'].map((route) => ({ url: `https://anidalal.com${route}` })),
+    ...['/instrument/', '/canvas/', '/work/', '/pomodoro/'].map((route) => ({ url: `https://anidalal.com${route}` })),
     ...getWorkProjects().map((entry) => ({ url: `https://anidalal.com/work/${entry.id}/` })),
     ...postEntries,
   ];

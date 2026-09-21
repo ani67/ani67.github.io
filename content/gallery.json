@@ -1,5 +1,30 @@
 [
   {
+    "id": "pomodoro",
+    "title": "A little time",
+    "year": "2026",
+    "medium": "Pomodoro timer · A quiet place to focus",
+    "blurb": "A little time, one thing at a time. A simple Pomodoro timer with nine illustrated places around the world, adjustable focus and break sessions, and gentle sounds to begin and wind down.",
+    "tags": [
+      "tools"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://res.cloudinary.com/duw0custw/image/upload/v1790021999/web/nov%20rain/rooftops_z3fkea.webp",
+        "alt": "A little time — Pomodoro timer over an illustrated Bengaluru rooftop",
+        "ratio": 1.5
+      }
+    ],
+    "collection": {
+      "file": "pomodoro",
+      "count": 4
+    },
+    "href": "/pomodoro/",
+    "hrefLabel": "Open timer",
+    "external": false
+  },
+  {
     "id": "galactic-racers",
     "title": "Galactic Racers",
     "year": "2026",

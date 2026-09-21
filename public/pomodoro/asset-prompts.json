@@ -1,0 +1,50 @@
+{
+  "tool": "Built-in image_gen",
+  "assets": [
+    {
+      "path": "assets/pomodoro/backgrounds/rooftops.webp",
+      "prompt": "Use case: illustration-story. Create a wide 1536x1024 full-bleed illustrated background for a quiet pomodoro timer. Painterly gouache with fine printed paper grain, warm human everyday Indian rooftop life at blue hour. Clear turquoise blue sky occupying top 35 percent, dense Bengaluru low-rise terraces at horizon, deep blue rooftop foreground, small neighbors drinking chai at a table at far left, two children playing at lower center, laundry drying and warm yellow doorway to right, potted plants along bottom edges. Keep central area visually calm for giant white timer numerals to be added in code. Rich cobalt and teal, little warm ochre accents. Charming editorial illustration, detailed but restrained, flat shapes and atmospheric depth. Landscape composition. No text, no typography, no numbers, no clock, no UI, no borders, no watermark.",
+      "cloudinary_url": "https://res.cloudinary.com/duw0custw/image/upload/v1790021948/web/nov%20rain/rooftops_eoqhkb.webp"
+    },
+    {
+      "path": "assets/pomodoro/backgrounds/monsoon.webp",
+      "prompt": "Use case: illustration-story. Landscape 1536x1024 full-bleed background illustration for a calm pomodoro timer. Painterly gouache, fine grain paper texture, charming editorial travel illustration. Quiet monsoon afternoon seen from a covered Indian veranda overlooking lush green trees and hills, distant tiny houses, rain and mist, wooden railing low in composition, leafy plants and a cup of chai at bottom corners. Deep forest green and muted jade palette, soft diffused light. Top third is calm hazy green-grey sky; keep central 60 percent uncluttered with distant scenery so giant white numerals will read clearly over it. Warm and inviting, richly textured. No text, numbers, typography, clock, UI, borders or watermark.",
+      "cloudinary_url": "https://res.cloudinary.com/duw0custw/image/upload/v1790021990/web/nov%20rain/monsoon_ntvpwq.webp"
+    },
+    {
+      "path": "assets/pomodoro/backgrounds/sunset.webp",
+      "prompt": "Use case: illustration-story. Landscape 1536x1024 full-bleed background illustration for a calm pomodoro timer. Painterly gouache with fine printed paper texture, charming editorial illustration. A quiet Indian seaside terrace at sunset, terracotta floor in bottom third, pots and bougainvillea around edges, a simple chair at far left, distant fishing boats on still water and coconut palms at far edges. Dusky peach sky occupies upper third, warm coral, dusty rose and deep plum shadows, serene and nostalgic. Central 60 percent open uncluttered sea and sky for giant white timer numerals to be overlaid in code. No text, no numbers, no typography, no clock, no UI, no borders, no watermark.",
+      "cloudinary_url": "https://res.cloudinary.com/duw0custw/image/upload/v1790021994/web/nov%20rain/sunset_q3bvqs.webp"
+    },
+    {
+      "path": "assets/pomodoro/backgrounds/kyoto.webp",
+      "prompt": "Use case: illustration-story. A 1536x1024 landscape full-bleed background for a calm Pomodoro timer. Kyoto, Japan: a quiet wooden veranda overlooking a small moss garden, maple trees, rain-damp stones and a distant traditional tiled roof, soft jade and indigo morning light. Painterly gouache editorial travel illustration, fine paper grain, rich atmospheric color, charming human-scale details. Keep central 60 percent uncluttered distant scenery for large white timer numerals added later. Top third open sky or soft atmospheric greenery. Objects framing only edges and lower corners. No text, numbers, clock, UI, borders or watermark.",
+      "cloudinary_url": "https://res.cloudinary.com/duw0custw/image/upload/v1790021983/web/nov%20rain/kyoto_tzax7d.webp"
+    },
+    {
+      "path": "assets/pomodoro/backgrounds/lisbon.webp",
+      "prompt": "Use case: illustration-story. A 1536x1024 landscape full-bleed background for a calm Pomodoro timer. Lisbon, Portugal: a rooftop terrace overlooking stacked pastel houses and the Tagus river, terracotta roofs, blue azulejo details and potted plants at the edges, warm late-afternoon golden light. Painterly gouache editorial travel illustration, fine paper grain, rich atmospheric color, charming human-scale details. Keep central 60 percent uncluttered distant scenery for large white timer numerals added later. Top third open sky or soft atmospheric greenery. Objects framing only edges and lower corners. No text, numbers, clock, UI, borders or watermark.",
+      "cloudinary_url": "https://res.cloudinary.com/duw0custw/image/upload/v1790021986/web/nov%20rain/lisbon_ua0xzn.webp"
+    },
+    {
+      "path": "assets/pomodoro/backgrounds/alps.webp",
+      "prompt": "Use case: illustration-story. A 1536x1024 landscape full-bleed background for a calm Pomodoro timer. Swiss Alps: a timber chalet balcony with wildflowers overlooking an alpine lake, mountain silhouettes and distant snowy peaks, cool blue early morning, peaceful expansive sky. Painterly gouache editorial travel illustration, fine paper grain, rich atmospheric color, charming human-scale details. Keep central 60 percent uncluttered distant scenery for large white timer numerals added later. Top third open sky or soft atmospheric greenery. Objects framing only edges and lower corners. No text, numbers, clock, UI, borders or watermark.",
+      "cloudinary_url": "https://res.cloudinary.com/duw0custw/image/upload/v1790021979/web/nov%20rain/alps_emtauv.webp"
+    },
+    {
+      "path": "assets/pomodoro/backgrounds/marrakech.webp",
+      "prompt": "Use case: illustration-story. A 1536x1024 landscape full-bleed background for a calm Pomodoro timer. Marrakech, Morocco: a tranquil rooftop with terracotta parapets, patterned rugs and clay pots around the edges, distant medina roofs and Atlas mountains, muted dusty pink and amber twilight. Painterly gouache editorial travel illustration, fine paper grain, rich atmospheric color, charming human-scale details. Keep central 60 percent uncluttered distant scenery for large white timer numerals added later. Top third open sky or soft atmospheric greenery. Objects framing only edges and lower corners. No text, numbers, clock, UI, borders or watermark.",
+      "cloudinary_url": "https://res.cloudinary.com/duw0custw/image/upload/v1790021988/web/nov%20rain/marrakech_ihvigz.webp"
+    },
+    {
+      "path": "assets/pomodoro/backgrounds/new-york.webp",
+      "prompt": "Use case: illustration-story. A 1536x1024 landscape full-bleed background for a calm Pomodoro timer. Brooklyn, New York: a quiet brownstone rooftop with a fire escape at the edge, small potted plants, distant Manhattan skyline and water towers, hazy lavender blue hour, warm window lights. Painterly gouache editorial travel illustration, fine paper grain, rich atmospheric color, charming human-scale details. Keep central 60 percent uncluttered distant scenery for large white timer numerals added later. Top third open sky or soft atmospheric greenery. Objects framing only edges and lower corners. No text, numbers, clock, UI, borders or watermark.",
+      "cloudinary_url": "https://res.cloudinary.com/duw0custw/image/upload/v1790021992/web/nov%20rain/new-york_nd4euz.webp"
+    },
+    {
+      "path": "assets/pomodoro/backgrounds/cape-town.webp",
+      "prompt": "Use case: illustration-story. A 1536x1024 landscape full-bleed background for a calm Pomodoro timer. Cape Town, South Africa: a shaded terrace above the Atlantic coast with fynbos and an empty wooden chair at the edge, distant Twelve Apostles mountains and a curving beach, soft teal and sandy gold afternoon. Painterly gouache editorial travel illustration, fine paper grain, rich atmospheric color, charming human-scale details. Keep central 60 percent uncluttered distant scenery for large white timer numerals added later. Top third open sky or soft atmospheric greenery. Objects framing only edges and lower corners. No text, numbers, clock, UI, borders or watermark.",
+      "cloudinary_url": "https://res.cloudinary.com/duw0custw/image/upload/v1790021981/web/nov%20rain/cape-town_kbpya1.webp"
+    }
+  ]
+}
