@@ -22,10 +22,7 @@ export function BlogIndex() {
   return (
     <BlogLayout
       headlineAs="h1"
-      headline={<>
-        <span className="block">Notes from making things.</span>
-        <span className="block">On design, generative art, and what I learn building tools.</span>
-      </>}
+      headline="Notes from making things. On design, generative art, and what I learn building tools."
       belowHeadline={
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
           <Suspense><TagFilterBar /></Suspense>
