@@ -6,10 +6,7 @@ export const metadata = pageMetadata('About Ani Dalal', 'Product designer and ge
 
 export default function AboutPage() {
   return (
-    <BlogLayout useLinks headlineAs="h1" headline={<>
-      <span className="block">I design products, make art, and build tools.</span>
-      <span className="block">Currently at Frameo.AI, shaping the product and how it reaches people.</span>
-    </>}>
+    <BlogLayout useLinks headlineAs="h1" headline="I design, make art, and build tools. Currently building Frameo.AI.">
       <article className="flex-1 px-6 pt-16 pb-24 md:px-0 md:pt-10 md:pb-32 font-[family-name:var(--font-mondwest)]">
 
         <div className="space-y-12">

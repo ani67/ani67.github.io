@@ -13,7 +13,7 @@ const jsonLd = {
   url: "https://anidalal.com",
   email: "anidalal3@gmail.com",
   jobTitle: "Product Designer",
-  description: "Designer, artist and builder. Sets design direction and owns the product side of go-to-market at Frameo.AI.",
+  description: "Designer, artist and builder. Currently building Frameo.AI.",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Bengaluru",
