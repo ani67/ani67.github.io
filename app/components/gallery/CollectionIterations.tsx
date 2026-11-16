@@ -106,7 +106,21 @@ const thumb = (ref: string, w: number) =>
     ? cldUrl(ref, w)
     : ref.startsWith('/') || ref.startsWith('http')
       ? ref
-      : `https://assets.objkt.media/file/assets-003/${ref}/artifact`;
+      : w <= FX_THUMB_MAX
+        ? cldUrl(fxThumb(ref), w)
+        : `https://assets.objkt.media/file/assets-003/${ref}/artifact`;
+
+/**
+ * Small copies of fxhash previews, re-hosted on Cloudinary (asset folder
+ * `web/nft-thumbs`, public ID `fxthumb_<cid>`, 800px WebP).
+ *
+ * fxhash's resizing CDN (`media.fxhash.xyz`) went dark, and objkt's archive
+ * serves only the 1–10MB original — so the rail was pulling ~3MB per 80px
+ * tile and most tiles sat blank. The rail uses these; the stage still loads
+ * the full original from objkt. Regenerate for new tokens with the same ID.
+ */
+const FX_THUMB_MAX = 800;
+const fxThumb = (cid: string) => `https://res.cloudinary.com/duw0custw/image/upload/fxthumb_${cid}`;
 
 /**
  * The URL that runs one iteration live.
@@ -125,7 +139,7 @@ const liveUrl = (data: CollectionData, item: Iteration) =>
 
 /** True when the reference can actually be resized by a CDN. */
 const resizable = (ref: string) =>
-  isTransformable(ref);
+  isTransformable(ref) || !(ref.startsWith('/') || ref.startsWith('http'));
 
 /**
  * What to call the things in a collection, decided by what they actually are.
